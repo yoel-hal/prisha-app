@@ -1,0 +1,37 @@
+{
+  "navigation": {
+    "tabs": {
+      "home": "בית",
+      "calendar": "לוח שנה",
+      "history": "היסטוריה",
+      "settings": "הגדרות"
+    }
+  },
+  "vesetTypes": {
+    "haflagah": "וסת ההפלגה",
+    "hodesh": "וסת החודש",
+    "beinonis": "עונה בינונית"
+  },
+  "minhagim": {
+    "ashkenaz": "אשכנז",
+    "sfarad": "ספרד",
+    "chabad": "חב\"ד",
+    "teimani": "תימני",
+    "yireim": "יראים"
+  },
+  "onah": {
+    "day": "יום",
+    "night": "לילה"
+  },
+  "auth": {
+    "title": "ברוכה הבאה",
+    "subtitle": "התחברי כדי להמשיך",
+    "email": "אימייל",
+    "password": "סיסמה",
+    "signIn": "התחברות",
+    "signUp": "הרשמה",
+    "forgotPassword": "שכחת סיסמה?",
+    "continueWithGoogle": "המשך עם Google",
+    "continueWithApple": "המשך עם Apple"
+  }
+}

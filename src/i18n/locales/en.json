@@ -1,0 +1,37 @@
+{
+  "navigation": {
+    "tabs": {
+      "home": "Home",
+      "calendar": "Calendar",
+      "history": "History",
+      "settings": "Settings"
+    }
+  },
+  "vesetTypes": {
+    "haflagah": "Haflagah",
+    "hodesh": "Veset HaChodesh",
+    "beinonis": "Onah Beinonit"
+  },
+  "minhagim": {
+    "ashkenaz": "Ashkenaz",
+    "sfarad": "Sfarad",
+    "chabad": "Chabad",
+    "teimani": "Teimani",
+    "yireim": "Yireim"
+  },
+  "onah": {
+    "day": "Day",
+    "night": "Night"
+  },
+  "auth": {
+    "title": "Welcome",
+    "subtitle": "Sign in to continue",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "forgotPassword": "Forgot password?",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithApple": "Continue with Apple"
+  }
+}
