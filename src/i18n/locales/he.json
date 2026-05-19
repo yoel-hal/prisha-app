@@ -5,7 +5,57 @@
     "settings": "הגדרות"
   },
   "common": {
-    "loading": "טוען…"
+    "loading": "טוען…",
+    "done": "סיום"
+  },
+  "period": {
+    "add": "הוספת וסת",
+    "date": "תאריך",
+    "onah": "עונה",
+    "day": "יום / Day",
+    "night": "לילה / Night",
+    "notes": "הערות (אופציונלי)",
+    "save": "שמירה",
+    "saved": "הוסת נשמרה",
+    "confirmation": "וסתות קרובות:",
+    "gregorian": "לועזי",
+    "hebrew": "עברי",
+    "year": "שנה"
+  },
+  "calendar": {
+    "title": "לוח שנה",
+    "noData": "הוסיפי וסת כדי לראות וסתות בלוח.",
+    "addToCalendar": "הוספה ליומן",
+    "setReminder": "הגדרת תזכורת"
+  },
+  "settings": {
+    "title": "הגדרות",
+    "minhag": "מנהג",
+    "customization": "התאמה אישית",
+    "language": "שפה",
+    "notifications": "התראות",
+    "calendarSync": "סנכרון יומן",
+    "privacy": "פרטיות",
+    "coupleSync": "סנכרון זוגי",
+    "about": "אודות"
+  },
+  "veset": {
+    "onahBeinonit": "עונה בינונית",
+    "haflaga": "וסת ההפלגה",
+    "yomHaChodesh": "וסת החודש"
+  },
+  "minhag": {
+    "ashkenaz": "אשכנז",
+    "sfarad": "ספרד",
+    "chabad": "חב\"ד",
+    "teimani": "תימני",
+    "yireim": "יראים",
+    "confirm": "אישור",
+    "ashkenazDesc": "מנהג אשכנז לחישוב וסתות, כולל כללי עונה בינונית והפלגה סטנדרטיים. ההפלגה נספרת מיום לאחר תחילת הוסת הקודמת. נפוץ בקהילות אשכנז בישראל ובגולה.",
+    "sfaradDesc": "מנהג ספרד לחישוב וסתות, עם כללים ייחודיים לעונה בינונית ווסת החודש. מניין ימי ההפלגה עוקב אחר הגישה הספרדית. נפוץ בקהילות ספרד ומזרח.",
+    "chabadDesc": "מנהג חב\"ד, שעשוי להבדיל בחישוב עונה בינונית וביישום ימי הפלגה. חלק מפוסקי חב\"ד מקילים בנסיבות מסוימות ביחס לוסתות.",
+    "teimaniDesc": "מנהג תימן (בלדי) עם מסורות ייחודיות לזמני וסתות וחישוב עונות. חישוב עונות יום ולילה עשוי להשתנות ממנהג אשכנז או ספרד.",
+    "yireimDesc": "מנהג היראים — גישה מחמירה עם חומרות נוספות במקומות הרלוונטיים. עשוי לטפל בוסתות בצורה מחמירה יותר, כולל שיקולי קביעות וחפיפת וסתות."
   },
   "vesetTypes": {
     "haflagah": "וסת ההפלגה",
@@ -28,11 +78,21 @@
     "subtitle": "התחברי כדי להמשיך",
     "email": "אימייל",
     "password": "סיסמה",
+    "emailPlaceholder": "you@example.com",
+    "passwordPlaceholder": "••••••••",
     "signIn": "התחברות",
     "signUp": "הרשמה",
+    "createAccount": "יצירת חשבון",
     "forgotPassword": "שכחת סיסמה?",
+    "passwordResetSent": "נשלח אימייל לאיפוס סיסמה. בדקי את תיבת הדואר.",
+    "backToLogin": "חזרה לאפשרויות התחברות",
+    "errorEmptyFields": "נא למלא אימייל וסיסמה.",
+    "errorEmailRequired": "נא למלא כתובת אימייל.",
+    "errorInvalidEmail": "נא להזין כתובת אימייל תקינה.",
+    "errorWeakPassword": "הסיסמה חייבת להכיל לפחות 6 תווים.",
     "continueWithGoogle": "המשך עם Google",
     "continueWithApple": "המשך עם Apple",
-    "continueWithEmail": "המשך עם אימייל"
+    "continueWithEmail": "המשך עם אימייל",
+    "signOut": "התנתקות"
   }
 }

@@ -5,7 +5,57 @@
     "settings": "Settings"
   },
   "common": {
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "done": "Done"
+  },
+  "period": {
+    "add": "Add Period",
+    "date": "Date",
+    "onah": "Onah",
+    "day": "Day / יום",
+    "night": "Night / לילה",
+    "notes": "Notes (optional)",
+    "save": "Save",
+    "saved": "Period saved",
+    "confirmation": "Upcoming vestos:",
+    "gregorian": "Gregorian",
+    "hebrew": "Hebrew",
+    "year": "Year"
+  },
+  "calendar": {
+    "title": "Calendar",
+    "noData": "Add a period to see vestos on the calendar.",
+    "addToCalendar": "Add to Calendar",
+    "setReminder": "Set Reminder"
+  },
+  "settings": {
+    "title": "Settings",
+    "minhag": "Minhag",
+    "customization": "Customization",
+    "language": "Language",
+    "notifications": "Notifications",
+    "calendarSync": "Calendar Sync",
+    "privacy": "Privacy",
+    "coupleSync": "Couple Sync",
+    "about": "About"
+  },
+  "veset": {
+    "onahBeinonit": "Onah Beinonit",
+    "haflaga": "Haflaga",
+    "yomHaChodesh": "Yom HaChodesh"
+  },
+  "minhag": {
+    "ashkenaz": "Ashkenaz",
+    "sfarad": "Sfarad",
+    "chabad": "Chabad",
+    "teimani": "Teimani",
+    "yireim": "Yireim",
+    "confirm": "Confirm",
+    "ashkenazDesc": "Follows Ashkenazi custom for vestos calculations, including standard onah beinonit and haflaga rules. Haflaga is counted from the day after the previous period began. Commonly used in Israel and the diaspora Ashkenazi community.",
+    "sfaradDesc": "Follows Sephardic custom with distinct rules for onah beinonit and veset ha-chodesh. Haflaga intervals follow the Sephardic approach to counting days between periods. Widely used in Sephardic and Mizrahi communities.",
+    "chabadDesc": "Follows Chabad/Lubavitch custom, which may differ in how onah beinonit is calculated and when haflaga days apply. Some Chabad poskim are more lenient on certain vestos in specific circumstances.",
+    "teimaniDesc": "Follows Yemenite (Baladi) custom with its own traditions for vestos timing and onah calculations. Day and night onot may be calculated differently than Ashkenaz or Sephardic practice.",
+    "yireimDesc": "Follows the stringent approach of the Yireim, applying additional chumrot where relevant. May treat certain vestos more strictly, including considerations around kavuah and overlapping vestos."
   },
   "vesetTypes": {
     "haflagah": "Haflagah",
@@ -28,11 +78,21 @@
     "subtitle": "Sign in to continue",
     "email": "Email",
     "password": "Password",
+    "emailPlaceholder": "you@example.com",
+    "passwordPlaceholder": "••••••••",
     "signIn": "Sign In",
     "signUp": "Sign Up",
+    "createAccount": "Create Account",
     "forgotPassword": "Forgot password?",
+    "passwordResetSent": "Password reset email sent. Check your inbox.",
+    "backToLogin": "Back to sign-in options",
+    "errorEmptyFields": "Please enter your email and password.",
+    "errorEmailRequired": "Please enter your email address.",
+    "errorInvalidEmail": "Please enter a valid email address.",
+    "errorWeakPassword": "Password must be at least 6 characters.",
     "continueWithGoogle": "Continue with Google",
     "continueWithApple": "Continue with Apple",
-    "continueWithEmail": "Continue with Email"
+    "continueWithEmail": "Continue with Email",
+    "signOut": "Sign Out"
   }
 }

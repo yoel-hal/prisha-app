@@ -2,14 +2,14 @@ import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
-export default function AboutSettingsScreen() {
+export default function CalendarSyncSettingsScreen() {
   const { t } = useTranslation();
 
   return (
     <>
-      <Stack.Screen options={{ title: t('settings.about') }} />
+      <Stack.Screen options={{ title: t('settings.calendarSync') }} />
     <View style={styles.container}>
-      <Text style={styles.text}>{t('settings.about')}</Text>
+      <Text style={styles.text}>{t('settings.calendarSync')}</Text>
     </View>
     </>
   );

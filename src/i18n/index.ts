@@ -1,4 +1,4 @@
-import { I18nManager } from 'react-native';
+import { DevSettings, I18nManager, Platform } from 'react-native';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
@@ -12,21 +12,33 @@ export const resources = {
 
 export type SupportedLanguage = keyof typeof resources;
 
-const RTL_LANGUAGES: SupportedLanguage[] = ['he'];
-
 /**
  * Applies RTL/LTR direction based on selected app language.
- * Note: switching direction at runtime may require an app reload in React Native.
+ * Hebrew → RTL; English → LTR.
+ * Native layout mirroring may require an app reload after toggling direction.
  */
 export function applyLanguageDirection(language: SupportedLanguage): void {
-  const shouldUseRTL = RTL_LANGUAGES.includes(language);
+  const shouldUseRTL = language === 'he';
   I18nManager.allowRTL(shouldUseRTL);
   I18nManager.forceRTL(shouldUseRTL);
 }
 
+function reloadAppIfNeeded(directionChanged: boolean): void {
+  if (!directionChanged || Platform.OS === 'web') {
+    return;
+  }
+  if (__DEV__ && typeof DevSettings.reload === 'function') {
+    DevSettings.reload();
+  }
+}
+
 export async function setAppLanguage(language: SupportedLanguage): Promise<void> {
+  const shouldUseRTL = language === 'he';
+  const directionChanged = I18nManager.isRTL !== shouldUseRTL;
+
   applyLanguageDirection(language);
   await i18n.changeLanguage(language);
+  reloadAppIfNeeded(directionChanged);
 }
 
 if (!i18n.isInitialized) {

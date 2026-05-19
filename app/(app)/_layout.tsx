@@ -50,7 +50,7 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
-        name="settings/index"
+        name="settings"
         options={{
           title: t('navigation.settings'),
           tabBarIcon: ({ color, size }) => (
