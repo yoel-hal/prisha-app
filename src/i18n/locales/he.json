@@ -1,11 +1,11 @@
 {
   "navigation": {
-    "tabs": {
-      "home": "בית",
-      "calendar": "לוח שנה",
-      "history": "היסטוריה",
-      "settings": "הגדרות"
-    }
+    "calendar": "לוח שנה",
+    "add": "הוספת וסת",
+    "settings": "הגדרות"
+  },
+  "common": {
+    "loading": "טוען…"
   },
   "vesetTypes": {
     "haflagah": "וסת ההפלגה",
@@ -32,6 +32,7 @@
     "signUp": "הרשמה",
     "forgotPassword": "שכחת סיסמה?",
     "continueWithGoogle": "המשך עם Google",
-    "continueWithApple": "המשך עם Apple"
+    "continueWithApple": "המשך עם Apple",
+    "continueWithEmail": "המשך עם אימייל"
   }
 }

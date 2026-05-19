@@ -1,11 +1,11 @@
 {
   "navigation": {
-    "tabs": {
-      "home": "Home",
-      "calendar": "Calendar",
-      "history": "History",
-      "settings": "Settings"
-    }
+    "calendar": "Calendar",
+    "add": "Add Period",
+    "settings": "Settings"
+  },
+  "common": {
+    "loading": "Loading…"
   },
   "vesetTypes": {
     "haflagah": "Haflagah",
@@ -32,6 +32,7 @@
     "signUp": "Sign Up",
     "forgotPassword": "Forgot password?",
     "continueWithGoogle": "Continue with Google",
-    "continueWithApple": "Continue with Apple"
+    "continueWithApple": "Continue with Apple",
+    "continueWithEmail": "Continue with Email"
   }
 }

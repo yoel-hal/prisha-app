@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "500134129394",
+    "project_id": "prisha-tracker",
+    "storage_bucket": "prisha-tracker.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:500134129394:android:7fa31942abbfda8ecb2a6b",
+        "android_client_info": {
+          "package_name": "com.yoel.halberstadt.prishatracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCriOzOeMQfPnGkVdMXkqGtEu-zLb8GXiI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
