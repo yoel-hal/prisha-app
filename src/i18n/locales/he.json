@@ -6,7 +6,8 @@
   },
   "common": {
     "loading": "טוען…",
-    "done": "סיום"
+    "done": "סיום",
+    "cancel": "ביטול"
   },
   "period": {
     "add": "הוספת וסת",
@@ -123,6 +124,26 @@
     "veshetEinahDesc": "החלת כללים לוסת שלא התקיימה במועד הצפוי.",
     "onahBeinonitIfHaflaga": "עונה בינונית עם הפלגה",
     "onahBeinonitIfHaflagaDesc": "החלת עונה בינונית גם כאשר וסת הפלגה חל באותו יום."
+  },
+  "couple": {
+    "title": "סנכרון זוגי",
+    "soloMode": "מצב יחיד — הזמיני את בן/בת הזוג",
+    "invitePartner": "הזמנת בן/בת זוג",
+    "partnerEmail": "אימייל בן/בת הזוג",
+    "sendInvite": "שליחת הזמנה",
+    "inviteSent": "ההזמנה נשלחה! בן/בת הזוג יראו אותה בהתחברות",
+    "connected": "מחובר",
+    "disconnect": "ניתוק",
+    "disconnectWarning": "ניתוק לא ימחק את נתוני הוסתות שלך",
+    "disconnectConfirm": "לנתק את החיבור לבן/בת הזוג?",
+    "pendingInvite": "{{email}} הזמין/ה אותך להתחבר. לקבל?",
+    "pendingInviteOutgoing": "הזמנה ממתינה ל-{{email}}",
+    "acceptInvite": "קבלה",
+    "declineInvite": "דחייה",
+    "inviteExpired": "תוקף ההזמנה פג",
+    "inviteAccepted": "התחברתם בהצלחה לבן/בת הזוג",
+    "noPartner": "אין בן/בת זוג מחובר/ת",
+    "partnerConnected": "מחובר/ת ל-{{email}}"
   },
   "auth": {
     "title": "ברוכה הבאה",

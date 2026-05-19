@@ -11,6 +11,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import type { User } from 'firebase/auth';
 
 import '../src/i18n';
+import { bootstrapCoupleForAuthUser } from '../src/hooks/useCouple';
 import { useAuthStore } from '../src/store/authStore';
 import { useOnboardingStore } from '../src/store/onboardingStore';
 import { useSettingsStore } from '../src/store/settingsStore';
@@ -20,6 +21,7 @@ function RootLayout() {
   const router = useRouter();
   const segments = useSegments();
   const [user, setUser] = useState<User | null | undefined>(undefined);
+  const [coupleBootstrapped, setCoupleBootstrapped] = useState(false);
   const onboardingLoaded = useOnboardingStore((state) => state.loaded);
   const onboardingComplete = useOnboardingStore((state) => state.complete);
   const hydrateOnboarding = useOnboardingStore((state) => state.hydrate);
@@ -38,6 +40,9 @@ function RootLayout() {
       unsubscribe = onAuthStateChanged((nextUser) => {
         setUser(nextUser);
         setAuthUser(nextUser);
+        if (!nextUser) {
+          setCoupleBootstrapped(false);
+        }
       });
     });
 
@@ -45,6 +50,26 @@ function RootLayout() {
       unsubscribe?.();
     };
   }, [setAuthUser]);
+
+  useEffect(() => {
+    if (!user?.uid || !user.email) {
+      setCoupleBootstrapped(!user);
+      return;
+    }
+
+    let cancelled = false;
+    setCoupleBootstrapped(false);
+
+    void bootstrapCoupleForAuthUser(user.uid, user.email).finally(() => {
+      if (!cancelled) {
+        setCoupleBootstrapped(true);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.uid, user?.email]);
 
   useEffect(() => {
     if (coupleId) {
@@ -83,7 +108,8 @@ function RootLayout() {
   }, [user, onboardingComplete, segments, router]);
 
   const isAuthLoading = user === undefined;
-  const isBootstrapping = isAuthLoading || !onboardingLoaded;
+  const isBootstrapping =
+    isAuthLoading || !onboardingLoaded || (!!user && !coupleBootstrapped);
   const inAuthGroup = segments[0] === '(auth)';
   const inAppGroup = segments[0] === '(app)';
   const inOnboarding = segments[0] === 'onboarding';

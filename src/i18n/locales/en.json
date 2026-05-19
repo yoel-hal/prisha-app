@@ -6,7 +6,8 @@
   },
   "common": {
     "loading": "Loading…",
-    "done": "Done"
+    "done": "Done",
+    "cancel": "Cancel"
   },
   "period": {
     "add": "Add Period",
@@ -123,6 +124,26 @@
     "veshetEinahDesc": "Apply rules for a veset that did not occur on the expected date.",
     "onahBeinonitIfHaflaga": "Onah beinonit with haflaga",
     "onahBeinonitIfHaflagaDesc": "Also apply onah beinonit when a haflaga veset falls on the same day."
+  },
+  "couple": {
+    "title": "Couple Sync",
+    "soloMode": "Solo mode — invite your partner",
+    "invitePartner": "Invite your partner",
+    "partnerEmail": "Partner's email",
+    "sendInvite": "Send Invite",
+    "inviteSent": "Invite sent! Your partner will see it when they log in",
+    "connected": "Connected",
+    "disconnect": "Disconnect",
+    "disconnectWarning": "Disconnecting will not delete your period data",
+    "disconnectConfirm": "Are you sure you want to disconnect from your partner?",
+    "pendingInvite": "{{email}} invited you to connect. Accept?",
+    "pendingInviteOutgoing": "Invite pending for {{email}}",
+    "acceptInvite": "Accept",
+    "declineInvite": "Decline",
+    "inviteExpired": "This invite has expired",
+    "inviteAccepted": "You are now connected with your partner",
+    "noPartner": "No partner connected",
+    "partnerConnected": "Connected with {{email}}"
   },
   "auth": {
     "title": "Welcome",
