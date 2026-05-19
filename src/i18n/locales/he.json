@@ -31,6 +31,7 @@
   "settings": {
     "title": "הגדרות",
     "minhag": "מנהג",
+    "chumrot": "חומרות (Chumrot)",
     "customization": "התאמה אישית",
     "language": "שפה",
     "notifications": "התראות",
@@ -72,6 +73,28 @@
   "onah": {
     "day": "יום",
     "night": "לילה"
+  },
+  "onboarding": {
+    "welcome": "פרישה טרקר / Prisha Tracker",
+    "tagline": "מעקב ימי פרישה / Track your prisha days",
+    "getStarted": "התחלה",
+    "chooseLanguage": "Choose your language / בחר שפה",
+    "continue": "המשך",
+    "chooseMinhag": "בחירת מנהג",
+    "chumrot": "חומרות נוספות",
+    "chumrotDesc": "חומרות אופציונליות לחישוב וסתות. ניתן לשנות בהגדרות בכל עת.",
+    "allSet": "הכל מוכן",
+    "allSetDesc": "ההעדפות נשמרו. אפשר להתחיל לעקוב אחר ימי הפרישה בלוח השנה.",
+    "start": "התחלה",
+    "skip": "דילוג"
+  },
+  "chumrot": {
+    "kavuah": "קביעות",
+    "kavuahDesc": "התחשבות בדפוסי מחזור קבועים (קביעות) בחישוב וסתות.",
+    "veshetEinah": "וסת שאינה",
+    "veshetEinahDesc": "החלת כללים לוסת שלא התקיימה במועד הצפוי.",
+    "onahBeinonitIfHaflaga": "עונה בינונית עם הפלגה",
+    "onahBeinonitIfHaflagaDesc": "החלת עונה בינונית גם כאשר וסת הפלגה חל באותו יום."
   },
   "auth": {
     "title": "ברוכה הבאה",

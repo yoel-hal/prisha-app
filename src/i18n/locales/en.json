@@ -31,6 +31,7 @@
   "settings": {
     "title": "Settings",
     "minhag": "Minhag",
+    "chumrot": "Stringencies (Chumrot)",
     "customization": "Customization",
     "language": "Language",
     "notifications": "Notifications",
@@ -72,6 +73,28 @@
   "onah": {
     "day": "Day",
     "night": "Night"
+  },
+  "onboarding": {
+    "welcome": "פרישה טרקר / Prisha Tracker",
+    "tagline": "מעקב ימי פרישה / Track your prisha days",
+    "getStarted": "Get Started",
+    "chooseLanguage": "Choose your language / בחר שפה",
+    "continue": "Continue",
+    "chooseMinhag": "Choose your minhag",
+    "chumrot": "Additional stringencies",
+    "chumrotDesc": "Optional chumrot for vestos calculations. You can change these later in settings.",
+    "allSet": "You're all set",
+    "allSetDesc": "Your preferences are saved. Start tracking your prisha days on the calendar.",
+    "start": "Start",
+    "skip": "Skip"
+  },
+  "chumrot": {
+    "kavuah": "Kavuah",
+    "kavuahDesc": "Treat established cycle patterns (kavuah) when calculating vestos.",
+    "veshetEinah": "Veset she-einah",
+    "veshetEinahDesc": "Apply rules for a veset that did not occur on the expected date.",
+    "onahBeinonitIfHaflaga": "Onah beinonit with haflaga",
+    "onahBeinonitIfHaflagaDesc": "Also apply onah beinonit when a haflaga veset falls on the same day."
   },
   "auth": {
     "title": "Welcome",

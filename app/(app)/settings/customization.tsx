@@ -5,14 +5,31 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import type { Minhag } from '../../../src/calculations/types';
+import type { Chumrot, Minhag } from '../../../src/calculations/types';
 import { useSettings } from '../../../src/hooks/useSettings';
 import { textStartStyle } from '../../../src/utils/rtl';
+
+type ChumraKey = keyof Chumrot;
+
+const CHUMRA_ROWS: { key: ChumraKey; labelKey: string; descKey: string }[] = [
+  { key: 'kavuah', labelKey: 'chumrot.kavuah', descKey: 'chumrot.kavuahDesc' },
+  {
+    key: 'veshetEinah',
+    labelKey: 'chumrot.veshetEinah',
+    descKey: 'chumrot.veshetEinahDesc',
+  },
+  {
+    key: 'onahBeinonitIfHaflaga',
+    labelKey: 'chumrot.onahBeinonitIfHaflaga',
+    descKey: 'chumrot.onahBeinonitIfHaflagaDesc',
+  },
+];
 
 const MINHAGIM: Minhag[] = [
   'ashkenaz',
@@ -31,9 +48,9 @@ const DESC_KEYS: Record<Minhag, string> = {
 };
 
 export default function CustomizationScreen() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
-  const { minhag, selectMinhag } = useSettings();
+  const { minhag, chumrot, selectMinhag, selectChumrot } = useSettings();
   const [pending, setPending] = useState<Minhag>(minhag);
   const [saving, setSaving] = useState(false);
 
@@ -47,6 +64,13 @@ export default function CustomizationScreen() {
     setSaving(false);
     router.back();
   }, [pending, selectMinhag, router]);
+
+  const toggleChumra = useCallback(
+    (key: ChumraKey, value: boolean) => {
+      void selectChumrot({ ...chumrot, [key]: value });
+    },
+    [chumrot, selectChumrot],
+  );
 
   return (
     <>
@@ -67,6 +91,22 @@ export default function CustomizationScreen() {
               />
             ))}
           </View>
+
+          <Text style={[styles.header, styles.sectionGap, textStartStyle()]}>
+            {t('settings.chumrot')}
+          </Text>
+
+          <View style={styles.chumrotRows}>
+            {CHUMRA_ROWS.map((row) => (
+              <ChumraRow
+                key={row.key}
+                label={t(row.labelKey)}
+                description={t(row.descKey)}
+                value={chumrot[row.key]}
+                onValueChange={(value) => toggleChumra(row.key, value)}
+              />
+            ))}
+          </View>
         </ScrollView>
 
         <View style={styles.footer}>
@@ -80,6 +120,28 @@ export default function CustomizationScreen() {
         </View>
       </SafeAreaView>
     </>
+  );
+}
+
+function ChumraRow({
+  label,
+  description,
+  value,
+  onValueChange,
+}: {
+  label: string;
+  description: string;
+  value: boolean;
+  onValueChange: (next: boolean) => void;
+}) {
+  return (
+    <View style={styles.chumrotRow}>
+      <View style={styles.chumrotRowText}>
+        <Text style={[styles.chumrotRowLabel, textStartStyle()]}>{label}</Text>
+        <Text style={[styles.chumrotRowDesc, textStartStyle()]}>{description}</Text>
+      </View>
+      <Switch value={value} onValueChange={onValueChange} />
+    </View>
   );
 }
 
@@ -137,6 +199,33 @@ const styles = StyleSheet.create({
     color: '#888',
     textTransform: 'uppercase',
     marginBottom: 4,
+  },
+  sectionGap: {
+    marginTop: 24,
+  },
+  chumrotRows: {
+    gap: 4,
+  },
+  chumrotRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#eee',
+  },
+  chumrotRowText: {
+    flex: 1,
+    gap: 4,
+  },
+  chumrotRowLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  chumrotRowDesc: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#666',
   },
   cardList: {
     gap: 12,
