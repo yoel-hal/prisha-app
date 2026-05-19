@@ -26,9 +26,27 @@ export type Chumrot = {
   onahBeinonitIfHaflaga: boolean;
 };
 
+export type NotificationLeadHours = 12 | 24 | 48;
+
+export type NotificationSettings = {
+  enabled: boolean;
+  leadHours: NotificationLeadHours;
+  onahBeinonit: boolean;
+  haflaga: boolean;
+  yomHaChodesh: boolean;
+};
+
+export type CalendarSettings = {
+  syncEnabled: boolean;
+  eventTitle: string;
+  syncedEventIds: Record<string, string>;
+};
+
 export type UserSettings = {
   minhag: Minhag;
   chumrot: Chumrot;
+  notifications: NotificationSettings;
+  calendar: CalendarSettings;
 };
 
 export type VesetResult = {

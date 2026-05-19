@@ -26,7 +26,35 @@
     "title": "Calendar",
     "noData": "Add a period to see vestos on the calendar.",
     "addToCalendar": "Add to Calendar",
-    "setReminder": "Set Reminder"
+    "setReminder": "Set Reminder",
+    "syncTitle": "Calendar Sync",
+    "syncEnable": "Sync to device calendar",
+    "eventTitle": "Calendar event title",
+    "eventTitlePlaceholder": "e.g. פרישה",
+    "syncSaved": "Calendar preferences saved",
+    "permissionDenied": "Calendar access was denied. Enable it in system settings to sync events.",
+    "addSuccess": "Added to your device calendar",
+    "addError": "Could not add to calendar. Try again.",
+    "preview": "Preview",
+    "previewAllDay": "All day"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "enable": "Enable notifications",
+    "leadTime": "Notify me before",
+    "hours12": "12 hours",
+    "hours24": "24 hours",
+    "hours48": "48 hours",
+    "onahBeinonit": "Onah Beinonit notifications",
+    "haflaga": "Haflaga notifications",
+    "yomHaChodesh": "Yom HaChodesh notifications",
+    "saved": "Notification preferences saved",
+    "permissionDenied": "Notification permission was denied. Enable it in system settings to receive reminders."
+  },
+  "reminder": {
+    "set": "Set reminder",
+    "success": "Reminder scheduled",
+    "error": "Could not schedule reminder. Try again."
   },
   "settings": {
     "title": "Settings",

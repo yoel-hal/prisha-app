@@ -13,7 +13,15 @@ import {
   type Unsubscribe,
 } from 'firebase/firestore';
 
-import type { HebrewDate, Period, UserSettings } from '../calculations/types';
+import type {
+  CalendarSettings,
+  HebrewDate,
+  NotificationLeadHours,
+  NotificationSettings,
+  Period,
+  UserSettings,
+} from '../calculations/types';
+const DEFAULT_EVENT_TITLE = 'פרישה';
 import { db } from './config';
 
 const SETTINGS_DOC_ID = 'default';
@@ -61,6 +69,56 @@ function mapPeriod(id: string, data: DocumentData): Period {
   };
 }
 
+function parseLeadHours(value: unknown): NotificationLeadHours {
+  if (value === 12 || value === 48) {
+    return value;
+  }
+  return 24;
+}
+
+function mapNotifications(data: DocumentData): NotificationSettings {
+  const raw =
+    data.notifications && typeof data.notifications === 'object'
+      ? (data.notifications as Record<string, unknown>)
+      : {};
+
+  return {
+    enabled: raw.enabled === true,
+    leadHours: parseLeadHours(raw.leadHours),
+    onahBeinonit: raw.onahBeinonit !== false,
+    haflaga: raw.haflaga !== false,
+    yomHaChodesh: raw.yomHaChodesh !== false,
+  };
+}
+
+function mapCalendar(data: DocumentData): CalendarSettings {
+  const raw =
+    data.calendar && typeof data.calendar === 'object'
+      ? (data.calendar as Record<string, unknown>)
+      : {};
+
+  const syncedRaw =
+    raw.syncedEventIds && typeof raw.syncedEventIds === 'object'
+      ? (raw.syncedEventIds as Record<string, unknown>)
+      : {};
+
+  const syncedEventIds: Record<string, string> = {};
+  for (const [vesetId, eventId] of Object.entries(syncedRaw)) {
+    if (typeof eventId === 'string') {
+      syncedEventIds[vesetId] = eventId;
+    }
+  }
+
+  return {
+    syncEnabled: raw.syncEnabled === true,
+    eventTitle:
+      typeof raw.eventTitle === 'string' && raw.eventTitle.length > 0
+        ? raw.eventTitle
+        : DEFAULT_EVENT_TITLE,
+    syncedEventIds,
+  };
+}
+
 function mapSettings(data: DocumentData): UserSettings {
   const chumrot = data.chumrot;
   const minhag = data.minhag;
@@ -80,6 +138,8 @@ function mapSettings(data: DocumentData): UserSettings {
       veshetEinah: chumrotRecord.veshetEinah === true,
       onahBeinonitIfHaflaga: chumrotRecord.onahBeinonitIfHaflaga === true,
     },
+    notifications: mapNotifications(data),
+    calendar: mapCalendar(data),
   };
 }
 

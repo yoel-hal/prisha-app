@@ -21,6 +21,7 @@ export type CalendarDayEvent = {
   dateHebrew: Period['dateHebrew'];
   onah: Period['onah'];
   vesetType?: VesetType;
+  vesetId?: string;
   periodId?: string;
 };
 
@@ -90,6 +91,7 @@ export function getEventsForDate(
         dateHebrew: veset.dateHebrew,
         onah: veset.onah,
         vesetType: veset.type,
+        vesetId: veset.id,
       });
     }
   }

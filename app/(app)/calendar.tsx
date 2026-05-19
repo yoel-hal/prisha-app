@@ -5,10 +5,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CalendarDaySheet } from '../../src/components/calendar/CalendarDaySheet';
 import { useCalendar } from '../../src/hooks/useCalendar';
+import { usePeriods } from '../../src/hooks/usePeriods';
+import { useVesetCalculations } from '../../src/hooks/useVesetCalculations';
 import { isAppRTL, textStartStyle } from '../../src/utils/rtl';
 
 export default function CalendarScreen() {
   const { t } = useTranslation();
+  usePeriods();
+  const { vesetim } = useVesetCalculations();
   const {
     isLoading,
     markedDates,
@@ -66,6 +70,7 @@ export default function CalendarScreen() {
         visible={selectedEvents.length > 0}
         selectedEvent={selectedEvents[0] ?? null}
         events={selectedEvents}
+        vesetim={vesetim}
         onClose={closeSheet}
       />
     </SafeAreaView>

@@ -3,10 +3,16 @@ import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Platform, StyleSheet } from 'react-native';
 
+import { NotificationScheduler } from '../../src/components/app/NotificationScheduler';
+import { usePeriods } from '../../src/hooks/usePeriods';
+
 export default function AppLayout() {
   const { t } = useTranslation();
+  usePeriods();
 
   return (
+    <>
+    <NotificationScheduler />
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -59,5 +65,6 @@ export default function AppLayout() {
         }}
       />
     </Tabs>
+    </>
   );
 }
