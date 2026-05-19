@@ -1,15 +1,14 @@
-import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import { getApp, getApps, initializeApp, type FirebaseApp, type FirebaseOptions } from 'firebase/app';
 import {
+  browserLocalPersistence,
   getAuth,
   initializeAuth,
   type Auth,
-  // @ts-expect-error Exported from the React Native bundle; Metro resolves it at build time.
-  getReactNativePersistence,
 } from 'firebase/auth';
 import { getFirestore, type Firestore } from 'firebase/firestore';
 import { getFunctions, type Functions } from 'firebase/functions';
+import { Platform } from 'react-native';
 
 const FIREBASE_ENV_KEYS = {
   apiKey: 'EXPO_PUBLIC_FIREBASE_API_KEY',
@@ -77,6 +76,16 @@ function getOrInitializeApp(): FirebaseApp {
 
 function getOrInitializeAuth(firebaseApp: FirebaseApp): Auth {
   try {
+    if (Platform.OS === 'web') {
+      return initializeAuth(firebaseApp, {
+        persistence: browserLocalPersistence,
+      });
+    }
+
+    const { getReactNativePersistence } = require('firebase/auth');
+    const ReactNativeAsyncStorage =
+      require('@react-native-async-storage/async-storage').default;
+
     return initializeAuth(firebaseApp, {
       persistence: getReactNativePersistence(ReactNativeAsyncStorage),
     });

@@ -10,6 +10,7 @@ import {
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import type { User } from 'firebase/auth';
 
+import { DesktopWebShell } from '../src/components/common/DesktopWebShell';
 import '../src/i18n';
 import { bootstrapCoupleForAuthUser } from '../src/hooks/useCouple';
 import { useAuthStore } from '../src/store/authStore';
@@ -123,27 +124,29 @@ function RootLayout() {
 
   return (
     <GestureHandlerRootView style={styles.root}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="onboarding" />
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(app)" />
-      </Stack>
-      {isBootstrapping ? (
-        <View style={styles.loadingOverlay} pointerEvents="auto">
-          <ActivityIndicator size="large" />
-          <Text style={styles.loadingText}>{t('common.loading')}</Text>
-        </View>
-      ) : null}
-      {showLoggedOutRedirect ? (
-        <Redirect href="/onboarding/welcome" />
-      ) : null}
-      {showLoggedInIncompleteRedirect ? (
-        <Redirect href="/onboarding/minhag" />
-      ) : null}
-      {showLoggedInCompleteRedirect ? (
-        <Redirect href="/calendar" />
-      ) : null}
+      <DesktopWebShell>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="onboarding" />
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(app)" />
+        </Stack>
+        {isBootstrapping ? (
+          <View style={styles.loadingOverlay} pointerEvents="auto">
+            <ActivityIndicator size="large" />
+            <Text style={styles.loadingText}>{t('common.loading')}</Text>
+          </View>
+        ) : null}
+        {showLoggedOutRedirect ? (
+          <Redirect href="/onboarding/welcome" />
+        ) : null}
+        {showLoggedInIncompleteRedirect ? (
+          <Redirect href="/onboarding/minhag" />
+        ) : null}
+        {showLoggedInCompleteRedirect ? (
+          <Redirect href="/calendar" />
+        ) : null}
+      </DesktopWebShell>
     </GestureHandlerRootView>
   );
 }

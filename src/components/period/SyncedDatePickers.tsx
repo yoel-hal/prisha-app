@@ -15,9 +15,12 @@ import {
 } from 'react-native';
 
 import type { HebrewDate } from '../../calculations/types';
+import { useDesktopWeb } from '../../hooks/useDesktopWeb';
 import type { SupportedLanguage } from '../../i18n';
 import { formatHebrewDate } from '../../utils/hebrewDateFormat';
 import { textStartStyle } from '../../utils/rtl';
+import { HebrewDatePickerInline } from './HebrewDatePickerInline';
+import { WebGregorianDateInput } from './WebGregorianDateInput';
 
 interface SyncedDatePickersProps {
   gregorianDate: Date;
@@ -44,8 +47,10 @@ export function SyncedDatePickers({
 }: SyncedDatePickersProps) {
   const { t, i18n } = useTranslation();
   const language = i18n.language as SupportedLanguage;
+  const isDesktopWeb = useDesktopWeb();
+  const showGregorianInline = Platform.OS === 'ios';
   const [showGregorianPicker, setShowGregorianPicker] = useState(
-    Platform.OS === 'ios',
+    showGregorianInline,
   );
   const [hebrewModalOpen, setHebrewModalOpen] = useState(false);
 
@@ -75,7 +80,7 @@ export function SyncedDatePickers({
     _event: DateTimePickerEvent,
     selected?: Date,
   ) {
-    if (Platform.OS === 'android') {
+    if (!showGregorianInline) {
       setShowGregorianPicker(false);
     }
     if (selected) {
@@ -92,6 +97,23 @@ export function SyncedDatePickers({
     onHebrewChange(next);
   }
 
+  if (isDesktopWeb) {
+    return (
+      <View style={styles.section}>
+        <Text style={[styles.label, textStartStyle()]}>{t('period.date')}</Text>
+        <WebGregorianDateInput
+          label={t('period.gregorian')}
+          value={gregorianDate}
+          onChange={onGregorianChange}
+        />
+        <HebrewDatePickerInline
+          hebrewDate={hebrewDate}
+          onHebrewChange={onHebrewChange}
+        />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.section}>
       <Text style={[styles.label, textStartStyle()]}>{t('period.date')}</Text>
@@ -100,7 +122,7 @@ export function SyncedDatePickers({
         <Text style={[styles.subLabel, textStartStyle()]}>
           {t('period.gregorian')}
         </Text>
-        {Platform.OS === 'android' && !showGregorianPicker ? (
+        {!showGregorianInline && !showGregorianPicker ? (
           <Pressable
             style={styles.dateButton}
             onPress={() => setShowGregorianPicker(true)}
@@ -112,11 +134,11 @@ export function SyncedDatePickers({
             </Text>
           </Pressable>
         ) : null}
-        {(Platform.OS === 'ios' || showGregorianPicker) && (
+        {(showGregorianInline || showGregorianPicker) && (
           <DateTimePicker
             value={gregorianDate}
             mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            display={showGregorianInline ? 'spinner' : 'default'}
             onChange={handleGregorianChange}
           />
         )}
@@ -141,6 +163,10 @@ export function SyncedDatePickers({
         onRequestClose={() => setHebrewModalOpen(false)}
       >
         <View style={styles.modalBackdrop}>
+          <Pressable
+            style={styles.modalBackdropPressable}
+            onPress={() => setHebrewModalOpen(false)}
+          />
           <View style={styles.modalCard}>
             <Text style={[styles.modalTitle, textStartStyle()]}>
               {t('period.date')}
@@ -260,6 +286,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'flex-end',
+  },
+  modalBackdropPressable: {
+    ...StyleSheet.absoluteFillObject,
   },
   modalCard: {
     backgroundColor: '#fff',

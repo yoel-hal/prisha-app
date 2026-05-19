@@ -21,8 +21,10 @@ import {
   useSettingsStore,
 } from '../../../src/store/settingsStore';
 import { alignStart, textStartStyle } from '../../../src/utils/rtl';
+import { webScreenScrollStyles } from '../../../src/utils/webScroll';
 
 export default function CalendarSyncSettingsScreen() {
+  const webScroll = webScreenScrollStyles();
   const { t } = useTranslation();
   const coupleId = useAuthStore((state) => state.coupleId);
   const stored = useSettingsStore((state) => state.calendar);
@@ -107,8 +109,8 @@ export default function CalendarSyncSettingsScreen() {
   return (
     <>
       <Stack.Screen options={{ title: t('calendar.syncTitle') }} />
-      <SafeAreaView style={styles.safe} edges={['bottom']}>
-        <ScrollView contentContainerStyle={styles.scroll}>
+      <SafeAreaView style={[styles.safe, webScroll.safe]} edges={['bottom']}>
+        <ScrollView style={webScroll.scroll} contentContainerStyle={styles.scroll}>
           <View style={styles.row}>
             <Text style={[styles.rowLabel, textStartStyle()]}>
               {t('calendar.syncEnable')}

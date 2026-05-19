@@ -21,6 +21,7 @@ import { useVesetCalculations } from '../../../src/hooks/useVesetCalculations';
 import { useAuthStore } from '../../../src/store/authStore';
 import { useSettingsStore } from '../../../src/store/settingsStore';
 import { textStartStyle } from '../../../src/utils/rtl';
+import { webScreenScrollStyles } from '../../../src/utils/webScroll';
 
 const LEAD_OPTIONS: NotificationLeadHours[] = [12, 24, 48];
 
@@ -41,6 +42,7 @@ function leadHoursLabelKey(hours: NotificationLeadHours): string {
 }
 
 export default function NotificationsSettingsScreen() {
+  const webScroll = webScreenScrollStyles();
   const { t } = useTranslation();
   const coupleId = useAuthStore((state) => state.coupleId);
   const stored = useSettingsStore((state) => state.notifications);
@@ -125,8 +127,8 @@ export default function NotificationsSettingsScreen() {
   return (
     <>
       <Stack.Screen options={{ title: t('notifications.title') }} />
-      <SafeAreaView style={styles.safe} edges={['bottom']}>
-        <ScrollView contentContainerStyle={styles.scroll}>
+      <SafeAreaView style={[styles.safe, webScroll.safe]} edges={['bottom']}>
+        <ScrollView style={webScroll.scroll} contentContainerStyle={styles.scroll}>
           <SettingsRow
             label={t('notifications.enable')}
             value={draft.enabled}

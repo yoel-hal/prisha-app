@@ -12,8 +12,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Chumrot, Minhag } from '../../../src/calculations/types';
+import { useDesktopWeb } from '../../../src/hooks/useDesktopWeb';
 import { useSettings } from '../../../src/hooks/useSettings';
 import { textStartStyle } from '../../../src/utils/rtl';
+import { webScreenScrollStyles } from '../../../src/utils/webScroll';
 
 type ChumraKey = keyof Chumrot;
 
@@ -48,6 +50,8 @@ const DESC_KEYS: Record<Minhag, string> = {
 };
 
 export default function CustomizationScreen() {
+  const webScroll = webScreenScrollStyles();
+  const isDesktopWeb = useDesktopWeb();
   const { t } = useTranslation();
   const router = useRouter();
   const { minhag, chumrot, selectMinhag, selectChumrot } = useSettings();
@@ -62,8 +66,10 @@ export default function CustomizationScreen() {
     setSaving(true);
     await selectMinhag(pending);
     setSaving(false);
-    router.back();
-  }, [pending, selectMinhag, router]);
+    if (!isDesktopWeb) {
+      router.back();
+    }
+  }, [pending, selectMinhag, router, isDesktopWeb]);
 
   const toggleChumra = useCallback(
     (key: ChumraKey, value: boolean) => {
@@ -72,11 +78,9 @@ export default function CustomizationScreen() {
     [chumrot, selectChumrot],
   );
 
-  return (
+  const body = (
     <>
-      <Stack.Screen options={{ title: t('settings.customization') }} />
-      <SafeAreaView style={styles.safe} edges={['bottom']}>
-        <ScrollView contentContainerStyle={styles.scroll}>
+        <ScrollView style={webScroll.scroll} contentContainerStyle={styles.scroll}>
           <Text style={[styles.header, textStartStyle()]}>
             {t('settings.minhag')}
           </Text>
@@ -118,6 +122,18 @@ export default function CustomizationScreen() {
             <Text style={styles.confirmText}>{t('minhag.confirm')}</Text>
           </Pressable>
         </View>
+    </>
+  );
+
+  if (isDesktopWeb) {
+    return <View style={styles.safe}>{body}</View>;
+  }
+
+  return (
+    <>
+      <Stack.Screen options={{ title: t('settings.customization') }} />
+      <SafeAreaView style={[styles.safe, webScroll.safe]} edges={['bottom']}>
+        {body}
       </SafeAreaView>
     </>
   );

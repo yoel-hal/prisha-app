@@ -26,6 +26,10 @@
   "calendar": {
     "title": "Calendar",
     "noData": "Add a period to see vestos on the calendar.",
+    "upcomingVesetim": "Upcoming vestos",
+    "noUpcoming": "No vestos in the next three months.",
+    "dayDetails": "Day details",
+    "clearSelection": "Show all upcoming",
     "addToCalendar": "Add to Calendar",
     "setReminder": "Set Reminder",
     "syncTitle": "Calendar Sync",

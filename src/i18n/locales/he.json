@@ -26,6 +26,10 @@
   "calendar": {
     "title": "לוח שנה",
     "noData": "הוסיפי וסת כדי לראות וסתות בלוח.",
+    "upcomingVesetim": "וסתות קרובות",
+    "noUpcoming": "אין וסתות בשלושת החודשים הקרובים.",
+    "dayDetails": "פרטי היום",
+    "clearSelection": "הצגת כל הקרובות",
     "addToCalendar": "הוספה ליומן",
     "setReminder": "הגדרת תזכורת",
     "syncTitle": "סנכרון יומן",

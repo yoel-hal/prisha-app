@@ -15,8 +15,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useCouple } from '../../../src/hooks/useCouple';
 import { textStartStyle } from '../../../src/utils/rtl';
+import { webScreenScrollStyles } from '../../../src/utils/webScroll';
 
 export default function CoupleSyncSettingsScreen() {
+  const webScroll = webScreenScrollStyles();
   const { t } = useTranslation();
   const {
     partnerEmail,
@@ -76,8 +78,8 @@ export default function CoupleSyncSettingsScreen() {
   return (
     <>
       <Stack.Screen options={{ title: t('couple.title') }} />
-      <SafeAreaView style={styles.safe} edges={['bottom']}>
-        <ScrollView contentContainerStyle={styles.scroll}>
+      <SafeAreaView style={[styles.safe, webScroll.safe]} edges={['bottom']}>
+        <ScrollView style={webScroll.scroll} contentContainerStyle={styles.scroll}>
           {pendingInvite ? (
             <View style={[styles.banner, styles.incomingBanner]}>
               <Text style={[styles.bannerText, textStartStyle()]}>

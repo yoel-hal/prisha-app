@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -13,8 +13,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { signOut } from '../../../src/firebase/auth';
+import { useDesktopWeb } from '../../../src/hooks/useDesktopWeb';
 import { useSettings } from '../../../src/hooks/useSettings';
 import { isAppRTL, textStartStyle } from '../../../src/utils/rtl';
+import { webScreenScrollStyles } from '../../../src/utils/webScroll';
 
 type SettingsRoute =
   | '/settings/customization'
@@ -45,7 +47,13 @@ function SettingsRow({
 
 export default function SettingsScreen() {
   const { t } = useTranslation();
+  const isDesktopWeb = useDesktopWeb();
+  const webScroll = webScreenScrollStyles();
   const router = useRouter();
+
+  if (isDesktopWeb) {
+    return <Redirect href="/settings/customization" />;
+  }
   const { currentLanguage, setLanguage } = useSettings();
   const [signingOut, setSigningOut] = useState(false);
 
@@ -64,8 +72,8 @@ export default function SettingsScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.scroll}>
+    <SafeAreaView style={[styles.safe, webScroll.safe]} edges={['top']}>
+      <ScrollView style={webScroll.scroll} contentContainerStyle={styles.scroll}>
         <Text style={[styles.title, textStartStyle()]}>{t('settings.title')}</Text>
 
         <Text style={[styles.sectionHeader, textStartStyle()]}>

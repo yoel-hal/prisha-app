@@ -14,6 +14,7 @@ import OnboardingSkipButton from '../../src/components/onboarding/OnboardingSkip
 import type { Minhag } from '../../src/calculations/types';
 import { useSettings } from '../../src/hooks/useSettings';
 import { textStartStyle } from '../../src/utils/rtl';
+import { webScreenScrollStyles } from '../../src/utils/webScroll';
 
 const MINHAGIM: Minhag[] = [
   'ashkenaz',
@@ -32,6 +33,7 @@ const DESC_KEYS: Record<Minhag, string> = {
 };
 
 export default function OnboardingMinhagScreen() {
+  const webScroll = webScreenScrollStyles();
   const { t } = useTranslation();
   const router = useRouter();
   const { selectMinhag } = useSettings();
@@ -49,10 +51,10 @@ export default function OnboardingMinhagScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+    <SafeAreaView style={[styles.safe, webScroll.safe]} edges={['top', 'bottom']}>
       <OnboardingSkipButton onSkip={() => void goNext('ashkenaz')} />
 
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView style={webScroll.scroll} contentContainerStyle={styles.scroll}>
         <Text style={[styles.title, textStartStyle()]}>{t('onboarding.chooseMinhag')}</Text>
 
         <View style={styles.cardList}>

@@ -15,6 +15,7 @@ import type { Chumrot } from '../../src/calculations/types';
 import OnboardingSkipButton from '../../src/components/onboarding/OnboardingSkipButton';
 import { useSettings } from '../../src/hooks/useSettings';
 import { textStartStyle } from '../../src/utils/rtl';
+import { webScreenScrollStyles } from '../../src/utils/webScroll';
 
 const DEFAULT_CHUMROT: Chumrot = {
   kavuah: false,
@@ -39,6 +40,7 @@ const CHUMRA_ROWS: { key: ChumraKey; labelKey: string; descKey: string }[] = [
 ];
 
 export default function OnboardingChumrotScreen() {
+  const webScroll = webScreenScrollStyles();
   const { t } = useTranslation();
   const router = useRouter();
   const { selectChumrot } = useSettings();
@@ -60,10 +62,10 @@ export default function OnboardingChumrotScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+    <SafeAreaView style={[styles.safe, webScroll.safe]} edges={['top', 'bottom']}>
       <OnboardingSkipButton onSkip={() => void goNext(DEFAULT_CHUMROT)} />
 
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView style={webScroll.scroll} contentContainerStyle={styles.scroll}>
         <Text style={[styles.title, textStartStyle()]}>{t('onboarding.chumrot')}</Text>
         <Text style={[styles.subtitle, textStartStyle()]}>
           {t('onboarding.chumrotDesc')}

@@ -15,9 +15,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useEmailAuth } from '../../src/hooks/useEmailAuth';
 import { useAlignStart, textStartStyle } from '../../src/utils/rtl';
+import { webScreenScrollStyles } from '../../src/utils/webScroll';
 
 export default function RegisterScreen() {
   const { t } = useTranslation();
+  const webScroll = webScreenScrollStyles();
   const router = useRouter();
   const textStart = useAlignStart();
   const {
@@ -34,12 +36,13 @@ export default function RegisterScreen() {
   } = useEmailAuth();
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+    <SafeAreaView style={[styles.safe, webScroll.safe]} edges={['top', 'bottom']}>
       <KeyboardAvoidingView
-        style={styles.flex}
+        style={[styles.flex, webScroll.safe]}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView
+          style={webScroll.scroll}
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
         >
