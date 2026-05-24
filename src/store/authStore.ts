@@ -20,6 +20,8 @@ export interface UserProfileState {
   phone: string;
 }
 
+export type AppLockType = 'pin' | 'biometric';
+
 interface AuthState {
   user: User | null;
   firstName: string;
@@ -31,6 +33,9 @@ interface AuthState {
   pendingInvite: PendingCoupleInvite | null;
   outgoingInvite: OutgoingCoupleInvite | null;
   isCoupleBootstrapping: boolean;
+  appLockEnabled: boolean;
+  appLockType: AppLockType | null;
+  isAppLocked: boolean;
   setUser: (user: User | null) => void;
   setUserProfile: (profile: UserProfileState) => void;
   setCoupleId: (id: string | null) => void;
@@ -39,6 +44,8 @@ interface AuthState {
   setOutgoingInvite: (invite: OutgoingCoupleInvite | null) => void;
   setCoupleBootstrapping: (bootstrapping: boolean) => void;
   resetCoupleState: () => void;
+  setAppLock: (enabled: boolean, type: AppLockType | null) => void;
+  setIsAppLocked: (locked: boolean) => void;
 }
 
 const emptyProfile: UserProfileState = {
@@ -56,6 +63,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   pendingInvite: null,
   outgoingInvite: null,
   isCoupleBootstrapping: false,
+  appLockEnabled: false,
+  appLockType: null,
+  isAppLocked: false,
   setUser: (user) =>
     set((state) => {
       if (!user) {
@@ -67,6 +77,7 @@ export const useAuthStore = create<AuthState>((set) => ({
           pendingInvite: null,
           outgoingInvite: null,
           isCoupleBootstrapping: false,
+          isAppLocked: false,
         };
       }
 
@@ -106,4 +117,11 @@ export const useAuthStore = create<AuthState>((set) => ({
       pendingInvite: null,
       outgoingInvite: null,
     }),
+  setAppLock: (enabled, type) =>
+    set({
+      appLockEnabled: enabled,
+      appLockType: type,
+      isAppLocked: false,
+    }),
+  setIsAppLocked: (locked) => set({ isAppLocked: locked }),
 }));

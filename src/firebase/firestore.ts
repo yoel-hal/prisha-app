@@ -639,8 +639,17 @@ export async function acceptInvite(
   }
 
   const existingUser = await getUserDocument(userId);
-  if (existingUser?.coupleId && existingUser.coupleId !== coupleId) {
-    await disconnectCouple(userId, existingUser.coupleId);
+  const oldCoupleId =
+    existingUser?.coupleId && existingUser.coupleId !== coupleId
+      ? existingUser.coupleId
+      : null;
+  let oldCoupleMembers: string[] = [];
+  if (oldCoupleId) {
+    const oldCoupleSnap = await getDoc(coupleRef(oldCoupleId));
+    if (oldCoupleSnap.exists()) {
+      const m = oldCoupleSnap.data().members;
+      oldCoupleMembers = Array.isArray(m) ? (m as string[]) : [];
+    }
   }
 
   console.log('[acceptInvite] adding member via arrayUnion', {
@@ -650,25 +659,27 @@ export async function acceptInvite(
   });
 
   const batch = writeBatch(db);
-  batch.update(coupleRef(coupleId), {
-    members: arrayUnion(userId),
-  });
+  // Join new couple
+  batch.update(coupleRef(coupleId), { members: arrayUnion(userId) });
   batch.set(
     userRef(userId),
-    {
-      email: userEmail,
-      coupleId,
-      role: 'partner',
-    },
+    { email: userEmail, coupleId, role: 'partner' },
     { merge: true },
   );
-  batch.update(inviteRef(coupleId, inviteId), {
-    status: 'accepted',
-  });
+  batch.update(inviteRef(coupleId, inviteId), { status: 'accepted' });
+  // Atomically clean up old solo couple in the same batch
+  if (oldCoupleId) {
+    const remaining = oldCoupleMembers.filter((id) => id !== userId);
+    if (remaining.length === 0) {
+      batch.delete(coupleRef(oldCoupleId));
+    } else {
+      batch.update(coupleRef(oldCoupleId), { members: arrayRemove(userId) });
+    }
+  }
 
   try {
     await batch.commit();
-    console.log('[acceptInvite] success', { userId, inviteId, coupleId });
+    console.log('[acceptInvite] success', { userId, inviteId, coupleId, oldCoupleId });
   } catch (error) {
     console.error('[acceptInvite] batch commit failed', {
       userId,
@@ -758,4 +769,69 @@ export async function getCoupleMembers(
   );
 
   return memberDocs;
+}
+
+const FIRESTORE_BATCH_LIMIT = 500;
+
+async function deleteAllDocsInCollection(
+  colRef: ReturnType<typeof collection>,
+): Promise<void> {
+  const snapshot = await getDocs(colRef);
+  if (snapshot.empty) {
+    return;
+  }
+
+  let batch = writeBatch(db);
+  let operationCount = 0;
+
+  for (const docSnap of snapshot.docs) {
+    batch.delete(docSnap.ref);
+    operationCount += 1;
+    if (operationCount >= FIRESTORE_BATCH_LIMIT) {
+      await batch.commit();
+      batch = writeBatch(db);
+      operationCount = 0;
+    }
+  }
+
+  if (operationCount > 0) {
+    await batch.commit();
+  }
+}
+
+async function deleteCoupleWithSubcollections(coupleId: string): Promise<void> {
+  await deleteAllDocsInCollection(periodsRef(coupleId));
+  await deleteAllDocsInCollection(invitesRef(coupleId));
+  await deleteAllDocsInCollection(
+    collection(db, 'couples', coupleId, 'settings'),
+  );
+  await deleteDoc(coupleRef(coupleId));
+}
+
+export async function deleteAllUserData(
+  userId: string,
+  coupleId: string,
+): Promise<void> {
+  if (coupleId) {
+    const coupleSnapshot = await getDoc(coupleRef(coupleId));
+    if (coupleSnapshot.exists()) {
+      const members = Array.isArray(coupleSnapshot.data().members)
+        ? (coupleSnapshot.data().members as string[])
+        : [];
+
+      if (members.length <= 1) {
+        await deleteCoupleWithSubcollections(coupleId);
+      } else {
+        await updateDoc(coupleRef(coupleId), {
+          members: arrayRemove(userId),
+        });
+      }
+    }
+  }
+
+  await setDoc(
+    userRef(userId),
+    { coupleId: null, role: '' },
+    { merge: true },
+  );
 }

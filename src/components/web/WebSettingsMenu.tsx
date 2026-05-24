@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -282,6 +283,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#eee',
+    ...(Platform.OS === 'web' ? { cursor: 'pointer' as const } : {}),
   },
   rowActive: {
     backgroundColor: '#f5f5f5',

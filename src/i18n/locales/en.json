@@ -178,6 +178,23 @@
     "noPartner": "No partner connected",
     "partnerConnected": "Connected with {{email}}"
   },
+  "about": {
+    "privacyPolicy": "Privacy Policy",
+    "dataWeCollectTitle": "Data We Collect",
+    "dataWeCollectBody": "We collect your email address, first and last name, country, and phone number. Phone numbers are used for owner statistics only.",
+    "dataStorageTitle": "Data Storage",
+    "dataStorageBody": "All data is stored securely on Firebase (Google Cloud).",
+    "periodDataTitle": "Period Data",
+    "periodDataBody": "Period data is stored encrypted and is accessible only to you and your partner.",
+    "noAdsTitle": "No Ads",
+    "noAdsBody": "This app contains no advertising and never sells your data.",
+    "deleteAccountTitle": "Delete Account",
+    "deleteAccountBody": "You can delete all your data at any time from Settings.",
+    "contactTitle": "Contact",
+    "contactIntro": "For privacy questions, contact",
+    "github": "GitHub",
+    "version": "Version"
+  },
   "auth": {
     "title": "Welcome",
     "subtitle": "Sign in to continue",
@@ -209,5 +226,35 @@
     "continueWithApple": "Continue with Apple",
     "continueWithEmail": "Continue with Email",
     "signOut": "Sign Out"
+  },
+  "deleteAccount": {
+    "confirmTitle": "Delete Account",
+    "confirmMessage": "This will permanently delete your account and all associated data. This cannot be undone.",
+    "confirmButton": "Delete Account",
+    "secondConfirmTitle": "Are you absolutely sure?",
+    "secondConfirmMessage": "This cannot be undone. All your data will be permanently deleted.",
+    "secondConfirmButton": "Yes, delete my account",
+    "cancel": "Cancel",
+    "enterPassword": "Enter your password to confirm",
+    "wrongPassword": "Wrong password. Account not deleted.",
+    "reauthMessage": "For security, please sign out and sign back in, then try deleting your account again.",
+    "successMessage": "Your account has been deleted.",
+    "errorMessage": "Could not delete your account. Please try again."
+  },
+  "appLock": {
+    "title": "App Lock",
+    "enable": "Enable app lock",
+    "disable": "Disable",
+    "typePin": "PIN",
+    "typeBiometric": "Biometric",
+    "enterPin": "Enter PIN",
+    "wrongPin": "Wrong PIN. Try again.",
+    "confirmPin": "Confirm PIN",
+    "pinMismatch": "PINs do not match. Try again.",
+    "pinSet": "App lock enabled.",
+    "biometricPrompt": "Authenticate to unlock",
+    "biometricUnavailable": "Biometric authentication is not available on this device.",
+    "confirmDisable": "Disable app lock?",
+    "locked": "App locked"
   }
 }

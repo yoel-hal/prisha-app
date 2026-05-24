@@ -28,6 +28,7 @@ export default function SettingsLayout() {
             <Stack.Screen name="couple" />
             <Stack.Screen name="about" />
             <Stack.Screen name="profile" />
+            <Stack.Screen name="delete-account-reauth" />
           </Stack>
         </WebSettingsDetailPanel>
       </View>
@@ -48,6 +49,7 @@ export default function SettingsLayout() {
       <Stack.Screen name="couple" />
       <Stack.Screen name="about" />
       <Stack.Screen name="profile" />
+      <Stack.Screen name="delete-account-reauth" />
     </Stack>
   );
 }

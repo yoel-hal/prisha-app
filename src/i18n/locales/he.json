@@ -178,6 +178,23 @@
     "noPartner": "אין בן/בת זוג מחובר/ת",
     "partnerConnected": "מחובר/ת ל-{{email}}"
   },
+  "about": {
+    "privacyPolicy": "מדיניות פרטיות",
+    "dataWeCollectTitle": "נתונים שאנו אוספים",
+    "dataWeCollectBody": "אנו אוספים את כתובת האימייל, השם הפרטי והמשפחה, המדינה ומספר הטלפון שלך. מספרי טלפון משמשים לסטטיסטיקות בעלים בלבד.",
+    "dataStorageTitle": "אחסון נתונים",
+    "dataStorageBody": "כל הנתונים מאוחסנים בצורה מאובטחת ב-Firebase (Google Cloud).",
+    "periodDataTitle": "נתוני הוסתות",
+    "periodDataBody": "נתוני הוסתות מאוחסנים מוצפנים ונגישים רק לך ולבן/בת הזוג שלך.",
+    "noAdsTitle": "ללא פרסומות",
+    "noAdsBody": "באפליקציה זו אין פרסומות, ולעולם לא נמכרים הנתונים שלך.",
+    "deleteAccountTitle": "מחיקת חשבון",
+    "deleteAccountBody": "ניתן למחוק את כל הנתונים שלך בכל עת מההגדרות.",
+    "contactTitle": "יצירת קשר",
+    "contactIntro": "לשאלות בנושא פרטיות, פנו אל",
+    "github": "GitHub",
+    "version": "גרסה"
+  },
   "auth": {
     "title": "ברוכה הבאה",
     "subtitle": "התחברי כדי להמשיך",
@@ -209,5 +226,35 @@
     "continueWithApple": "המשך עם Apple",
     "continueWithEmail": "המשך עם אימייל",
     "signOut": "התנתקות"
+  },
+  "deleteAccount": {
+    "confirmTitle": "מחק חשבון",
+    "confirmMessage": "פעולה זו תמחק לצמיתות את חשבונך ואת כל הנתונים המשויכים. לא ניתן לבטל פעולה זו.",
+    "confirmButton": "מחק חשבון",
+    "secondConfirmTitle": "האם את בטוחה לחלוטין?",
+    "secondConfirmMessage": "לא ניתן לבטל פעולה זו. כל הנתונים שלך יימחקו לצמיתות.",
+    "secondConfirmButton": "כן, מחקי את החשבון",
+    "cancel": "ביטול",
+    "enterPassword": "הזיני את הסיסמה לאישור",
+    "wrongPassword": "סיסמה שגויה. החשבון לא נמחק.",
+    "reauthMessage": "מטעמי אבטחה, התנתקי והתחברי מחדש, ואז נסי למחוק את החשבון שוב.",
+    "successMessage": "החשבון שלך נמחק.",
+    "errorMessage": "לא ניתן למחוק את החשבון. נסי שוב."
+  },
+  "appLock": {
+    "title": "נעילת אפליקציה",
+    "enable": "הפעלת נעילת אפליקציה",
+    "disable": "ביטול",
+    "typePin": "קוד PIN",
+    "typeBiometric": "ביומטרי",
+    "enterPin": "הזיני PIN",
+    "wrongPin": "PIN שגוי. נסי שוב.",
+    "confirmPin": "אשרי PIN",
+    "pinMismatch": "קודי ה-PIN אינם תואמים. נסי שוב.",
+    "pinSet": "נעילת האפליקציה הופעלה.",
+    "biometricPrompt": "אמתי זהות כדי לפתוח",
+    "biometricUnavailable": "אימות ביומטרי אינו זמין במכשיר זה.",
+    "confirmDisable": "לבטל את נעילת האפליקציה?",
+    "locked": "האפליקציה נעולה"
   }
 }

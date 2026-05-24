@@ -13,9 +13,11 @@ import * as WebBrowser from 'expo-web-browser';
 import { FirebaseError } from 'firebase/app';
 import {
   createUserWithEmailAndPassword,
+  EmailAuthProvider,
   GoogleAuthProvider,
   OAuthProvider,
   onAuthStateChanged as firebaseOnAuthStateChanged,
+  reauthenticateWithCredential,
   sendPasswordResetEmail,
   signInWithCredential,
   signInWithEmailAndPassword,
@@ -306,5 +308,65 @@ export async function signOut(): Promise<AuthResult> {
     return { success: true };
   } catch (error) {
     return { success: false, error: toErrorMessage(error) };
+  }
+}
+
+export class RequiresReauthError extends Error {
+  constructor() {
+    super('REQUIRES_REAUTH');
+    this.name = 'RequiresReauthError';
+  }
+}
+
+export class WrongPasswordError extends Error {
+  constructor() {
+    super('WRONG_PASSWORD');
+    this.name = 'WrongPasswordError';
+  }
+}
+
+export function isEmailPasswordUser(): boolean {
+  return auth.currentUser?.providerData[0]?.providerId === 'password';
+}
+
+export async function reauthenticateWithPassword(password: string): Promise<void> {
+  const currentUser = auth.currentUser;
+  if (!currentUser?.email) {
+    throw new Error('No authenticated user with email');
+  }
+
+  const credential = EmailAuthProvider.credential(currentUser.email, password);
+
+  try {
+    await reauthenticateWithCredential(currentUser, credential);
+  } catch (error) {
+    if (
+      error instanceof FirebaseError &&
+      (error.code === 'auth/wrong-password' ||
+        error.code === 'auth/invalid-credential' ||
+        error.code === 'auth/invalid-login-credentials')
+    ) {
+      throw new WrongPasswordError();
+    }
+    throw error;
+  }
+}
+
+export async function deleteUserAccount(): Promise<void> {
+  const currentUser = auth.currentUser;
+  if (!currentUser) {
+    throw new Error('No authenticated user');
+  }
+
+  try {
+    await currentUser.delete();
+  } catch (error) {
+    if (
+      error instanceof FirebaseError &&
+      error.code === 'auth/requires-recent-login'
+    ) {
+      throw new RequiresReauthError();
+    }
+    throw error;
   }
 }

@@ -17,6 +17,7 @@ import { bootstrapCoupleForAuthUser } from '../src/hooks/useCouple';
 import { useAuthStore } from '../src/store/authStore';
 import { useOnboardingStore } from '../src/store/onboardingStore';
 import { useSettingsStore } from '../src/store/settingsStore';
+import { log } from '../src/utils/log';
 import {
   getIncompleteOnboardingHref,
   profileFromAuthStore,
@@ -76,7 +77,7 @@ function RootLayout() {
     setSettingsChecked(false);
     settingsCheckedForRef.current = null;
 
-    console.log('[RootLayout] bootstrapping couple for user', {
+    log('[RootLayout] bootstrapping couple for user', {
       uid: user.uid,
       email: user.email ?? null,
       hasEmail: Boolean(user.email),
@@ -85,7 +86,7 @@ function RootLayout() {
     void bootstrapCoupleForAuthUser(user.uid, user.email).finally(() => {
       if (!cancelled) {
         const { pendingInvite, coupleId } = useAuthStore.getState();
-        console.log('[RootLayout] couple bootstrap complete', {
+        log('[RootLayout] couple bootstrap complete', {
           coupleId,
           pendingInvite,
           bannerWillShow: pendingInvite !== null,

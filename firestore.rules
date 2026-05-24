@@ -39,7 +39,7 @@ service cloud.firestore {
       // Readable by members; solo couples readable so invitees can join
       allow read: if isAuthenticated() && (
         request.auth.uid in resource.data.members
-        || resource.data.members.size() == 1
+        || resource.data.members.size() <= 2
       );
 
       allow create: if isAuthenticated()

@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -28,6 +28,7 @@ function formatInviteExpiry(iso: string, language: string): string {
 }
 
 export default function CoupleSyncSettingsScreen() {
+  const router = useRouter();
   const webScroll = webScreenScrollStyles();
   const { t, i18n } = useTranslation();
   const pendingInvite = useAuthStore((state) => state.pendingInvite);
@@ -110,12 +111,13 @@ export default function CoupleSyncSettingsScreen() {
 
     try {
       await acceptPendingInvite();
+      router.replace('/calendar');
       setAcceptedMessage(true);
       setTimeout(() => setAcceptedMessage(false), 4000);
     } catch (acceptError) {
       console.error('[CoupleScreen] accept failed', acceptError);
     }
-  }, [acceptPendingInvite, pendingInvite]);
+  }, [acceptPendingInvite, pendingInvite, router]);
 
   const hasOutgoingInvite = Boolean(outgoingInvite && !isConnected);
 

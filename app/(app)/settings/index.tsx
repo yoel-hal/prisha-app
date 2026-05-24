@@ -70,16 +70,15 @@ export default function SettingsScreen() {
   const isDesktopWeb = useDesktopWeb();
   const webScroll = webScreenScrollStyles();
   const router = useRouter();
-
-  if (isDesktopWeb) {
-    return null;
-  }
-
   const user = useAuthStore((state) => state.user);
   const firstName = useAuthStore((state) => state.firstName);
   const lastName = useAuthStore((state) => state.lastName);
   const { currentLanguage, setLanguage } = useSettings();
   const [signingOut, setSigningOut] = useState(false);
+
+  if (isDesktopWeb) {
+    return null;
+  }
 
   const email = user?.email ?? '';
   const fullName = getDisplayFullName(firstName, lastName);

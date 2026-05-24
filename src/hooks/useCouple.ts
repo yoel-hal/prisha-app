@@ -1,4 +1,5 @@
 import { FirebaseError } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
 import { useCallback, useEffect, useState } from 'react';
 
 import {
@@ -17,17 +18,18 @@ import {
 import { useAuthStore } from '../store/authStore';
 import { usePeriodsStore } from '../store/periodsStore';
 import { useSettingsStore } from '../store/settingsStore';
+import { log, logError } from '../utils/log';
 
 function logFirebaseError(label: string, error: unknown): void {
   if (error instanceof FirebaseError) {
-    console.error(label, {
+    logError(label, {
       code: error.code,
       message: error.message,
       customData: error.customData,
     });
     return;
   }
-  console.error(label, error);
+  logError(label, error);
 }
 
 /** Increments on each bootstrap start; stale bootstraps must not mutate authStore. */
@@ -37,7 +39,7 @@ async function refreshCoupleData(coupleId: string, userId: string): Promise<void
   const { setPartnerEmail, setOutgoingInvite } = useAuthStore.getState();
 
   // Never read or write pendingInvite here — only bootstrap sets it after this completes.
-  console.log('[refreshCoupleData] start', { coupleId, userId });
+  log('[refreshCoupleData] start', { coupleId, userId });
 
   const members = await getCoupleMembers(coupleId);
   const partner = members.find((member) => member.userId !== userId);
@@ -49,7 +51,7 @@ async function refreshCoupleData(coupleId: string, userId: string): Promise<void
   usePeriodsStore.setState({ isLoading: true, periods: [] });
   await useSettingsStore.getState().loadSettings(coupleId);
 
-  console.log('[refreshCoupleData] done', {
+  log('[refreshCoupleData] done', {
     coupleId,
     partnerEmail: partner?.email ?? null,
     outgoingInvite: outgoing,
@@ -86,7 +88,7 @@ export function useCouple() {
 
   useEffect(() => {
     if (isCoupleBootstrapping) {
-      console.log('[useCouple] skip refreshCoupleState — bootstrap in progress');
+      log('[useCouple] skip refreshCoupleState — bootstrap in progress');
       return;
     }
 
@@ -157,7 +159,7 @@ export function useCouple() {
       pendingInvite: invite,
     } = useAuthStore.getState();
 
-    console.log('[acceptPendingInvite] start', {
+    log('[acceptPendingInvite] start', {
       userId: currentUser?.uid ?? null,
       pendingInvite: invite,
     });
@@ -172,7 +174,7 @@ export function useCouple() {
     setAcceptingInvite(true);
     setError(null);
     try {
-      console.log('[acceptPendingInvite] calling acceptInvite', {
+      log('[acceptPendingInvite] calling acceptInvite', {
         userId: currentUser.uid,
         inviteId,
         coupleId: newCoupleId,
@@ -180,13 +182,20 @@ export function useCouple() {
 
       await acceptInvite(currentUser.uid, inviteId, newCoupleId);
 
-      console.log('[acceptPendingInvite] acceptInvite succeeded — updating store');
+      log('[acceptPendingInvite] acceptInvite succeeded — refreshing token');
+      try {
+        await getAuth().currentUser?.getIdToken(true);
+      } catch (tokenError) {
+        log('[acceptPendingInvite] token refresh failed (non-fatal)', tokenError);
+      }
+
+      log('[acceptPendingInvite] updating store');
       setCoupleId(newCoupleId);
       setPendingInvite(null);
 
       await refreshCoupleData(newCoupleId, currentUser.uid);
 
-      console.log('[acceptPendingInvite] complete', { coupleId: newCoupleId });
+      log('[acceptPendingInvite] complete', { coupleId: newCoupleId });
     } catch (acceptError) {
       logFirebaseError('[acceptPendingInvite] error', acceptError);
       setError(
@@ -230,7 +239,7 @@ export function useCouple() {
       outgoingInvite: invite,
     } = useAuthStore.getState();
 
-    console.log('[cancelOutgoingInvite] start', {
+    log('[cancelOutgoingInvite] start', {
       coupleId: currentCoupleId,
       outgoingInvite: invite,
     });
@@ -243,14 +252,14 @@ export function useCouple() {
     setCancellingInvite(true);
     setError(null);
     try {
-      console.log('[cancelOutgoingInvite] calling cancelInvite', {
+      log('[cancelOutgoingInvite] calling cancelInvite', {
         coupleId: currentCoupleId,
         inviteId: invite.inviteId,
       });
 
       await cancelInvite(currentCoupleId, invite.inviteId);
 
-      console.log('[cancelOutgoingInvite] cancelInvite succeeded — clearing store');
+      log('[cancelOutgoingInvite] cancelInvite succeeded — clearing store');
       setOutgoingInvite(null);
 
       const { user: currentUser } = useAuthStore.getState();
@@ -258,7 +267,7 @@ export function useCouple() {
         await refreshCoupleData(currentCoupleId, currentUser.uid);
       }
 
-      console.log('[cancelOutgoingInvite] complete');
+      log('[cancelOutgoingInvite] complete');
     } catch (cancelError) {
       logFirebaseError('[cancelOutgoingInvite] error', cancelError);
       setError(
@@ -303,7 +312,7 @@ export async function bootstrapCoupleForAuthUser(
 
   useAuthStore.getState().setCoupleBootstrapping(true);
 
-  console.log('[bootstrapCoupleForAuthUser] start', {
+  log('[bootstrapCoupleForAuthUser] start', {
     userId,
     authEmail: authEmail ?? null,
     generation,
@@ -312,17 +321,17 @@ export async function bootstrapCoupleForAuthUser(
   try {
     const resolvedCoupleId = await ensureCoupleForUser(userId, authEmail ?? '');
     if (!isCurrentBootstrap()) {
-      console.log('[bootstrapCoupleForAuthUser] stale after ensureCoupleForUser');
+      log('[bootstrapCoupleForAuthUser] stale after ensureCoupleForUser');
       return;
     }
 
     useAuthStore.getState().setCoupleId(resolvedCoupleId);
-    console.log('[bootstrapCoupleForAuthUser] coupleId', resolvedCoupleId);
+    log('[bootstrapCoupleForAuthUser] coupleId', resolvedCoupleId);
 
     // Refresh partner/outgoing/settings/periods — never touches pendingInvite.
     await refreshCoupleData(resolvedCoupleId, userId);
     if (!isCurrentBootstrap()) {
-      console.log('[bootstrapCoupleForAuthUser] stale after refreshCoupleData');
+      log('[bootstrapCoupleForAuthUser] stale after refreshCoupleData');
       return;
     }
 
@@ -336,14 +345,14 @@ export async function bootstrapCoupleForAuthUser(
       });
     }
     const lookupEmail = authEmail ?? userDoc?.email ?? '';
-    console.log('[bootstrapCoupleForAuthUser] calling checkPendingInvite', {
+    log('[bootstrapCoupleForAuthUser] calling checkPendingInvite', {
       authEmail: authEmail ?? null,
       userDocEmail: userDoc?.email ?? null,
       lookupEmail: lookupEmail || '(empty)',
     });
 
     if (!lookupEmail) {
-      console.log(
+      log(
         '[bootstrapCoupleForAuthUser] no email yet — skipping invite check (pendingInvite unchanged)',
       );
       return;
@@ -353,37 +362,37 @@ export async function bootstrapCoupleForAuthUser(
     try {
       pending = await checkPendingInvite(lookupEmail);
     } catch (error) {
-      console.error('[bootstrapCoupleForAuthUser] checkPendingInvite failed', error);
+      logError('[bootstrapCoupleForAuthUser] checkPendingInvite failed', error);
       return;
     }
 
     if (!isCurrentBootstrap()) {
-      console.log('[bootstrapCoupleForAuthUser] stale after checkPendingInvite');
+      log('[bootstrapCoupleForAuthUser] stale after checkPendingInvite');
       return;
     }
 
-    console.log('[bootstrapCoupleForAuthUser] checkPendingInvite result', pending);
+    log('[bootstrapCoupleForAuthUser] checkPendingInvite result', pending);
 
     if (!pending) {
-      console.log(
+      log(
         '[bootstrapCoupleForAuthUser] no pending invite found — leaving pendingInvite unchanged',
       );
       return;
     }
 
-    console.log('[bootstrap] calling getCoupleMembers', pending.coupleId);
+    log('[bootstrap] calling getCoupleMembers', pending.coupleId);
 
     let invitingMembers: CoupleMemberInfo[] = [];
     try {
       invitingMembers = await getCoupleMembers(pending.coupleId);
     } catch (err) {
-      console.error('[bootstrap] getCoupleMembers FAILED:', err);
+      logError('[bootstrap] getCoupleMembers FAILED:', err);
       // Still proceed — inviterEmail is optional
       invitingMembers = [];
     }
 
     if (!isCurrentBootstrap()) {
-      console.log('[bootstrapCoupleForAuthUser] stale after getCoupleMembers');
+      log('[bootstrapCoupleForAuthUser] stale after getCoupleMembers');
       return;
     }
 
@@ -396,7 +405,7 @@ export async function bootstrapCoupleForAuthUser(
       inviterEmail,
     };
 
-    console.log('[bootstrapCoupleForAuthUser] setting pending invite banner', bannerState);
+    log('[bootstrapCoupleForAuthUser] setting pending invite banner', bannerState);
 
     useAuthStore.getState().setPendingInvite({
       inviteId: pending.inviteId,
@@ -408,7 +417,7 @@ export async function bootstrapCoupleForAuthUser(
       useAuthStore.getState().setCoupleBootstrapping(false);
     }
 
-    console.log('[bootstrap] pendingInvite in store right now:', {
+    log('[bootstrap] pendingInvite in store right now:', {
       pendingInvite: useAuthStore.getState().pendingInvite,
       coupleId: useAuthStore.getState().coupleId,
       generation,
