@@ -32,7 +32,7 @@ const NAV_ITEMS: NavItem[] = [
     match: (pathname) => pathname.includes('/add-period'),
   },
   {
-    href: '/settings/customization',
+    href: '/settings',
     labelKey: 'navigation.settings',
     icon: 'settings',
     match: (pathname) => pathname.includes('/settings'),

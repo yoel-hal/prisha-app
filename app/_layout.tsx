@@ -1,5 +1,5 @@
 import { Redirect, Stack, useRouter, useSegments } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -12,10 +12,16 @@ import type { User } from 'firebase/auth';
 
 import { DesktopWebShell } from '../src/components/common/DesktopWebShell';
 import '../src/i18n';
+import { getSettings } from '../src/firebase/firestore';
 import { bootstrapCoupleForAuthUser } from '../src/hooks/useCouple';
 import { useAuthStore } from '../src/store/authStore';
 import { useOnboardingStore } from '../src/store/onboardingStore';
 import { useSettingsStore } from '../src/store/settingsStore';
+import {
+  getIncompleteOnboardingHref,
+  profileFromAuthStore,
+  type IncompleteOnboardingHref,
+} from '../src/utils/onboardingRoute';
 
 function RootLayout() {
   const { t } = useTranslation();
@@ -23,6 +29,10 @@ function RootLayout() {
   const segments = useSegments();
   const [user, setUser] = useState<User | null | undefined>(undefined);
   const [coupleBootstrapped, setCoupleBootstrapped] = useState(false);
+  const [settingsChecked, setSettingsChecked] = useState(false);
+  const [incompleteOnboardingHref, setIncompleteOnboardingHref] =
+    useState<IncompleteOnboardingHref>('/onboarding/profile');
+  const settingsCheckedForRef = useRef<string | null>(null);
   const onboardingLoaded = useOnboardingStore((state) => state.loaded);
   const onboardingComplete = useOnboardingStore((state) => state.complete);
   const hydrateOnboarding = useOnboardingStore((state) => state.hydrate);
@@ -43,6 +53,8 @@ function RootLayout() {
         setAuthUser(nextUser);
         if (!nextUser) {
           setCoupleBootstrapped(false);
+          settingsCheckedForRef.current = null;
+          setSettingsChecked(true);
         }
       });
     });
@@ -53,16 +65,31 @@ function RootLayout() {
   }, [setAuthUser]);
 
   useEffect(() => {
-    if (!user?.uid || !user.email) {
+    if (!user?.uid) {
       setCoupleBootstrapped(!user);
+      setSettingsChecked(true);
       return;
     }
 
     let cancelled = false;
     setCoupleBootstrapped(false);
+    setSettingsChecked(false);
+    settingsCheckedForRef.current = null;
+
+    console.log('[RootLayout] bootstrapping couple for user', {
+      uid: user.uid,
+      email: user.email ?? null,
+      hasEmail: Boolean(user.email),
+    });
 
     void bootstrapCoupleForAuthUser(user.uid, user.email).finally(() => {
       if (!cancelled) {
+        const { pendingInvite, coupleId } = useAuthStore.getState();
+        console.log('[RootLayout] couple bootstrap complete', {
+          coupleId,
+          pendingInvite,
+          bannerWillShow: pendingInvite !== null,
+        });
         setCoupleBootstrapped(true);
       }
     });
@@ -83,34 +110,99 @@ function RootLayout() {
       return;
     }
 
-    const inAuthGroup = segments[0] === '(auth)';
-    const inAppGroup = segments[0] === '(app)';
-    const inOnboarding = segments[0] === 'onboarding';
-
-    if (!user) {
-      if (inAuthGroup || inOnboarding) {
-        return;
-      }
-      router.replace('/onboarding/welcome');
+    if (user && !coupleBootstrapped) {
+      setSettingsChecked(false);
       return;
     }
 
-    if (!onboardingComplete) {
-      if (inOnboarding) {
+    let cancelled = false;
+
+    void (async () => {
+      let resumeHref: IncompleteOnboardingHref = '/onboarding/profile';
+
+      if (user) {
+        const resolvedCoupleId = coupleId ?? useAuthStore.getState().coupleId;
+        const settingsCacheKey = `${user.uid}:${resolvedCoupleId ?? ''}`;
+
+        if (settingsCheckedForRef.current !== settingsCacheKey) {
+          setSettingsChecked(false);
+
+          if (resolvedCoupleId) {
+            const settings = await getSettings(resolvedCoupleId);
+            if (cancelled) {
+              return;
+            }
+            resumeHref = getIncompleteOnboardingHref(
+              profileFromAuthStore(),
+              settings !== null,
+              user,
+            );
+          } else {
+            resumeHref = getIncompleteOnboardingHref(
+              profileFromAuthStore(),
+              false,
+              user,
+            );
+          }
+          if (cancelled) {
+            return;
+          }
+
+          settingsCheckedForRef.current = settingsCacheKey;
+          setIncompleteOnboardingHref(resumeHref);
+          setSettingsChecked(true);
+        } else {
+          resumeHref = incompleteOnboardingHref;
+        }
+      } else {
+        setSettingsChecked(true);
+      }
+
+      const inAuthGroup = segments[0] === '(auth)';
+      const inAppGroup = segments[0] === '(app)';
+      const inOnboarding = segments[0] === 'onboarding';
+
+      if (!user) {
+        if (inAuthGroup || inOnboarding) {
+          return;
+        }
+        router.replace('/onboarding/welcome');
         return;
       }
-      router.replace('/onboarding/minhag');
-      return;
-    }
 
-    if (!inAppGroup) {
-      router.replace('/calendar');
-    }
-  }, [user, onboardingComplete, segments, router]);
+      if (!onboardingComplete) {
+        if (inOnboarding) {
+          return;
+        }
+        router.replace(resumeHref);
+        return;
+      }
+
+      if (!inAppGroup) {
+        router.replace('/calendar');
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    user,
+    onboardingComplete,
+    onboardingLoaded,
+    coupleBootstrapped,
+    coupleId,
+    incompleteOnboardingHref,
+    segments,
+    router,
+  ]);
 
   const isAuthLoading = user === undefined;
   const isBootstrapping =
-    isAuthLoading || !onboardingLoaded || (!!user && !coupleBootstrapped);
+    isAuthLoading ||
+    !onboardingLoaded ||
+    (!!user && !coupleBootstrapped) ||
+    (!!user && !settingsChecked);
   const inAuthGroup = segments[0] === '(auth)';
   const inAppGroup = segments[0] === '(app)';
   const inOnboarding = segments[0] === 'onboarding';
@@ -141,7 +233,7 @@ function RootLayout() {
           <Redirect href="/onboarding/welcome" />
         ) : null}
         {showLoggedInIncompleteRedirect ? (
-          <Redirect href="/onboarding/minhag" />
+          <Redirect href={incompleteOnboardingHref} />
         ) : null}
         {showLoggedInCompleteRedirect ? (
           <Redirect href="/calendar" />

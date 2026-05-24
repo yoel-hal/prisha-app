@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Pressable,
@@ -13,6 +13,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import OnboardingSkipButton from '../../src/components/onboarding/OnboardingSkipButton';
 import type { Minhag } from '../../src/calculations/types';
 import { useSettings } from '../../src/hooks/useSettings';
+import { useAuthStore } from '../../src/store/authStore';
+import { hasProfileData } from '../../src/utils/profileDisplay';
 import { textStartStyle } from '../../src/utils/rtl';
 import { webScreenScrollStyles } from '../../src/utils/webScroll';
 
@@ -37,8 +39,19 @@ export default function OnboardingMinhagScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { selectMinhag } = useSettings();
+  const firstName = useAuthStore((state) => state.firstName);
+  const lastName = useAuthStore((state) => state.lastName);
+  const country = useAuthStore((state) => state.country);
+  const phone = useAuthStore((state) => state.phone);
   const [selected, setSelected] = useState<Minhag>('ashkenaz');
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const profile = { firstName, lastName, country, phone };
+    if (!hasProfileData(profile)) {
+      router.replace('/onboarding/profile');
+    }
+  }, [firstName, lastName, country, phone, router]);
 
   const goNext = useCallback(
     async (minhag: Minhag) => {

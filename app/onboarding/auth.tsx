@@ -1,21 +1,21 @@
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import AuthSignInButtons from '../../src/components/auth/AuthSignInButtons';
 import { useAuthStore } from '../../src/store/authStore';
+import { navigateAfterSignIn } from '../../src/utils/authNavigation';
 import { textStartStyle } from '../../src/utils/rtl';
 
-export default function OnboardingAuthScreen() {
+export default function OnboardingAuthChooserScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
     if (user) {
-      router.replace('/onboarding/minhag');
+      navigateAfterSignIn(router, user);
     }
   }, [user, router]);
 
@@ -24,7 +24,22 @@ export default function OnboardingAuthScreen() {
       <View style={styles.container}>
         <Text style={[styles.title, textStartStyle()]}>{t('auth.title')}</Text>
         <Text style={[styles.subtitle, textStartStyle()]}>{t('auth.subtitle')}</Text>
-        <AuthSignInButtons emailRoute="/register" />
+
+        <View style={styles.actions}>
+          <Pressable
+            style={[styles.button, styles.primaryButton]}
+            onPress={() => router.push('/onboarding/register')}
+          >
+            <Text style={styles.primaryButtonText}>{t('auth.createAccount')}</Text>
+          </Pressable>
+
+          <Pressable
+            style={[styles.button, styles.secondaryButton]}
+            onPress={() => router.push('/onboarding/login')}
+          >
+            <Text style={styles.secondaryButtonText}>{t('auth.signIn')}</Text>
+          </Pressable>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -49,6 +64,33 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: '#666',
-    marginBottom: 0,
+  },
+  actions: {
+    gap: 12,
+  },
+  button: {
+    borderRadius: 10,
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 52,
+  },
+  primaryButton: {
+    backgroundColor: '#1a1a1a',
+  },
+  primaryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  secondaryButton: {
+    backgroundColor: '#f0f0f0',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#ddd',
+  },
+  secondaryButtonText: {
+    color: '#1a1a1a',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

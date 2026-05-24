@@ -11,11 +11,13 @@ import {
   onSnapshot,
   orderBy,
   query,
+  serverTimestamp,
   setDoc,
   updateDoc,
   where,
   writeBatch,
   type DocumentData,
+  type FieldValue,
   type Unsubscribe,
 } from 'firebase/firestore';
 
@@ -28,7 +30,7 @@ import type {
   UserSettings,
 } from '../calculations/types';
 const DEFAULT_EVENT_TITLE = 'פרישה';
-import { db } from './config';
+import { auth, db } from './config';
 
 const SETTINGS_DOC_ID = 'default';
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -37,13 +39,52 @@ export type UserRole = 'owner' | 'partner';
 
 export interface UserDocument {
   email: string;
+  firstName: string;
+  lastName: string;
+  country: string;
+  phone: string;
+  language: string;
+  createdAt: string;
   coupleId: string | null;
-  role: UserRole | null;
+  role: string;
+}
+
+export type UserProfileFields = Pick<
+  UserDocument,
+  'firstName' | 'lastName' | 'country' | 'phone'
+>;
+
+function mapUserDocument(data: DocumentData): UserDocument {
+  return {
+    email: typeof data.email === 'string' ? data.email : '',
+    firstName: typeof data.firstName === 'string' ? data.firstName : '',
+    lastName: typeof data.lastName === 'string' ? data.lastName : '',
+    country: typeof data.country === 'string' ? data.country : '',
+    phone: typeof data.phone === 'string' ? data.phone : '',
+    language: typeof data.language === 'string' ? data.language : '',
+    createdAt: typeof data.createdAt === 'string' ? data.createdAt : '',
+    coupleId: typeof data.coupleId === 'string' ? data.coupleId : null,
+    role: typeof data.role === 'string' ? data.role : '',
+  };
+}
+
+function defaultUserDocument(email: string): UserDocument {
+  return {
+    email: normalizeEmail(email),
+    firstName: '',
+    lastName: '',
+    country: '',
+    phone: '',
+    language: '',
+    createdAt: new Date().toISOString(),
+    coupleId: null,
+    role: '',
+  };
 }
 
 export interface CoupleDocument {
-  createdAt: string;
   members: string[];
+  createdAt: FieldValue | string;
 }
 
 export type InviteStatus = 'pending' | 'accepted' | 'declined' | 'expired';
@@ -260,12 +301,44 @@ export async function getUserDocument(
   if (!snapshot.exists()) {
     return null;
   }
-  const data = snapshot.data();
+  return mapUserDocument(snapshot.data());
+}
+
+export async function saveUserProfile(
+  userId: string,
+  profile: UserProfileFields & { language?: string },
+  email?: string,
+): Promise<UserDocument> {
+  if (email) {
+    await ensureUserDocument(userId, email);
+  }
+
+  const existing = await getUserDocument(userId);
+  const payload: Record<string, string> = {
+    firstName: profile.firstName.trim(),
+    lastName: profile.lastName.trim(),
+    country: profile.country.trim(),
+    phone: profile.phone.trim(),
+  };
+
+  if (profile.language !== undefined) {
+    payload.language = profile.language;
+  }
+
+  await setDoc(userRef(userId), payload, { merge: true });
+
+  const updated = await getUserDocument(userId);
+  if (updated) {
+    return updated;
+  }
+
   return {
-    email: typeof data.email === 'string' ? data.email : '',
-    coupleId: typeof data.coupleId === 'string' ? data.coupleId : null,
-    role:
-      data.role === 'owner' || data.role === 'partner' ? data.role : null,
+    ...(existing ?? defaultUserDocument('')),
+    ...payload,
+    coupleId: existing?.coupleId ?? null,
+    role: existing?.role ?? '',
+    email: existing?.email ?? '',
+    createdAt: existing?.createdAt ?? new Date().toISOString(),
   };
 }
 
@@ -284,11 +357,7 @@ export async function ensureUserDocument(
     return existing;
   }
 
-  const userDoc: UserDocument = {
-    email: normalizedEmail,
-    coupleId: null,
-    role: null,
-  };
+  const userDoc = defaultUserDocument(normalizedEmail);
   await setDoc(userRef(userId), userDoc);
   return userDoc;
 }
@@ -308,18 +377,41 @@ export async function createCouple(
   userId: string,
   email: string,
 ): Promise<string> {
-  const coupleDoc: CoupleDocument = {
-    createdAt: new Date().toISOString(),
+  const newCoupleRef = doc(collection(db, 'couples'));
+  const coupleId = newCoupleRef.id;
+
+  const coupleData = {
     members: [userId],
+    createdAt: serverTimestamp(),
   };
-  const ref = await addDoc(collection(db, 'couples'), coupleDoc);
-  const coupleId = ref.id;
+
+  console.log('[createCouple] writing couple document', { coupleId, coupleData });
+
+  await setDoc(newCoupleRef, coupleData);
+
+  const written = await getDoc(newCoupleRef);
+  const writtenMembers = written.data()?.members;
+
+  if (
+    !written.exists() ||
+    !Array.isArray(writtenMembers) ||
+    !writtenMembers.includes(userId)
+  ) {
+    console.error('[createCouple] verification failed', {
+      coupleId,
+      exists: written.exists(),
+      data: written.data(),
+    });
+    throw new Error('Failed to create couple document with members field');
+  }
 
   await setDoc(userRef(userId), {
     email: normalizeEmail(email),
     coupleId,
     role: 'owner',
   });
+
+  console.log('[createCouple] success', { coupleId, members: writtenMembers });
 
   return coupleId;
 }
@@ -328,6 +420,19 @@ export async function invitePartner(
   coupleId: string,
   partnerEmail: string,
 ): Promise<void> {
+  const coupleSnapshot = await getDoc(coupleRef(coupleId));
+  const members = coupleSnapshot.data()?.members;
+
+  if (
+    !coupleSnapshot.exists() ||
+    !Array.isArray(members) ||
+    members.length === 0
+  ) {
+    throw new Error(
+      'Couple document is missing members. Cannot send invite until the couple is fixed.',
+    );
+  }
+
   const normalizedPartnerEmail = normalizeEmail(partnerEmail);
   const now = new Date();
   const invite: CoupleInvite = {
@@ -340,9 +445,23 @@ export async function invitePartner(
   await addDoc(invitesRef(coupleId), invite);
 }
 
+export async function cancelInvite(
+  coupleId: string,
+  inviteId: string,
+): Promise<void> {
+  console.log('[cancelInvite] start', { coupleId, inviteId });
+  try {
+    await deleteDoc(inviteRef(coupleId, inviteId));
+    console.log('[cancelInvite] success', { coupleId, inviteId });
+  } catch (error) {
+    console.error('[cancelInvite] error', { coupleId, inviteId, error });
+    throw error;
+  }
+}
+
 export async function getPendingOutgoingInvite(
   coupleId: string,
-): Promise<{ inviteId: string; partnerEmail: string } | null> {
+): Promise<{ inviteId: string; partnerEmail: string; expiresAt: string } | null> {
   const q = query(invitesRef(coupleId), where('status', '==', 'pending'));
   const snapshot = await getDocs(q);
   const now = Date.now();
@@ -361,37 +480,101 @@ export async function getPendingOutgoingInvite(
     return {
       inviteId: document.id,
       partnerEmail: data.partnerEmail,
+      expiresAt: data.expiresAt,
     };
   }
 
   return null;
 }
 
+/** Email used for invite queries — must match Firebase Auth token email for security rules. */
+export function resolveInviteLookupEmail(fallbackEmail: string): string {
+  const authEmail = auth.currentUser?.email?.trim();
+  if (authEmail) {
+    return normalizeEmail(authEmail);
+  }
+  return normalizeEmail(fallbackEmail);
+}
+
 export async function checkPendingInvite(
   email: string,
 ): Promise<{ inviteId: string; coupleId: string } | null> {
-  const normalizedEmail = normalizeEmail(email);
-  const q = query(
-    collectionGroup(db, 'invites'),
-    where('partnerEmail', '==', normalizedEmail),
-    where('status', '==', 'pending'),
-  );
-  const snapshot = await getDocs(q);
-  const now = Date.now();
+  const paramEmail = normalizeEmail(email);
+  const queryEmail = resolveInviteLookupEmail(email);
+  const authEmail = auth.currentUser?.email ?? null;
 
-  for (const document of snapshot.docs) {
-    const data = document.data() as CoupleInvite;
-    if (new Date(data.expiresAt).getTime() < now) {
-      continue;
-    }
+  console.log('[checkPendingInvite] start', {
+    paramEmail,
+    authEmail,
+    queryEmail,
+    authUid: auth.currentUser?.uid ?? null,
+    emailsMatch: paramEmail === queryEmail,
+  });
 
-    const coupleId = document.ref.parent.parent?.id;
-    if (coupleId) {
-      return { inviteId: document.id, coupleId };
-    }
+  if (!queryEmail) {
+    console.warn(
+      '[checkPendingInvite] no email available — auth.email and param are empty; cannot query invites',
+    );
+    return null;
   }
 
-  return null;
+  if (paramEmail && paramEmail !== queryEmail) {
+    console.warn(
+      '[checkPendingInvite] param email differs from auth email; querying with auth email (required by security rules)',
+      { paramEmail, queryEmail },
+    );
+  }
+
+  try {
+    const q = query(
+      collectionGroup(db, 'invites'),
+      where('partnerEmail', '==', queryEmail),
+      where('status', '==', 'pending'),
+    );
+
+    console.log('[checkPendingInvite] running collectionGroup query on "invites"', {
+      partnerEmail: queryEmail,
+      status: 'pending',
+    });
+
+    const snapshot = await getDocs(q);
+    const now = Date.now();
+
+    console.log('[checkPendingInvite] query results', {
+      size: snapshot.size,
+      docs: snapshot.docs.map((document) => ({
+        inviteId: document.id,
+        path: document.ref.path,
+        partnerEmail: (document.data() as CoupleInvite).partnerEmail,
+        status: (document.data() as CoupleInvite).status,
+        expiresAt: (document.data() as CoupleInvite).expiresAt,
+        coupleId: document.ref.parent.parent?.id ?? null,
+      })),
+    });
+
+    for (const document of snapshot.docs) {
+      const data = document.data() as CoupleInvite;
+      if (new Date(data.expiresAt).getTime() < now) {
+        console.log('[checkPendingInvite] skipping expired invite', document.id);
+        continue;
+      }
+
+      const coupleId = document.ref.parent.parent?.id;
+      if (coupleId) {
+        const result = { inviteId: document.id, coupleId };
+        console.log('[checkPendingInvite] found pending invite', result);
+        return result;
+      }
+
+      console.warn('[checkPendingInvite] invite missing coupleId parent', document.ref.path);
+    }
+
+    console.log('[checkPendingInvite] no valid pending invite');
+    return null;
+  } catch (error) {
+    console.error('[checkPendingInvite] error', error);
+    throw error;
+  }
 }
 
 export async function acceptInvite(
@@ -399,16 +582,24 @@ export async function acceptInvite(
   inviteId: string,
   coupleId: string,
 ): Promise<void> {
+  console.log('[acceptInvite] start', { userId, inviteId, coupleId });
+
   const userSnapshot = await getDoc(userRef(userId));
   if (!userSnapshot.exists()) {
     throw new Error('User document not found');
   }
 
-  const userEmail = normalizeEmail(
-    typeof userSnapshot.data().email === 'string'
-      ? userSnapshot.data().email
-      : '',
-  );
+  const authEmail = auth.currentUser?.email?.trim() ?? '';
+  const docEmail =
+    typeof userSnapshot.data().email === 'string' ? userSnapshot.data().email : '';
+  const userEmail = normalizeEmail(authEmail || docEmail);
+
+  console.log('[acceptInvite] resolved email', {
+    authEmail: authEmail || null,
+    docEmail: docEmail || null,
+    userEmail,
+  });
+
   if (!userEmail) {
     throw new Error('User email is required to accept an invite');
   }
@@ -435,7 +626,12 @@ export async function acceptInvite(
   }
 
   const members = coupleSnapshot.data().members;
-  if (!Array.isArray(members) || members.length >= 2) {
+  if (!Array.isArray(members) || members.length === 0) {
+    throw new Error(
+      'Couple document is missing members. Update it in Firebase Console before accepting.',
+    );
+  }
+  if (members.length >= 2) {
     throw new Error('Couple already has two members');
   }
   if (members.includes(userId)) {
@@ -446,6 +642,12 @@ export async function acceptInvite(
   if (existingUser?.coupleId && existingUser.coupleId !== coupleId) {
     await disconnectCouple(userId, existingUser.coupleId);
   }
+
+  console.log('[acceptInvite] adding member via arrayUnion', {
+    coupleId,
+    userId,
+    existingMembers: members,
+  });
 
   const batch = writeBatch(db);
   batch.update(coupleRef(coupleId), {
@@ -463,7 +665,19 @@ export async function acceptInvite(
   batch.update(inviteRef(coupleId, inviteId), {
     status: 'accepted',
   });
-  await batch.commit();
+
+  try {
+    await batch.commit();
+    console.log('[acceptInvite] success', { userId, inviteId, coupleId });
+  } catch (error) {
+    console.error('[acceptInvite] batch commit failed', {
+      userId,
+      inviteId,
+      coupleId,
+      error,
+    });
+    throw error;
+  }
 }
 
 export async function declineInvite(
@@ -483,7 +697,7 @@ export async function disconnectCouple(
   if (!coupleSnapshot.exists()) {
     await setDoc(
       userRef(userId),
-      { coupleId: null, role: null },
+      { coupleId: null, role: '' },
       { merge: true },
     );
     return;
@@ -497,7 +711,7 @@ export async function disconnectCouple(
   const batch = writeBatch(db);
   batch.set(
     userRef(userId),
-    { coupleId: null, role: null },
+    { coupleId: null, role: '' },
     { merge: true },
   );
 

@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons';
-import { Redirect, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -15,6 +15,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { signOut } from '../../../src/firebase/auth';
 import { useDesktopWeb } from '../../../src/hooks/useDesktopWeb';
 import { useSettings } from '../../../src/hooks/useSettings';
+import { useAuthStore } from '../../../src/store/authStore';
+import {
+  getDisplayFullName,
+  getProfileInitials,
+} from '../../../src/utils/profileDisplay';
+import { showDeleteAccountAlert } from '../../../src/utils/deleteAccountAlert';
 import { isAppRTL, textStartStyle } from '../../../src/utils/rtl';
 import { webScreenScrollStyles } from '../../../src/utils/webScroll';
 
@@ -24,17 +30,23 @@ type SettingsRoute =
   | '/settings/calendar-sync'
   | '/settings/privacy'
   | '/settings/couple'
-  | '/settings/about';
+  | '/settings/about'
+  | '/settings/profile';
 
 function SettingsRow({
   label,
   onPress,
+  isLast = false,
 }: {
   label: string;
   onPress: () => void;
+  isLast?: boolean;
 }) {
   return (
-    <Pressable style={styles.row} onPress={onPress}>
+    <Pressable
+      style={[styles.row, isLast && styles.rowLast]}
+      onPress={onPress}
+    >
       <Text style={[styles.rowLabel, textStartStyle()]}>{label}</Text>
       <Feather
         name={isAppRTL() ? 'chevron-left' : 'chevron-right'}
@@ -45,6 +57,14 @@ function SettingsRow({
   );
 }
 
+function SettingsGroupHeader({ label }: { label: string }) {
+  return (
+    <View style={styles.groupHeader}>
+      <Text style={[styles.groupHeaderText, textStartStyle()]}>{label}</Text>
+    </View>
+  );
+}
+
 export default function SettingsScreen() {
   const { t } = useTranslation();
   const isDesktopWeb = useDesktopWeb();
@@ -52,10 +72,19 @@ export default function SettingsScreen() {
   const router = useRouter();
 
   if (isDesktopWeb) {
-    return <Redirect href="/settings/customization" />;
+    return null;
   }
+
+  const user = useAuthStore((state) => state.user);
+  const firstName = useAuthStore((state) => state.firstName);
+  const lastName = useAuthStore((state) => state.lastName);
   const { currentLanguage, setLanguage } = useSettings();
   const [signingOut, setSigningOut] = useState(false);
+
+  const email = user?.email ?? '';
+  const fullName = getDisplayFullName(firstName, lastName);
+  const showName = fullName.length > 0;
+  const initials = getProfileInitials(firstName, lastName, email);
 
   function navigate(route: SettingsRoute) {
     router.push(route);
@@ -67,7 +96,7 @@ export default function SettingsScreen() {
     setSigningOut(false);
 
     if (result.success) {
-      router.replace('/login');
+      router.replace('/onboarding/login');
     }
   }
 
@@ -75,6 +104,37 @@ export default function SettingsScreen() {
     <SafeAreaView style={[styles.safe, webScroll.safe]} edges={['top']}>
       <ScrollView style={webScroll.scroll} contentContainerStyle={styles.scroll}>
         <Text style={[styles.title, textStartStyle()]}>{t('settings.title')}</Text>
+
+        {email ? (
+          <View style={styles.accountCard}>
+            <Pressable
+              style={styles.avatarPressable}
+              onPress={() => navigate('/settings/profile')}
+              accessibilityRole="button"
+              accessibilityLabel={t('settings.profile')}
+            >
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>{initials}</Text>
+              </View>
+              <View style={styles.avatarEditBadge}>
+                <Feather name="edit-2" size={12} color="#fff" />
+              </View>
+            </Pressable>
+            <View style={styles.accountInfo}>
+              {showName ? (
+                <Text style={[styles.accountName, textStartStyle()]}>{fullName}</Text>
+              ) : null}
+              <Text
+                style={[
+                  showName ? styles.accountEmailMuted : styles.accountEmailPrimary,
+                  textStartStyle(),
+                ]}
+              >
+                {email}
+              </Text>
+            </View>
+          </View>
+        ) : null}
 
         <Text style={[styles.sectionHeader, textStartStyle()]}>
           {t('settings.language')}
@@ -116,6 +176,16 @@ export default function SettingsScreen() {
           <SettingsRow
             label={t('settings.about')}
             onPress={() => navigate('/settings/about')}
+          />
+          <SettingsGroupHeader label={t('settings.account')} />
+          <SettingsRow
+            label={t('settings.profile')}
+            onPress={() => navigate('/settings/profile')}
+          />
+          <SettingsRow
+            label={t('settings.deleteAccount')}
+            onPress={() => showDeleteAccountAlert(t)}
+            isLast
           />
         </View>
 
@@ -171,6 +241,59 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 8,
   },
+  accountCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    paddingVertical: 12,
+    marginBottom: 8,
+  },
+  avatarPressable: {
+    position: 'relative',
+  },
+  avatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: '#4A90D9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  avatarEditBadge: {
+    position: 'absolute',
+    end: -2,
+    bottom: -2,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#1a1a1a',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  accountInfo: {
+    flex: 1,
+    gap: 2,
+  },
+  accountName: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  accountEmailPrimary: {
+    fontSize: 15,
+    color: '#1a1a1a',
+  },
+  accountEmailMuted: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
   sectionHeader: {
     fontSize: 14,
     fontWeight: '600',
@@ -211,6 +334,19 @@ const styles = StyleSheet.create({
   groupSpaced: {
     marginTop: 16,
   },
+  groupHeader: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    backgroundColor: '#f7f7f7',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#eee',
+  },
+  groupHeaderText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#888',
+    textTransform: 'uppercase',
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -219,6 +355,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#eee',
+  },
+  rowLast: {
+    borderBottomWidth: 0,
   },
   rowLabel: {
     fontSize: 16,

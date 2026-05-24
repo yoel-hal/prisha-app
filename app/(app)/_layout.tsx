@@ -4,7 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { Platform, StyleSheet, View } from 'react-native';
 
 import { NotificationScheduler } from '../../src/components/app/NotificationScheduler';
+import { PendingInviteGlobalBanner } from '../../src/components/couple/PendingInviteGlobalBanner';
+import { SettingsTabIcon } from '../../src/components/couple/SettingsTabIcon';
 import { WebAppShell } from '../../src/components/web/WebAppShell';
+import { useCouple } from '../../src/hooks/useCouple';
 import { useDesktopWeb } from '../../src/hooks/useDesktopWeb';
 import { usePeriods } from '../../src/hooks/usePeriods';
 
@@ -12,12 +15,14 @@ export default function AppLayout() {
   const { t } = useTranslation();
   const isDesktopWeb = useDesktopWeb();
   usePeriods();
+  useCouple();
 
   return (
     <>
       <NotificationScheduler />
       <WebAppShell>
         <View style={styles.tabsHost}>
+          <PendingInviteGlobalBanner />
           <Tabs
             screenOptions={{
               headerShown: false,
@@ -67,7 +72,7 @@ export default function AppLayout() {
               options={{
                 title: t('navigation.settings'),
                 tabBarIcon: ({ color, size }) => (
-                  <Feather name="settings" size={size} color={color} />
+                  <SettingsTabIcon color={color} size={size} />
                 ),
               }}
             />
