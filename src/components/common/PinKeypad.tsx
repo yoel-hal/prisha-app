@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { textStartStyle } from '../../utils/rtl';
@@ -16,13 +16,18 @@ type PinKeypadProps = {
 
 export function PinKeypad({ title, subtitle, error, onComplete }: PinKeypadProps) {
   const [digits, setDigits] = useState('');
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
 
   useEffect(() => {
-    if (digits.length === PIN_LENGTH) {
-      onComplete(digits);
-      setDigits('');
+    if (digits.length !== PIN_LENGTH) {
+      return;
     }
-  }, [digits, onComplete]);
+
+    const pin = digits;
+    setDigits('');
+    onCompleteRef.current(pin);
+  }, [digits]);
 
   const handleKeyPress = useCallback((key: (typeof KEYPAD_KEYS)[number]) => {
     if (key === 'blank') {

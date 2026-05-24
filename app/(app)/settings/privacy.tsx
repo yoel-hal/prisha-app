@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Modal,
@@ -40,6 +40,10 @@ export default function PrivacySettingsScreen() {
   const [pendingPin, setPendingPin] = useState('');
   const [pinError, setPinError] = useState<string | null>(null);
   const [enrollingBiometric, setEnrollingBiometric] = useState(false);
+  const pinSetupStepRef = useRef(pinSetupStep);
+  pinSetupStepRef.current = pinSetupStep;
+  const pendingPinRef = useRef(pendingPin);
+  pendingPinRef.current = pendingPin;
 
   const resetPinSetup = useCallback(() => {
     setShowPinModal(false);
@@ -93,14 +97,16 @@ export default function PrivacySettingsScreen() {
 
   const handlePinComplete = useCallback(
     async (pin: string) => {
-      if (pinSetupStep === 'enter') {
+      if (pinSetupStepRef.current === 'enter') {
+        pendingPinRef.current = pin;
         setPendingPin(pin);
         setPinSetupStep('confirm');
         setPinError(null);
         return;
       }
 
-      if (pin !== pendingPin) {
+      if (pin !== pendingPinRef.current) {
+        pendingPinRef.current = '';
         setPinError(t('appLock.pinMismatch'));
         setPinSetupStep('enter');
         setPendingPin('');
@@ -111,16 +117,8 @@ export default function PrivacySettingsScreen() {
       resetPinSetup();
       showAlert(t('appLock.pinSet'));
     },
-    [enrollPin, pendingPin, pinSetupStep, resetPinSetup, t],
+    [enrollPin, resetPinSetup, t],
   );
-
-  useEffect(() => {
-    if (!showPinModal) {
-      return;
-    }
-
-    setPinError(null);
-  }, [pinSetupStep, showPinModal]);
 
   const lockTypeLabel =
     appLockType === 'biometric'
@@ -210,6 +208,7 @@ export default function PrivacySettingsScreen() {
         <View style={styles.pinModalBackdrop}>
           <View style={styles.pinModalCard}>
             <PinKeypad
+              key={pinSetupStep}
               title={
                 pinSetupStep === 'enter'
                   ? t('appLock.enterPin')

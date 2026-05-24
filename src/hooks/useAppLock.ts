@@ -9,6 +9,38 @@ const APP_LOCK_PIN_KEY = 'app_lock_pin';
 const APP_LOCK_ENABLED_KEY = 'app_lock_enabled';
 const APP_LOCK_TYPE_KEY = 'app_lock_type';
 
+async function storageGet(key: string): Promise<string | null> {
+  if (Platform.OS === 'web') {
+    if (key === APP_LOCK_PIN_KEY) {
+      return null;
+    }
+    return localStorage.getItem(key);
+  }
+  return SecureStore.getItemAsync(key);
+}
+
+async function storageSet(key: string, value: string): Promise<void> {
+  if (Platform.OS === 'web') {
+    if (key === APP_LOCK_PIN_KEY) {
+      return;
+    }
+    localStorage.setItem(key, value);
+    return;
+  }
+  await SecureStore.setItemAsync(key, value);
+}
+
+async function storageDelete(key: string): Promise<void> {
+  if (Platform.OS === 'web') {
+    if (key === APP_LOCK_PIN_KEY) {
+      return;
+    }
+    localStorage.removeItem(key);
+    return;
+  }
+  await SecureStore.deleteItemAsync(key);
+}
+
 async function readBiometricAvailable(): Promise<boolean> {
   if (Platform.OS === 'web') {
     return false;
@@ -27,18 +59,18 @@ async function persistAppLockSettings(
   type: AppLockType | null,
 ): Promise<void> {
   if (enabled && type) {
-    await SecureStore.setItemAsync(APP_LOCK_ENABLED_KEY, 'true');
-    await SecureStore.setItemAsync(APP_LOCK_TYPE_KEY, type);
+    await storageSet(APP_LOCK_ENABLED_KEY, 'true');
+    await storageSet(APP_LOCK_TYPE_KEY, type);
     return;
   }
 
-  await SecureStore.deleteItemAsync(APP_LOCK_ENABLED_KEY);
-  await SecureStore.deleteItemAsync(APP_LOCK_TYPE_KEY);
+  await storageDelete(APP_LOCK_ENABLED_KEY);
+  await storageDelete(APP_LOCK_TYPE_KEY);
 }
 
 export async function hydrateAppLockFromStorage(): Promise<void> {
-  const enabledValue = await SecureStore.getItemAsync(APP_LOCK_ENABLED_KEY);
-  const typeValue = await SecureStore.getItemAsync(APP_LOCK_TYPE_KEY);
+  const enabledValue = await storageGet(APP_LOCK_ENABLED_KEY);
+  const typeValue = await storageGet(APP_LOCK_TYPE_KEY);
 
   if (enabledValue !== 'true') {
     useAuthStore.getState().setAppLock(false, null);
@@ -60,13 +92,13 @@ export function useAppLock() {
   }, []);
 
   const enrollPin = useCallback(async (pin: string): Promise<void> => {
-    await SecureStore.setItemAsync(APP_LOCK_PIN_KEY, pin);
+    await storageSet(APP_LOCK_PIN_KEY, pin);
     await persistAppLockSettings(true, 'pin');
     setAppLock(true, 'pin');
   }, [setAppLock]);
 
   const verifyPin = useCallback(async (pin: string): Promise<boolean> => {
-    const storedPin = await SecureStore.getItemAsync(APP_LOCK_PIN_KEY);
+    const storedPin = await storageGet(APP_LOCK_PIN_KEY);
     return storedPin === pin;
   }, []);
 
@@ -117,13 +149,13 @@ export function useAppLock() {
   }, [setAppLock]);
 
   const disableLock = useCallback(async (): Promise<void> => {
-    await SecureStore.deleteItemAsync(APP_LOCK_PIN_KEY);
+    await storageDelete(APP_LOCK_PIN_KEY);
     await persistAppLockSettings(false, null);
     setAppLock(false, null);
   }, [setAppLock]);
 
   const hasStoredPin = useCallback(async (): Promise<boolean> => {
-    const storedPin = await SecureStore.getItemAsync(APP_LOCK_PIN_KEY);
+    const storedPin = await storageGet(APP_LOCK_PIN_KEY);
     return storedPin !== null;
   }, []);
 

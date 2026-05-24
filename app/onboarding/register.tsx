@@ -16,6 +16,7 @@ import type { User } from 'firebase/auth';
 import { AuthDivider } from '../../src/components/auth/AuthDivider';
 import { authFormStyles } from '../../src/components/auth/authFormStyles';
 import { OAuthSignInButtons } from '../../src/components/auth/OAuthSignInButtons';
+import { CountryPickerField } from '../../src/components/common/CountryPickerField';
 import { useEmailAuth } from '../../src/hooks/useEmailAuth';
 import { persistOAuthProfile } from '../../src/utils/persistOAuthProfile';
 import { useAlignStart, textStartStyle } from '../../src/utils/rtl';
@@ -110,16 +111,11 @@ export default function OnboardingRegisterScreen() {
             <Text style={[authFormStyles.label, textStartStyle()]}>
               {t('onboarding.country')}
             </Text>
-            <TextInput
-              style={authFormStyles.input}
+            <CountryPickerField
               value={country}
-              onChangeText={setCountry}
-              autoCapitalize="words"
-              autoCorrect={false}
-              editable={!loading}
-              textAlign={textStart}
+              onChange={setCountry}
               placeholder={t('onboarding.countryPlaceholder')}
-              placeholderTextColor="#999"
+              editable={!loading}
             />
           </View>
 

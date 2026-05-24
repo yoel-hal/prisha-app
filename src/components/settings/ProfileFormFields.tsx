@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { CountryPickerField } from '../common/CountryPickerField';
 import { useAlignStart, textStartStyle } from '../../utils/rtl';
 
 type ProfileFormFieldsProps = {
@@ -65,16 +66,11 @@ export function ProfileFormFields({
 
       <View style={styles.field}>
         <Text style={[styles.label, textStartStyle()]}>{t('onboarding.country')}</Text>
-        <TextInput
-          style={styles.input}
+        <CountryPickerField
           value={country}
-          onChangeText={setCountry}
-          autoCapitalize="words"
-          autoCorrect={false}
-          editable={!disabled}
-          textAlign={textStart}
+          onChange={setCountry}
           placeholder={t('onboarding.countryPlaceholder')}
-          placeholderTextColor="#999"
+          editable={!disabled}
         />
       </View>
 

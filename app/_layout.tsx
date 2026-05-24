@@ -163,6 +163,17 @@ function RootLayout() {
       const inAppGroup = segments[0] === '(app)';
       const inOnboarding = segments[0] === 'onboarding';
 
+      const onboardingStep = (segments as readonly string[])[1];
+      if (
+        inOnboarding &&
+        onboardingStep !== undefined &&
+        (onboardingStep === 'minhag' ||
+          onboardingStep === 'chumrot' ||
+          onboardingStep === 'done')
+      ) {
+        return;
+      }
+
       if (!user) {
         if (inAuthGroup || inOnboarding) {
           return;

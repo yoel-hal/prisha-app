@@ -90,6 +90,7 @@ export function AppLockGate({ children }: AppLockGateProps) {
 
           {showPinEntry ? (
             <PinKeypad
+              key={pinError ?? 'idle'}
               title={t('appLock.enterPin')}
               error={pinError}
               onComplete={(pin) => {
