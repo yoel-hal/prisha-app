@@ -13,12 +13,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ProfileFormFields } from '../../../src/components/settings/ProfileFormFields';
 import { useProfileForm } from '../../../src/hooks/useProfileForm';
+import { useAuthStore } from '../../../src/store/authStore';
+import { textStartStyle } from '../../../src/utils/rtl';
 import { webScreenScrollStyles } from '../../../src/utils/webScroll';
 
 export default function ProfileSettingsScreen() {
   const { t } = useTranslation();
   const webScroll = webScreenScrollStyles();
   const router = useRouter();
+  const isPartnerMode = useAuthStore((state) => state.isPartnerMode);
   const {
     firstName,
     setFirstName,
@@ -61,6 +64,12 @@ export default function ProfileSettingsScreen() {
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
+          {isPartnerMode ? (
+            <Text style={[styles.partnerNote, textStartStyle()]}>
+              {t('partner.restrictedFeature')}
+            </Text>
+          ) : null}
+
           {loading ? (
             <ActivityIndicator style={styles.loader} />
           ) : (
@@ -73,26 +82,28 @@ export default function ProfileSettingsScreen() {
               setCountry={setCountry}
               phone={phone}
               setPhone={setPhone}
-              disabled={saving}
+              disabled={saving || isPartnerMode}
             />
           )}
 
-          <Pressable
-            style={({ pressed }) => [
-              styles.saveButton,
-              (saving || loading) && styles.saveDisabled,
-              pressed && !saving && !loading && styles.savePressed,
-            ]}
-            onPress={handleSavePress}
-            disabled={saving || loading}
-            accessibilityRole="button"
-          >
-            {saving ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.saveButtonText}>{t('settings.saveConfirm')}</Text>
-            )}
-          </Pressable>
+          {!isPartnerMode ? (
+            <Pressable
+              style={({ pressed }) => [
+                styles.saveButton,
+                (saving || loading) && styles.saveDisabled,
+                pressed && !saving && !loading && styles.savePressed,
+              ]}
+              onPress={handleSavePress}
+              disabled={saving || loading}
+              accessibilityRole="button"
+            >
+              {saving ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.saveButtonText}>{t('settings.saveConfirm')}</Text>
+              )}
+            </Pressable>
+          ) : null}
         </ScrollView>
       </SafeAreaView>
     </>
@@ -115,6 +126,11 @@ const styles = StyleSheet.create({
   },
   loader: {
     marginTop: 24,
+  },
+  partnerNote: {
+    fontSize: 15,
+    color: '#3a5a9a',
+    lineHeight: 22,
   },
   saveButton: {
     backgroundColor: '#1a1a1a',

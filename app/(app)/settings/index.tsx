@@ -71,6 +71,7 @@ export default function SettingsScreen() {
   const webScroll = webScreenScrollStyles();
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
+  const isPartnerMode = useAuthStore((state) => state.isPartnerMode);
   const firstName = useAuthStore((state) => state.firstName);
   const lastName = useAuthStore((state) => state.lastName);
   const { currentLanguage, setLanguage } = useSettings();
@@ -104,7 +105,7 @@ export default function SettingsScreen() {
       <ScrollView style={webScroll.scroll} contentContainerStyle={styles.scroll}>
         <Text style={[styles.title, textStartStyle()]}>{t('settings.title')}</Text>
 
-        {email ? (
+        {email && !isPartnerMode ? (
           <View style={styles.accountCard}>
             <Pressable
               style={styles.avatarPressable}
@@ -175,19 +176,25 @@ export default function SettingsScreen() {
           <SettingsRow
             label={t('settings.about')}
             onPress={() => navigate('/settings/about')}
+            isLast={isPartnerMode}
           />
-          <SettingsGroupHeader label={t('settings.account')} />
-          <SettingsRow
-            label={t('settings.profile')}
-            onPress={() => navigate('/settings/profile')}
-          />
-          <SettingsRow
-            label={t('settings.deleteAccount')}
-            onPress={() => showDeleteAccountAlert(t)}
-            isLast
-          />
+          {!isPartnerMode ? (
+            <>
+              <SettingsGroupHeader label={t('settings.account')} />
+              <SettingsRow
+                label={t('settings.profile')}
+                onPress={() => navigate('/settings/profile')}
+              />
+              <SettingsRow
+                label={t('settings.deleteAccount')}
+                onPress={() => showDeleteAccountAlert(t)}
+                isLast
+              />
+            </>
+          ) : null}
         </View>
 
+        {!isPartnerMode ? (
         <Pressable
           style={styles.signOutButton}
           onPress={() => void handleSignOut()}
@@ -199,6 +206,7 @@ export default function SettingsScreen() {
             <Text style={styles.signOutText}>{t('auth.signOut')}</Text>
           )}
         </Pressable>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );

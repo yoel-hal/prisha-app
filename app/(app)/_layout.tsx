@@ -1,23 +1,26 @@
 import { Feather } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppState, Platform, StyleSheet, View, type AppStateStatus } from 'react-native';
 
 import { NotificationScheduler } from '../../src/components/app/NotificationScheduler';
 import { AppLockGate } from '../../src/components/common/AppLockGate';
+import { PartnerModeBanner } from '../../src/components/common/PartnerModeBanner';
 import CoupleDebugOverlay from '../../src/components/dev/CoupleDebugOverlay';
-import { PendingInviteGlobalBanner } from '../../src/components/couple/PendingInviteGlobalBanner';
-import { SettingsTabIcon } from '../../src/components/couple/SettingsTabIcon';
 import { WebAppShell } from '../../src/components/web/WebAppShell';
+import { signOut } from '../../src/firebase/auth';
+import { checkPartnerAccessValid } from '../../src/firebase/firestore';
 import { hydrateAppLockFromStorage } from '../../src/hooks/useAppLock';
 import { useCouple } from '../../src/hooks/useCouple';
 import { useDesktopWeb } from '../../src/hooks/useDesktopWeb';
 import { usePeriods } from '../../src/hooks/usePeriods';
 import { useAuthStore } from '../../src/store/authStore';
+import { clearPartnerSession } from '../../src/utils/partnerSession';
 
 export default function AppLayout() {
   const { t } = useTranslation();
+  const router = useRouter();
   const isDesktopWeb = useDesktopWeb();
   const setIsAppLocked = useAuthStore((state) => state.setIsAppLocked);
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
@@ -30,25 +33,42 @@ export default function AppLayout() {
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextState) => {
-      if (
-        appStateRef.current.match(/inactive|background/) &&
-        nextState === 'active' &&
-        useAuthStore.getState().appLockEnabled
-      ) {
-        setIsAppLocked(true);
-      }
+      const wasBackground = appStateRef.current.match(/inactive|background/);
       appStateRef.current = nextState;
+
+      if (wasBackground && nextState === 'active') {
+        if (useAuthStore.getState().appLockEnabled) {
+          setIsAppLocked(true);
+        }
+
+        void (async () => {
+          const { isPartnerMode: partnerMode, ownerUserId: ownerId } =
+            useAuthStore.getState();
+          if (partnerMode && ownerId) {
+            const valid = await checkPartnerAccessValid(ownerId);
+            if (!valid) {
+              await clearPartnerSession();
+              useAuthStore.getState().setPartnerMode(false, null, null);
+              useAuthStore.getState().setCoupleId(null);
+              const { useOnboardingStore } = await import('../../src/store/onboardingStore');
+              useOnboardingStore.getState().reset();
+              await signOut();
+              router.replace('/onboarding/welcome');
+            }
+          }
+        })();
+      }
     });
 
     return () => subscription.remove();
-  }, [setIsAppLocked]);
+  }, [router, setIsAppLocked]);
 
   return (
     <AppLockGate>
       <NotificationScheduler />
       <WebAppShell>
         <View style={styles.tabsHost}>
-          <PendingInviteGlobalBanner />
+          <PartnerModeBanner />
           <Tabs
             screenOptions={{
               headerShown: false,
@@ -98,7 +118,7 @@ export default function AppLayout() {
               options={{
                 title: t('navigation.settings'),
                 tabBarIcon: ({ color, size }) => (
-                  <SettingsTabIcon color={color} size={size} />
+                  <Feather name="settings" size={size} color={color} />
                 ),
               }}
             />

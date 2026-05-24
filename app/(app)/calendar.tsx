@@ -10,7 +10,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CalendarDayPanel } from '../../src/components/calendar/CalendarDayPanel';
-import { PendingInviteGlobalBanner } from '../../src/components/couple/PendingInviteGlobalBanner';
 import { CalendarDaySheet } from '../../src/components/calendar/CalendarDaySheet';
 import { UpcomingVesetimList } from '../../src/components/calendar/UpcomingVesetimList';
 import { WebMainContent } from '../../src/components/web/WebMainContent';
@@ -86,7 +85,6 @@ export default function CalendarScreen() {
   if (isDesktopWeb) {
     return (
       <WebMainContent scrollable={false}>
-        <PendingInviteGlobalBanner />
         <View
           style={[
             styles.desktopRow,

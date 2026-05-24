@@ -1,9 +1,7 @@
 import {
   addDoc,
   arrayRemove,
-  arrayUnion,
   collection,
-  collectionGroup,
   deleteDoc,
   doc,
   getDoc,
@@ -30,10 +28,9 @@ import type {
   UserSettings,
 } from '../calculations/types';
 const DEFAULT_EVENT_TITLE = 'פרישה';
-import { auth, db } from './config';
+import { db } from './config';
 
 const SETTINGS_DOC_ID = 'default';
-const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 export type UserRole = 'owner' | 'partner';
 
@@ -87,19 +84,14 @@ export interface CoupleDocument {
   createdAt: FieldValue | string;
 }
 
-export type InviteStatus = 'pending' | 'accepted' | 'declined' | 'expired';
-
-export interface CoupleInvite {
-  partnerEmail: string;
-  status: InviteStatus;
+export interface PartnerAccess {
+  token: string;
+  pinHash: string;
   createdAt: string;
-  expiresAt: string;
-}
-
-export interface CoupleMemberInfo {
-  userId: string;
-  email: string;
-  role: string;
+  partnerLastSeen: string | null;
+  isActive: boolean;
+  ownerName: string;
+  coupleId: string;
 }
 
 function normalizeEmail(email: string): string {
@@ -114,12 +106,12 @@ function coupleRef(coupleId: string) {
   return doc(db, 'couples', coupleId);
 }
 
-function invitesRef(coupleId: string) {
-  return collection(db, 'couples', coupleId, 'invites');
+function partnerAccessRef(userId: string) {
+  return doc(db, 'users', userId, 'partnerAccess', 'current');
 }
 
-function inviteRef(coupleId: string, inviteId: string) {
-  return doc(db, 'couples', coupleId, 'invites', inviteId);
+function partnerTokenRef(token: string) {
+  return doc(db, 'partnerTokens', token);
 }
 
 function periodsRef(coupleId: string) {
@@ -416,359 +408,117 @@ export async function createCouple(
   return coupleId;
 }
 
-export async function invitePartner(
-  coupleId: string,
-  partnerEmail: string,
-): Promise<void> {
-  const coupleSnapshot = await getDoc(coupleRef(coupleId));
-  const members = coupleSnapshot.data()?.members;
+export function generatePartnerToken(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let result = '';
+  const array = new Uint8Array(12);
+  crypto.getRandomValues(array);
+  for (const byte of array) {
+    result += chars[byte % chars.length];
+  }
+  return result;
+}
 
-  if (
-    !coupleSnapshot.exists() ||
-    !Array.isArray(members) ||
-    members.length === 0
-  ) {
-    throw new Error(
-      'Couple document is missing members. Cannot send invite until the couple is fixed.',
-    );
+export async function hashPin(pin: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(pin);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+export async function createPartnerAccess(
+  userId: string,
+  ownerName: string,
+  pin: string,
+): Promise<string> {
+  const ownerDoc = await getUserDocument(userId);
+  if (!ownerDoc?.coupleId) {
+    throw new Error('Owner must have a couple before creating partner access');
   }
 
-  const normalizedPartnerEmail = normalizeEmail(partnerEmail);
-  const now = new Date();
-  const invite: CoupleInvite = {
-    partnerEmail: normalizedPartnerEmail,
-    status: 'pending',
-    createdAt: now.toISOString(),
-    expiresAt: new Date(now.getTime() + INVITE_TTL_MS).toISOString(),
+  const existing = await getPartnerAccess(userId);
+  if (existing?.token) {
+    await deleteDoc(partnerTokenRef(existing.token));
+  }
+
+  const token = generatePartnerToken();
+  const pinHash = await hashPin(pin);
+  const access: PartnerAccess = {
+    token,
+    pinHash,
+    createdAt: new Date().toISOString(),
+    partnerLastSeen: null,
+    isActive: true,
+    ownerName,
+    coupleId: ownerDoc.coupleId,
   };
-
-  await addDoc(invitesRef(coupleId), invite);
+  await setDoc(partnerAccessRef(userId), access);
+  await setDoc(partnerTokenRef(token), { ownerId: userId });
+  return token;
 }
 
-export async function cancelInvite(
-  coupleId: string,
-  inviteId: string,
-): Promise<void> {
-  console.log('[cancelInvite] start', { coupleId, inviteId });
-  try {
-    await deleteDoc(inviteRef(coupleId, inviteId));
-    console.log('[cancelInvite] success', { coupleId, inviteId });
-  } catch (error) {
-    console.error('[cancelInvite] error', { coupleId, inviteId, error });
-    throw error;
-  }
-}
+export async function validatePartnerAccess(
+  token: string,
+  pin: string,
+): Promise<{ ownerId: string; ownerName: string; coupleId: string } | null> {
+  const normalizedToken = token.trim().toUpperCase();
 
-export async function getPendingOutgoingInvite(
-  coupleId: string,
-): Promise<{ inviteId: string; partnerEmail: string; expiresAt: string } | null> {
-  const q = query(invitesRef(coupleId), where('status', '==', 'pending'));
-  const snapshot = await getDocs(q);
-  const now = Date.now();
+  const tokenSnap = await getDoc(partnerTokenRef(normalizedToken));
+  if (!tokenSnap.exists()) return null;
 
-  const sortedDocs = [...snapshot.docs].sort((a, b) => {
-    const aTime = (a.data() as CoupleInvite).createdAt;
-    const bTime = (b.data() as CoupleInvite).createdAt;
-    return bTime.localeCompare(aTime);
-  });
+  const { ownerId } = tokenSnap.data() as { ownerId: string };
+  if (!ownerId) return null;
 
-  for (const document of sortedDocs) {
-    const data = document.data() as CoupleInvite;
-    if (new Date(data.expiresAt).getTime() < now) {
-      continue;
-    }
-    return {
-      inviteId: document.id,
-      partnerEmail: data.partnerEmail,
-      expiresAt: data.expiresAt,
-    };
-  }
+  const pinHash = await hashPin(pin);
+  const accessSnap = await getDoc(partnerAccessRef(ownerId));
+  if (!accessSnap.exists()) return null;
 
-  return null;
-}
+  const data = accessSnap.data() as PartnerAccess;
+  if (!data.isActive) return null;
+  if (data.token !== normalizedToken) return null;
+  if (data.pinHash !== pinHash) return null;
+  if (!data.coupleId) return null;
 
-/** Email used for invite queries — must match Firebase Auth token email for security rules. */
-export function resolveInviteLookupEmail(fallbackEmail: string): string {
-  const authEmail = auth.currentUser?.email?.trim();
-  if (authEmail) {
-    return normalizeEmail(authEmail);
-  }
-  return normalizeEmail(fallbackEmail);
-}
-
-export async function checkPendingInvite(
-  email: string,
-): Promise<{ inviteId: string; coupleId: string } | null> {
-  const paramEmail = normalizeEmail(email);
-  const queryEmail = resolveInviteLookupEmail(email);
-  const authEmail = auth.currentUser?.email ?? null;
-
-  console.log('[checkPendingInvite] start', {
-    paramEmail,
-    authEmail,
-    queryEmail,
-    authUid: auth.currentUser?.uid ?? null,
-    emailsMatch: paramEmail === queryEmail,
-  });
-
-  if (!queryEmail) {
-    console.warn(
-      '[checkPendingInvite] no email available — auth.email and param are empty; cannot query invites',
-    );
-    return null;
-  }
-
-  if (paramEmail && paramEmail !== queryEmail) {
-    console.warn(
-      '[checkPendingInvite] param email differs from auth email; querying with auth email (required by security rules)',
-      { paramEmail, queryEmail },
-    );
-  }
-
-  try {
-    const q = query(
-      collectionGroup(db, 'invites'),
-      where('partnerEmail', '==', queryEmail),
-      where('status', '==', 'pending'),
-    );
-
-    console.log('[checkPendingInvite] running collectionGroup query on "invites"', {
-      partnerEmail: queryEmail,
-      status: 'pending',
-    });
-
-    const snapshot = await getDocs(q);
-    const now = Date.now();
-
-    console.log('[checkPendingInvite] query results', {
-      size: snapshot.size,
-      docs: snapshot.docs.map((document) => ({
-        inviteId: document.id,
-        path: document.ref.path,
-        partnerEmail: (document.data() as CoupleInvite).partnerEmail,
-        status: (document.data() as CoupleInvite).status,
-        expiresAt: (document.data() as CoupleInvite).expiresAt,
-        coupleId: document.ref.parent.parent?.id ?? null,
-      })),
-    });
-
-    for (const document of snapshot.docs) {
-      const data = document.data() as CoupleInvite;
-      if (new Date(data.expiresAt).getTime() < now) {
-        console.log('[checkPendingInvite] skipping expired invite', document.id);
-        continue;
-      }
-
-      const coupleId = document.ref.parent.parent?.id;
-      if (coupleId) {
-        const result = { inviteId: document.id, coupleId };
-        console.log('[checkPendingInvite] found pending invite', result);
-        return result;
-      }
-
-      console.warn('[checkPendingInvite] invite missing coupleId parent', document.ref.path);
-    }
-
-    console.log('[checkPendingInvite] no valid pending invite');
-    return null;
-  } catch (error) {
-    console.error('[checkPendingInvite] error', error);
-    throw error;
-  }
-}
-
-export async function acceptInvite(
-  userId: string,
-  inviteId: string,
-  coupleId: string,
-): Promise<void> {
-  console.log('[acceptInvite] start', { userId, inviteId, coupleId });
-
-  const userSnapshot = await getDoc(userRef(userId));
-  if (!userSnapshot.exists()) {
-    throw new Error('User document not found');
-  }
-
-  const authEmail = auth.currentUser?.email?.trim() ?? '';
-  const docEmail =
-    typeof userSnapshot.data().email === 'string' ? userSnapshot.data().email : '';
-  const userEmail = normalizeEmail(authEmail || docEmail);
-
-  console.log('[acceptInvite] resolved email', {
-    authEmail: authEmail || null,
-    docEmail: docEmail || null,
-    userEmail,
-  });
-
-  if (!userEmail) {
-    throw new Error('User email is required to accept an invite');
-  }
-
-  const inviteSnapshot = await getDoc(inviteRef(coupleId, inviteId));
-  if (!inviteSnapshot.exists()) {
-    throw new Error('Invite not found');
-  }
-
-  const invite = inviteSnapshot.data() as CoupleInvite;
-  if (invite.status !== 'pending') {
-    throw new Error('Invite is no longer pending');
-  }
-  if (new Date(invite.expiresAt).getTime() < Date.now()) {
-    throw new Error('Invite has expired');
-  }
-  if (invite.partnerEmail !== userEmail) {
-    throw new Error('Invite email does not match current user');
-  }
-
-  const coupleSnapshot = await getDoc(coupleRef(coupleId));
-  if (!coupleSnapshot.exists()) {
-    throw new Error('Couple not found');
-  }
-
-  const members = coupleSnapshot.data().members;
-  if (!Array.isArray(members) || members.length === 0) {
-    throw new Error(
-      'Couple document is missing members. Update it in Firebase Console before accepting.',
-    );
-  }
-  if (members.length >= 2) {
-    throw new Error('Couple already has two members');
-  }
-  if (members.includes(userId)) {
-    throw new Error('User is already a member of this couple');
-  }
-
-  const existingUser = await getUserDocument(userId);
-  const oldCoupleId =
-    existingUser?.coupleId && existingUser.coupleId !== coupleId
-      ? existingUser.coupleId
-      : null;
-  let oldCoupleMembers: string[] = [];
-  if (oldCoupleId) {
-    const oldCoupleSnap = await getDoc(coupleRef(oldCoupleId));
-    if (oldCoupleSnap.exists()) {
-      const m = oldCoupleSnap.data().members;
-      oldCoupleMembers = Array.isArray(m) ? (m as string[]) : [];
-    }
-  }
-
-  console.log('[acceptInvite] adding member via arrayUnion', {
-    coupleId,
-    userId,
-    existingMembers: members,
-  });
-
-  const batch = writeBatch(db);
-  // Join new couple
-  batch.update(coupleRef(coupleId), { members: arrayUnion(userId) });
-  batch.set(
-    userRef(userId),
-    { email: userEmail, coupleId, role: 'partner' },
-    { merge: true },
-  );
-  batch.update(inviteRef(coupleId, inviteId), { status: 'accepted' });
-  // Atomically clean up old solo couple in the same batch
-  if (oldCoupleId) {
-    const remaining = oldCoupleMembers.filter((id) => id !== userId);
-    if (remaining.length === 0) {
-      batch.delete(coupleRef(oldCoupleId));
-    } else {
-      batch.update(coupleRef(oldCoupleId), { members: arrayRemove(userId) });
-    }
-  }
-
-  try {
-    await batch.commit();
-    console.log('[acceptInvite] success', { userId, inviteId, coupleId, oldCoupleId });
-  } catch (error) {
-    console.error('[acceptInvite] batch commit failed', {
-      userId,
-      inviteId,
-      coupleId,
-      error,
-    });
-    throw error;
-  }
-}
-
-export async function declineInvite(
-  coupleId: string,
-  inviteId: string,
-): Promise<void> {
-  await updateDoc(inviteRef(coupleId, inviteId), {
-    status: 'declined',
-  });
-}
-
-export async function disconnectCouple(
-  userId: string,
-  coupleId: string,
-): Promise<void> {
-  const coupleSnapshot = await getDoc(coupleRef(coupleId));
-  if (!coupleSnapshot.exists()) {
-    await setDoc(
-      userRef(userId),
-      { coupleId: null, role: '' },
-      { merge: true },
-    );
-    return;
-  }
-
-  const members = Array.isArray(coupleSnapshot.data().members)
-    ? (coupleSnapshot.data().members as string[])
-    : [];
-  const remainingMembers = members.filter((memberId) => memberId !== userId);
-
-  const batch = writeBatch(db);
-  batch.set(
-    userRef(userId),
-    { coupleId: null, role: '' },
+  await setDoc(
+    partnerAccessRef(ownerId),
+    { partnerLastSeen: new Date().toISOString() },
     { merge: true },
   );
 
-  if (remainingMembers.length === 0) {
-    batch.delete(coupleRef(coupleId));
-  } else {
-    batch.update(coupleRef(coupleId), {
-      members: arrayRemove(userId),
-    });
-  }
-
-  await batch.commit();
+  return {
+    ownerId,
+    ownerName: data.ownerName,
+    coupleId: data.coupleId,
+  };
 }
 
-export async function getCoupleMembers(
-  coupleId: string,
-): Promise<CoupleMemberInfo[]> {
-  const coupleSnapshot = await getDoc(coupleRef(coupleId));
-  if (!coupleSnapshot.exists()) {
-    return [];
+export async function checkPartnerAccessValid(ownerId: string): Promise<boolean> {
+  const snap = await getDoc(partnerAccessRef(ownerId));
+  if (!snap.exists()) return false;
+  const data = snap.data() as PartnerAccess;
+  return data.isActive === true;
+}
+
+export async function revokePartnerAccess(userId: string): Promise<void> {
+  const accessSnap = await getDoc(partnerAccessRef(userId));
+  const token = accessSnap.exists()
+    ? (accessSnap.data() as PartnerAccess).token
+    : null;
+
+  await setDoc(partnerAccessRef(userId), { isActive: false }, { merge: true });
+
+  if (token) {
+    await deleteDoc(partnerTokenRef(token));
   }
+}
 
-  const members = Array.isArray(coupleSnapshot.data().members)
-    ? (coupleSnapshot.data().members as string[])
-    : [];
-
-  const memberDocs = await Promise.all(
-    members.map(async (memberId) => {
-      const snapshot = await getDoc(userRef(memberId));
-      if (!snapshot.exists()) {
-        return {
-          userId: memberId,
-          email: '',
-          role: '',
-        };
-      }
-      const data = snapshot.data();
-      return {
-        userId: memberId,
-        email: typeof data.email === 'string' ? data.email : '',
-        role: typeof data.role === 'string' ? data.role : '',
-      };
-    }),
-  );
-
-  return memberDocs;
+export async function getPartnerAccess(
+  userId: string,
+): Promise<PartnerAccess | null> {
+  const snap = await getDoc(partnerAccessRef(userId));
+  if (!snap.exists()) return null;
+  return snap.data() as PartnerAccess;
 }
 
 const FIRESTORE_BATCH_LIMIT = 500;
@@ -801,7 +551,9 @@ async function deleteAllDocsInCollection(
 
 async function deleteCoupleWithSubcollections(coupleId: string): Promise<void> {
   await deleteAllDocsInCollection(periodsRef(coupleId));
-  await deleteAllDocsInCollection(invitesRef(coupleId));
+  await deleteAllDocsInCollection(
+    collection(db, 'couples', coupleId, 'invites'),
+  );
   await deleteAllDocsInCollection(
     collection(db, 'couples', coupleId, 'settings'),
   );
@@ -829,6 +581,7 @@ export async function deleteAllUserData(
     }
   }
 
+  await revokePartnerAccess(userId);
   await setDoc(
     userRef(userId),
     { coupleId: null, role: '' },

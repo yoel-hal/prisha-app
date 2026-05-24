@@ -13,7 +13,10 @@ import type { User } from 'firebase/auth';
 import { DesktopWebShell } from '../src/components/common/DesktopWebShell';
 import '../src/i18n';
 import { getSettings } from '../src/firebase/firestore';
-import { bootstrapCoupleForAuthUser } from '../src/hooks/useCouple';
+import {
+  bootstrapCoupleForAuthUser,
+  bootstrapPartnerMode,
+} from '../src/hooks/useCouple';
 import { useAuthStore } from '../src/store/authStore';
 import { useOnboardingStore } from '../src/store/onboardingStore';
 import { useSettingsStore } from '../src/store/settingsStore';
@@ -29,6 +32,7 @@ function RootLayout() {
   const router = useRouter();
   const segments = useSegments();
   const [user, setUser] = useState<User | null | undefined>(undefined);
+  const [partnerSessionChecked, setPartnerSessionChecked] = useState(false);
   const [coupleBootstrapped, setCoupleBootstrapped] = useState(false);
   const [settingsChecked, setSettingsChecked] = useState(false);
   const [incompleteOnboardingHref, setIncompleteOnboardingHref] =
@@ -38,6 +42,7 @@ function RootLayout() {
   const onboardingComplete = useOnboardingStore((state) => state.complete);
   const hydrateOnboarding = useOnboardingStore((state) => state.hydrate);
   const setAuthUser = useAuthStore((state) => state.setUser);
+  const isPartnerMode = useAuthStore((state) => state.isPartnerMode);
   const coupleId = useAuthStore((state) => state.coupleId);
   const loadSettings = useSettingsStore((state) => state.loadSettings);
 
@@ -46,13 +51,25 @@ function RootLayout() {
   }, [hydrateOnboarding]);
 
   useEffect(() => {
+    void (async () => {
+      const active = await bootstrapPartnerMode();
+      if (active) {
+        log('[RootLayout] partner session restored');
+      }
+      setPartnerSessionChecked(true);
+    })();
+  }, []);
+
+  useEffect(() => {
     let unsubscribe: (() => void) | undefined;
 
     void import('../src/firebase/auth').then(({ onAuthStateChanged }) => {
       unsubscribe = onAuthStateChanged((nextUser) => {
         setUser(nextUser);
-        setAuthUser(nextUser);
-        if (!nextUser) {
+        if (!useAuthStore.getState().isPartnerMode) {
+          setAuthUser(nextUser);
+        }
+        if (!nextUser && !useAuthStore.getState().isPartnerMode) {
           setCoupleBootstrapped(false);
           settingsCheckedForRef.current = null;
           setSettingsChecked(true);
@@ -66,6 +83,21 @@ function RootLayout() {
   }, [setAuthUser]);
 
   useEffect(() => {
+    if (!partnerSessionChecked || isPartnerMode) {
+      if (isPartnerMode) {
+        setCoupleBootstrapped(true);
+        setSettingsChecked(true);
+      }
+      return;
+    }
+
+    if (user?.isAnonymous) {
+      log('[RootLayout] skipping bootstrap — anonymous partner user');
+      setCoupleBootstrapped(true);
+      setSettingsChecked(true);
+      return;
+    }
+
     if (!user?.uid) {
       setCoupleBootstrapped(!user);
       setSettingsChecked(true);
@@ -85,11 +117,9 @@ function RootLayout() {
 
     void bootstrapCoupleForAuthUser(user.uid, user.email).finally(() => {
       if (!cancelled) {
-        const { pendingInvite, coupleId } = useAuthStore.getState();
+        const { coupleId: resolvedCoupleId } = useAuthStore.getState();
         log('[RootLayout] couple bootstrap complete', {
-          coupleId,
-          pendingInvite,
-          bannerWillShow: pendingInvite !== null,
+          coupleId: resolvedCoupleId,
         });
         setCoupleBootstrapped(true);
       }
@@ -98,7 +128,7 @@ function RootLayout() {
     return () => {
       cancelled = true;
     };
-  }, [user?.uid, user?.email]);
+  }, [user?.uid, user?.email, isPartnerMode, partnerSessionChecked]);
 
   useEffect(() => {
     if (coupleId) {
@@ -107,6 +137,23 @@ function RootLayout() {
   }, [coupleId, loadSettings]);
 
   useEffect(() => {
+    if (!partnerSessionChecked) {
+      return;
+    }
+
+    if (isPartnerMode) {
+      const inAppGroup = segments[0] === '(app)';
+      const onJoin = segments[0] === 'join';
+      if (!inAppGroup && !onJoin) {
+        router.replace('/calendar');
+      }
+      return;
+    }
+
+    if (user?.isAnonymous) {
+      return;
+    }
+
     if (user === undefined || !onboardingLoaded) {
       return;
     }
@@ -162,6 +209,7 @@ function RootLayout() {
       const inAuthGroup = segments[0] === '(auth)';
       const inAppGroup = segments[0] === '(app)';
       const inOnboarding = segments[0] === 'onboarding';
+      const onJoin = segments[0] === 'join';
 
       const onboardingStep = (segments as readonly string[])[1];
       if (
@@ -175,7 +223,7 @@ function RootLayout() {
       }
 
       if (!user) {
-        if (inAuthGroup || inOnboarding) {
+        if (inAuthGroup || inOnboarding || onJoin) {
           return;
         }
         router.replace('/onboarding/welcome');
@@ -207,30 +255,50 @@ function RootLayout() {
     incompleteOnboardingHref,
     segments,
     router,
+    isPartnerMode,
+    partnerSessionChecked,
   ]);
 
-  const isAuthLoading = user === undefined;
+  const isAuthLoading = !isPartnerMode && user === undefined;
   const isBootstrapping =
+    !partnerSessionChecked ||
     isAuthLoading ||
-    !onboardingLoaded ||
-    (!!user && !coupleBootstrapped) ||
-    (!!user && !settingsChecked);
+    (!isPartnerMode && !onboardingLoaded) ||
+    (!isPartnerMode && !!user && !coupleBootstrapped) ||
+    (!isPartnerMode && !!user && !settingsChecked);
   const inAuthGroup = segments[0] === '(auth)';
   const inAppGroup = segments[0] === '(app)';
   const inOnboarding = segments[0] === 'onboarding';
+  const onJoin = segments[0] === 'join';
 
+  const showPartnerRedirect =
+    !isBootstrapping && isPartnerMode && !inAppGroup && !onJoin;
   const showLoggedOutRedirect =
-    !isBootstrapping && !user && !inAuthGroup && !inOnboarding;
+    !isBootstrapping &&
+    !isPartnerMode &&
+    !user &&
+    !inAuthGroup &&
+    !inOnboarding &&
+    !onJoin;
   const showLoggedInIncompleteRedirect =
-    !isBootstrapping && !!user && !onboardingComplete && !inOnboarding;
+    !isBootstrapping &&
+    !isPartnerMode &&
+    !!user &&
+    !onboardingComplete &&
+    !inOnboarding;
   const showLoggedInCompleteRedirect =
-    !isBootstrapping && !!user && onboardingComplete && !inAppGroup;
+    !isBootstrapping &&
+    !isPartnerMode &&
+    !!user &&
+    onboardingComplete &&
+    !inAppGroup;
 
   return (
     <GestureHandlerRootView style={styles.root}>
       <DesktopWebShell>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="join" options={{ headerShown: false }} />
           <Stack.Screen name="onboarding" />
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(app)" />
@@ -241,6 +309,7 @@ function RootLayout() {
             <Text style={styles.loadingText}>{t('common.loading')}</Text>
           </View>
         ) : null}
+        {showPartnerRedirect ? <Redirect href="/calendar" /> : null}
         {showLoggedOutRedirect ? (
           <Redirect href="/onboarding/welcome" />
         ) : null}

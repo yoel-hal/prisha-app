@@ -1,5 +1,4 @@
 export { useAuthStore } from './authStore';
-export type { OutgoingCoupleInvite, PendingCoupleInvite } from './authStore';
 export { usePeriodsStore } from './periodsStore';
 export { useSettingsStore } from './settingsStore';
 export {

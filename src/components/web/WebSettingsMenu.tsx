@@ -92,7 +92,7 @@ export function WebSettingsMenu() {
   const router = useRouter();
   const pathname = usePathname();
   const { currentLanguage, setLanguage } = useSettings();
-  const pendingInvite = useAuthStore((state) => state.pendingInvite);
+  const isPartnerMode = useAuthStore((state) => state.isPartnerMode);
   const [signingOut, setSigningOut] = useState(false);
 
   function isActive(href: string): boolean {
@@ -121,10 +121,12 @@ export function WebSettingsMenu() {
       >
         <Text style={[styles.title, textStartStyle()]}>{t('settings.title')}</Text>
 
-        <SettingsProfileCard
-          showEditIcon
-          onPress={() => navigate('/settings/profile')}
-        />
+        {!isPartnerMode ? (
+          <SettingsProfileCard
+            showEditIcon
+            onPress={() => navigate('/settings/profile')}
+          />
+        ) : null}
 
         <Text style={[styles.sectionHeader, textStartStyle()]}>
           {t('settings.language')}
@@ -149,23 +151,28 @@ export function WebSettingsMenu() {
               label={t(item.labelKey)}
               active={isActive(item.href)}
               onPress={() => navigate(item.href)}
-              showBadge={item.href === '/settings/couple' && pendingInvite !== null}
+              showBadge={false}
             />
           ))}
-          <GroupHeader label={t('settings.account')} />
-          <MenuRow
-            label={t('settings.profile')}
-            active={isActive('/settings/profile')}
-            onPress={() => navigate('/settings/profile')}
-          />
-          <MenuRow
-            label={t('settings.deleteAccount')}
-            active={false}
-            onPress={() => showDeleteAccountAlert(t)}
-            isLast
-          />
+          {!isPartnerMode ? (
+            <>
+              <GroupHeader label={t('settings.account')} />
+              <MenuRow
+                label={t('settings.profile')}
+                active={isActive('/settings/profile')}
+                onPress={() => navigate('/settings/profile')}
+              />
+              <MenuRow
+                label={t('settings.deleteAccount')}
+                active={false}
+                onPress={() => showDeleteAccountAlert(t)}
+                isLast
+              />
+            </>
+          ) : null}
         </View>
 
+        {!isPartnerMode ? (
         <Pressable
           style={styles.signOutButton}
           onPress={() => void handleSignOut()}
@@ -177,6 +184,7 @@ export function WebSettingsMenu() {
             <Text style={styles.signOutText}>{t('auth.signOut')}</Text>
           )}
         </Pressable>
+        ) : null}
       </ScrollView>
     </View>
   );

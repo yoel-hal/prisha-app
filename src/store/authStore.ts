@@ -1,18 +1,6 @@
 import type { User } from 'firebase/auth';
 import { create } from 'zustand';
 
-export interface PendingCoupleInvite {
-  inviteId: string;
-  coupleId: string;
-  inviterEmail: string;
-}
-
-export interface OutgoingCoupleInvite {
-  inviteId: string;
-  partnerEmail: string;
-  expiresAt: string;
-}
-
 export interface UserProfileState {
   firstName: string;
   lastName: string;
@@ -29,9 +17,9 @@ interface AuthState {
   country: string;
   phone: string;
   coupleId: string | null;
-  partnerEmail: string | null;
-  pendingInvite: PendingCoupleInvite | null;
-  outgoingInvite: OutgoingCoupleInvite | null;
+  isPartnerMode: boolean;
+  ownerUserId: string | null;
+  ownerName: string | null;
   isCoupleBootstrapping: boolean;
   appLockEnabled: boolean;
   appLockType: AppLockType | null;
@@ -39,9 +27,11 @@ interface AuthState {
   setUser: (user: User | null) => void;
   setUserProfile: (profile: UserProfileState) => void;
   setCoupleId: (id: string | null) => void;
-  setPartnerEmail: (email: string | null) => void;
-  setPendingInvite: (invite: PendingCoupleInvite | null) => void;
-  setOutgoingInvite: (invite: OutgoingCoupleInvite | null) => void;
+  setPartnerMode: (
+    isPartner: boolean,
+    ownerUserId: string | null,
+    ownerName: string | null,
+  ) => void;
   setCoupleBootstrapping: (bootstrapping: boolean) => void;
   resetCoupleState: () => void;
   setAppLock: (enabled: boolean, type: AppLockType | null) => void;
@@ -59,9 +49,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   ...emptyProfile,
   coupleId: null,
-  partnerEmail: null,
-  pendingInvite: null,
-  outgoingInvite: null,
+  isPartnerMode: false,
+  ownerUserId: null,
+  ownerName: null,
   isCoupleBootstrapping: false,
   appLockEnabled: false,
   appLockType: null,
@@ -73,9 +63,6 @@ export const useAuthStore = create<AuthState>((set) => ({
           user: null,
           ...emptyProfile,
           coupleId: null,
-          partnerEmail: null,
-          pendingInvite: null,
-          outgoingInvite: null,
           isCoupleBootstrapping: false,
           isAppLocked: false,
         };
@@ -90,9 +77,6 @@ export const useAuthStore = create<AuthState>((set) => ({
           ? {
               ...emptyProfile,
               coupleId: null,
-              partnerEmail: null,
-              pendingInvite: null,
-              outgoingInvite: null,
               isCoupleBootstrapping: false,
             }
           : {}),
@@ -106,16 +90,14 @@ export const useAuthStore = create<AuthState>((set) => ({
       phone: profile.phone,
     }),
   setCoupleId: (id) => set({ coupleId: id }),
-  setPartnerEmail: (email) => set({ partnerEmail: email }),
-  setPendingInvite: (invite) => set({ pendingInvite: invite }),
-  setOutgoingInvite: (invite) => set({ outgoingInvite: invite }),
+  setPartnerMode: (isPartner, ownerUserId, ownerName) =>
+    set({ isPartnerMode: isPartner, ownerUserId, ownerName }),
   setCoupleBootstrapping: (bootstrapping) =>
     set({ isCoupleBootstrapping: bootstrapping }),
   resetCoupleState: () =>
     set({
-      partnerEmail: null,
-      pendingInvite: null,
-      outgoingInvite: null,
+      ownerUserId: null,
+      ownerName: null,
     }),
   setAppLock: (enabled, type) =>
     set({

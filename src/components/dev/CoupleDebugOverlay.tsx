@@ -38,9 +38,9 @@ function CoupleDebugOverlayContent() {
 
   const user = useAuthStore((s) => s.user);
   const coupleId = useAuthStore((s) => s.coupleId);
-  const pendingInvite = useAuthStore((s) => s.pendingInvite);
-  const partnerEmail = useAuthStore((s) => s.partnerEmail);
-  const outgoingInvite = useAuthStore((s) => s.outgoingInvite);
+  const isPartnerMode = useAuthStore((s) => s.isPartnerMode);
+  const ownerUserId = useAuthStore((s) => s.ownerUserId);
+  const ownerName = useAuthStore((s) => s.ownerName);
   const isCoupleBootstrapping = useAuthStore((s) => s.isCoupleBootstrapping);
   const minhag = useSettingsStore((s) => s.minhag);
 
@@ -64,9 +64,9 @@ function CoupleDebugOverlayContent() {
             <DebugRow label="user.uid" value={user?.uid ?? null} />
             <DebugRow label="user.email" value={user?.email ?? null} />
             <DebugRow label="coupleId" value={coupleId} />
-            <DebugRow label="pendingInvite" value={pendingInvite} />
-            <DebugRow label="partnerEmail" value={partnerEmail} />
-            <DebugRow label="outgoingInvite" value={outgoingInvite} />
+            <DebugRow label="isPartnerMode" value={isPartnerMode} />
+            <DebugRow label="ownerUserId" value={ownerUserId} />
+            <DebugRow label="ownerName" value={ownerName} />
             <DebugRow label="isCoupleBootstrapping" value={isCoupleBootstrapping} />
             <DebugRow label="settings.minhag" value={minhag} />
           </ScrollView>

@@ -1,12 +1,14 @@
-import { Stack, useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { Stack } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Alert,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   TextInput,
@@ -14,112 +16,178 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import {
+  createPartnerAccess,
+  getPartnerAccess,
+  type PartnerAccess,
+} from '../../../src/firebase/firestore';
 import { useCouple } from '../../../src/hooks/useCouple';
 import { useAuthStore } from '../../../src/store/authStore';
+import {
+  clearOwnerInvitePin,
+  loadOwnerInvitePin,
+  saveOwnerInvitePin,
+} from '../../../src/utils/partnerInviteCache';
+import { showAlert } from '../../../src/utils/alert';
 import { textStartStyle } from '../../../src/utils/rtl';
 import { webScreenScrollStyles } from '../../../src/utils/webScroll';
 
-function formatInviteExpiry(iso: string, language: string): string {
-  return new Date(iso).toLocaleDateString(language, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+function formatRelativeLastSeen(iso: string, language: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const minutes = Math.round(diffMs / 60_000);
+  const rtf = new Intl.RelativeTimeFormat(language, { numeric: 'auto' });
+
+  if (Math.abs(minutes) < 60) {
+    return rtf.format(-minutes, 'minute');
+  }
+  const hours = Math.round(minutes / 60);
+  if (Math.abs(hours) < 24) {
+    return rtf.format(-hours, 'hour');
+  }
+  const days = Math.round(hours / 24);
+  return rtf.format(-days, 'day');
 }
 
-export default function CoupleSyncSettingsScreen() {
-  const router = useRouter();
+export default function CouplePartnerSettingsScreen() {
   const webScroll = webScreenScrollStyles();
   const { t, i18n } = useTranslation();
-  const pendingInvite = useAuthStore((state) => state.pendingInvite);
+  const isPartnerMode = useAuthStore((state) => state.isPartnerMode);
+  const ownerName = useAuthStore((state) => state.ownerName);
+  const firstName = useAuthStore((state) => state.firstName);
+  const user = useAuthStore((state) => state.user);
+
   const {
-    partnerEmail,
-    outgoingInvite,
-    isConnected,
+    partnerAccess,
+    isPartnerConnected,
+    isLoadingAccess,
     loading,
-    acceptingInvite,
-    cancellingInvite,
     error,
-    invitePartner,
-    disconnect,
-    acceptPendingInvite,
-    declinePendingInvite,
-    cancelOutgoingInvite,
+    disconnectPartner,
+    refreshCoupleState,
+    setPartnerAccess,
   } = useCouple();
 
-  const [email, setEmail] = useState('');
-  const [inviteSent, setInviteSent] = useState(false);
-  const [acceptedMessage, setAcceptedMessage] = useState(false);
+  console.log('[CoupleScreen] render — isLoadingAccess:', isLoadingAccess, 'isPartnerConnected:', isPartnerConnected, 'partnerAccess:', JSON.stringify(partnerAccess));
 
-  const handleSendInvite = useCallback(async () => {
-    const trimmed = email.trim();
-    if (!trimmed) {
+  const [inviteModalVisible, setInviteModalVisible] = useState(false);
+  const [showCodeModalVisible, setShowCodeModalVisible] = useState(false);
+  const [pinInput, setPinInput] = useState('');
+  const [generatedToken, setGeneratedToken] = useState<string | null>(null);
+  const [generatedPin, setGeneratedPin] = useState<string | null>(null);
+  const [generating, setGenerating] = useState(false);
+  const [cachedPin, setCachedPin] = useState<string | null>(null);
+
+  const loadCachedPin = useCallback(async () => {
+    const pin = await loadOwnerInvitePin();
+    setCachedPin(pin);
+  }, []);
+
+  useEffect(() => {
+    void loadCachedPin();
+  }, [loadCachedPin, partnerAccess?.token]);
+
+  useEffect(() => {
+    if (!isPartnerConnected || !user?.uid) return;
+
+    const interval = setInterval(() => {
+      void refreshCoupleState();
+    }, 30_000);
+
+    return () => clearInterval(interval);
+  }, [isPartnerConnected, user?.uid, refreshCoupleState]);
+
+  const handleGenerateInvite = useCallback(async () => {
+    if (!user?.uid || pinInput.length !== 4) {
       return;
     }
 
+    setGenerating(true);
     try {
-      await invitePartner(trimmed);
-      setInviteSent(true);
-      setEmail('');
-      setTimeout(() => setInviteSent(false), 4000);
+      const ownerDisplayName = firstName.trim() || t('couple.title');
+      const token = await createPartnerAccess(user.uid, ownerDisplayName, pinInput);
+      await saveOwnerInvitePin(pinInput);
+      setCachedPin(pinInput);
+      setGeneratedToken(token);
+      setGeneratedPin(pinInput);
+
+      const access = await getPartnerAccess(user.uid);
+      if (access) {
+        setPartnerAccess(access);
+      }
+      await refreshCoupleState();
     } catch {
-      // Error surfaced via hook state if needed
+      Alert.alert(t('partner.connectionFailed'));
+    } finally {
+      setGenerating(false);
     }
-  }, [email, invitePartner]);
+  }, [
+    firstName,
+    pinInput,
+    refreshCoupleState,
+    setPartnerAccess,
+    t,
+    user?.uid,
+  ]);
+
+  const handleShareInvite = useCallback(async () => {
+    const code = generatedToken ?? partnerAccess?.token;
+    const pin = generatedPin ?? cachedPin;
+    if (!code || !pin) {
+      return;
+    }
+
+    const message = t('partner.shareMessage', { code, pin });
+    await Share.share({ message });
+  }, [cachedPin, generatedPin, generatedToken, partnerAccess?.token, t]);
+
+  const handleShowCodeAgain = useCallback(async () => {
+    const pin = await loadOwnerInvitePin();
+    setCachedPin(pin);
+    if (partnerAccess?.token) {
+      setGeneratedToken(partnerAccess.token);
+      setGeneratedPin(pin);
+    }
+    setShowCodeModalVisible(true);
+  }, [partnerAccess?.token]);
 
   const handleDisconnect = useCallback(() => {
-    Alert.alert(t('couple.disconnect'), t('couple.disconnectConfirm'), [
+    showAlert(t('partner.disconnectPartner'), t('partner.disconnectConfirm'), [
       { text: t('common.cancel'), style: 'cancel' },
       {
-        text: t('couple.disconnect'),
+        text: t('partner.disconnectPartner'),
         style: 'destructive',
         onPress: () => {
-          void disconnect();
+          void (async () => {
+            await disconnectPartner();
+            await clearOwnerInvitePin();
+            setCachedPin(null);
+            setGeneratedToken(null);
+            setGeneratedPin(null);
+          })();
         },
       },
     ]);
-  }, [disconnect, t]);
+  }, [disconnectPartner, t]);
 
-  const runCancelInvite = useCallback(async () => {
-    try {
-      await cancelOutgoingInvite();
-    } catch {
-      // errors logged in hook
-    }
-  }, [cancelOutgoingInvite]);
+  if (isPartnerMode) {
+    return (
+      <>
+        <Stack.Screen options={{ title: t('couple.title') }} />
+        <SafeAreaView style={[styles.safe, webScroll.safe]} edges={['bottom']}>
+          <View style={styles.partnerReadOnly}>
+            <Text style={[styles.partnerNote, textStartStyle()]}>
+              {t('partner.partnerModeNote', { name: ownerName })}
+            </Text>
+          </View>
+        </SafeAreaView>
+      </>
+    );
+  }
 
-  const handleCancelInvite = useCallback(() => {
-    Alert.alert(t('couple.cancelInvite'), t('couple.cancelInviteConfirm'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('couple.cancelInvite'),
-        style: 'destructive',
-        onPress: () => {
-          void runCancelInvite();
-        },
-      },
-    ]);
-  }, [runCancelInvite, t]);
-
-  const handleAccept = useCallback(async () => {
-    if (!pendingInvite) {
-      console.warn('[CoupleScreen] accept pressed but pendingInvite is null');
-      return;
-    }
-
-    console.log('[CoupleScreen] accept pressed', pendingInvite);
-
-    try {
-      await acceptPendingInvite();
-      router.replace('/calendar');
-      setAcceptedMessage(true);
-      setTimeout(() => setAcceptedMessage(false), 4000);
-    } catch (acceptError) {
-      console.error('[CoupleScreen] accept failed', acceptError);
-    }
-  }, [acceptPendingInvite, pendingInvite, router]);
-
-  const hasOutgoingInvite = Boolean(outgoingInvite && !isConnected);
+  const activeAccess: PartnerAccess | null =
+    partnerAccess?.isActive ? partnerAccess : null;
+  const displayCode = generatedToken ?? activeAccess?.token ?? null;
+  const displayPin = generatedPin ?? cachedPin;
 
   return (
     <>
@@ -130,158 +198,40 @@ export default function CoupleSyncSettingsScreen() {
             <Text style={[styles.errorText, textStartStyle()]}>{error}</Text>
           ) : null}
 
-          {pendingInvite ? (
-            <View style={styles.incomingBanner}>
-              <Text style={[styles.incomingTitle, textStartStyle()]}>
-                {t('couple.pendingInvite')}
-              </Text>
-              <Text style={[styles.incomingSubtitle, textStartStyle()]}>
-                {t('couple.invitedBy', {
-                  email:
-                    pendingInvite.inviterEmail || t('couple.invitePartner'),
-                })}
-              </Text>
-              <Pressable
-                style={[
-                  styles.acceptButtonLarge,
-                  acceptingInvite && styles.buttonDisabled,
-                ]}
-                onPress={() => void handleAccept()}
-                disabled={acceptingInvite || cancellingInvite}
-              >
-                {acceptingInvite ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.acceptButtonLargeText}>
-                    {t('couple.acceptInvite')}
-                  </Text>
-                )}
-              </Pressable>
-              <Pressable
-                style={[
-                  styles.declineButtonLarge,
-                  (acceptingInvite || loading) && styles.buttonDisabled,
-                ]}
-                onPress={() => void declinePendingInvite()}
-                disabled={acceptingInvite || loading}
-              >
-                <Text style={styles.declineButtonLargeText}>
-                  {t('couple.declineInvite')}
-                </Text>
-              </Pressable>
-            </View>
-          ) : null}
-
-          {acceptedMessage ? (
-            <Text style={[styles.success, textStartStyle()]}>
-              {t('couple.connectedToPartner')}
-            </Text>
-          ) : null}
-
-          {hasOutgoingInvite && outgoingInvite ? (
-            <View style={styles.outgoingBanner}>
-              <Text style={[styles.outgoingTitle, textStartStyle()]}>
-                {t('couple.inviteSentTo', { email: outgoingInvite.partnerEmail })}
-              </Text>
-              <Text style={[styles.outgoingStatus, textStartStyle()]}>
-                {t('couple.waitingForAccept')}
-              </Text>
-              <Text style={[styles.outgoingExpiry, textStartStyle()]}>
-                {t('couple.inviteExpires', {
-                  date: formatInviteExpiry(
-                    outgoingInvite.expiresAt,
-                    i18n.language,
-                  ),
-                })}
-              </Text>
-              <Pressable
-                style={[
-                  styles.cancelInviteButton,
-                  cancellingInvite && styles.buttonDisabled,
-                ]}
-                onPress={handleCancelInvite}
-                disabled={cancellingInvite || acceptingInvite}
-              >
-                {cancellingInvite ? (
-                  <ActivityIndicator color="#666" />
-                ) : (
-                  <Text style={styles.cancelInviteButtonText}>
-                    {t('couple.cancelInvite')}
-                  </Text>
-                )}
-              </Pressable>
-            </View>
-          ) : null}
-
           <Text style={[styles.sectionTitle, textStartStyle()]}>
-            {t('couple.title')}
+            {t('partner.inviteTitle')}
+          </Text>
+          <Text style={[styles.description, textStartStyle()]}>
+            {t('partner.inviteDescription')}
           </Text>
 
-          <View style={styles.card}>
-            {isConnected && partnerEmail ? (
-              <View style={styles.statusRow}>
-                <Text style={[styles.statusLabel, textStartStyle()]}>
-                  {t('couple.partnerConnected', { email: partnerEmail })}
-                </Text>
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{t('couple.connected')}</Text>
-                </View>
-              </View>
-            ) : (
-              <Text style={[styles.soloText, textStartStyle()]}>
-                {t('couple.soloMode')}
-              </Text>
-            )}
-          </View>
+          {isLoadingAccess ? (
+            <ActivityIndicator style={styles.accessLoader} />
+          ) : null}
 
-          {!isConnected && !hasOutgoingInvite ? (
-            <View style={styles.section}>
-              <Text style={[styles.sectionHeading, textStartStyle()]}>
-                {t('couple.invitePartner')}
+          {!isLoadingAccess && isPartnerConnected && activeAccess ? (
+            <View style={styles.connectedCard}>
+              <Text style={[styles.connectedTitle, textStartStyle()]}>
+                {t('partner.partnerConnected')}
               </Text>
-              <Text style={[styles.fieldLabel, textStartStyle()]}>
-                {t('couple.partnerEmail')}
-              </Text>
-              <TextInput
-                style={[styles.input, textStartStyle()]}
-                value={email}
-                onChangeText={setEmail}
-                placeholder={t('auth.emailPlaceholder')}
-                placeholderTextColor="#999"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                textContentType="emailAddress"
-              />
-              {inviteSent ? (
-                <Text style={[styles.success, textStartStyle()]}>
-                  {t('couple.inviteSent')}
+              {activeAccess.partnerLastSeen ? (
+                <Text style={[styles.lastSeen, textStartStyle()]}>
+                  {t('partner.lastSeen', {
+                    time: formatRelativeLastSeen(
+                      activeAccess.partnerLastSeen,
+                      i18n.language,
+                    ),
+                  })}
                 </Text>
               ) : null}
               <Pressable
-                style={[styles.primaryButton, loading && styles.buttonDisabled]}
-                onPress={() => void handleSendInvite()}
-                disabled={loading || !email.trim()}
+                style={styles.secondaryButton}
+                onPress={() => void handleShowCodeAgain()}
               >
-                {loading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.primaryButtonText}>
-                    {t('couple.sendInvite')}
-                  </Text>
-                )}
+                <Text style={styles.secondaryButtonText}>
+                  {t('partner.showCodeAgain')}
+                </Text>
               </Pressable>
-            </View>
-          ) : null}
-
-          {isConnected ? (
-            <View style={styles.section}>
-              <Text style={[styles.sectionHeading, textStartStyle()]}>
-                {partnerEmail}
-              </Text>
-              <Text style={[styles.warning, textStartStyle()]}>
-                {t('couple.disconnectWarning')}
-              </Text>
               <Pressable
                 style={[styles.dangerButton, loading && styles.buttonDisabled]}
                 onPress={handleDisconnect}
@@ -291,14 +241,147 @@ export default function CoupleSyncSettingsScreen() {
                   <ActivityIndicator color="#C62828" />
                 ) : (
                   <Text style={styles.dangerButtonText}>
-                    {t('couple.disconnect')}
+                    {t('partner.disconnectPartner')}
                   </Text>
                 )}
               </Pressable>
             </View>
           ) : null}
+
+          {!isLoadingAccess && !isPartnerConnected ? (
+            <Pressable
+              style={styles.primaryButton}
+              onPress={() => {
+                setPinInput('');
+                setGeneratedToken(null);
+                setGeneratedPin(null);
+                setInviteModalVisible(true);
+              }}
+            >
+              <Text style={styles.primaryButtonText}>
+                {t('partner.generateInvite')}
+              </Text>
+            </Pressable>
+          ) : null}
         </ScrollView>
       </SafeAreaView>
+
+      <Modal
+        visible={inviteModalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setInviteModalVisible(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <Text style={[styles.modalTitle, textStartStyle()]}>
+              {t('partner.inviteTitle')}
+            </Text>
+
+            {!displayCode ? (
+              <>
+                <Text style={[styles.fieldLabel, textStartStyle()]}>
+                  {t('partner.choosePin')}
+                </Text>
+                <TextInput
+                  style={[styles.input, textStartStyle()]}
+                  value={pinInput}
+                  onChangeText={(value) =>
+                    setPinInput(value.replace(/\D/g, '').slice(0, 4))
+                  }
+                  maxLength={4}
+                  keyboardType="number-pad"
+                  secureTextEntry
+                  placeholder="••••"
+                  placeholderTextColor="#999"
+                />
+                <Pressable
+                  style={[
+                    styles.primaryButton,
+                    (generating || pinInput.length < 4) && styles.buttonDisabled,
+                  ]}
+                  onPress={() => void handleGenerateInvite()}
+                  disabled={generating || pinInput.length < 4}
+                >
+                  {generating ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.primaryButtonText}>
+                      {t('partner.generateInvite')}
+                    </Text>
+                  )}
+                </Pressable>
+              </>
+            ) : (
+              <>
+                <Text style={[styles.codeLabel, textStartStyle()]}>
+                  {t('partner.inviteCode')}
+                </Text>
+                <Text style={styles.codeValue}>{displayCode}</Text>
+                {displayPin ? (
+                  <>
+                    <Text style={[styles.codeLabel, textStartStyle()]}>
+                      {t('partner.invitePin')}
+                    </Text>
+                    <Text style={styles.codeValue}>{displayPin}</Text>
+                  </>
+                ) : null}
+                <Pressable
+                  style={styles.primaryButton}
+                  onPress={() => void handleShareInvite()}
+                >
+                  <Text style={styles.primaryButtonText}>
+                    {t('partner.shareInvite')}
+                  </Text>
+                </Pressable>
+              </>
+            )}
+
+            <Pressable
+              style={styles.modalClose}
+              onPress={() => setInviteModalVisible(false)}
+            >
+              <Text style={styles.modalCloseText}>{t('common.done')}</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={showCodeModalVisible}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setShowCodeModalVisible(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <Text style={[styles.codeLabel, textStartStyle()]}>
+              {t('partner.inviteCode')}
+            </Text>
+            <Text style={styles.codeValue}>{activeAccess?.token ?? ''}</Text>
+            {cachedPin ? (
+              <>
+                <Text style={[styles.codeLabel, textStartStyle()]}>
+                  {t('partner.invitePin')}
+                </Text>
+                <Text style={styles.codeValue}>{cachedPin}</Text>
+              </>
+            ) : null}
+            <Pressable
+              style={styles.primaryButton}
+              onPress={() => void handleShareInvite()}
+            >
+              <Text style={styles.primaryButtonText}>{t('partner.shareInvite')}</Text>
+            </Pressable>
+            <Pressable
+              style={styles.modalClose}
+              onPress={() => setShowCodeModalVisible(false)}
+            >
+              <Text style={styles.modalCloseText}>{t('common.done')}</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }
@@ -312,128 +395,108 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 16,
   },
-  incomingBanner: {
-    backgroundColor: '#E8F5E9',
-    borderWidth: 2,
-    borderColor: '#43A047',
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  description: {
+    fontSize: 15,
+    color: '#666',
+    lineHeight: 22,
+  },
+  accessLoader: {
+    marginVertical: 24,
+  },
+  connectedCard: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#c7d4f0',
+    borderRadius: 12,
+    padding: 16,
+    gap: 12,
+    backgroundColor: '#f0f4ff',
+  },
+  connectedTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#3a5a9a',
+  },
+  lastSeen: {
+    fontSize: 14,
+    color: '#555',
+  },
+  partnerReadOnly: {
+    flex: 1,
+    padding: 20,
+    justifyContent: 'center',
+  },
+  partnerNote: {
+    fontSize: 17,
+    color: '#3a5a9a',
+    textAlign: 'center',
+  },
+  primaryButton: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 10,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  primaryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  secondaryButton: {
+    borderRadius: 10,
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#3a5a9a',
+  },
+  secondaryButtonText: {
+    color: '#3a5a9a',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  dangerButton: {
+    borderRadius: 10,
+    paddingVertical: 16,
+    alignItems: 'center',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#FFCDD2',
+    backgroundColor: '#FFEBEE',
+  },
+  dangerButtonText: {
+    color: '#C62828',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#C62828',
+    backgroundColor: '#FFEBEE',
+    padding: 12,
+    borderRadius: 8,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  modalCard: {
+    backgroundColor: '#fff',
     borderRadius: 14,
     padding: 20,
     gap: 12,
-    marginBottom: 4,
+    ...(Platform.OS === 'web' ? ({ maxWidth: 420, alignSelf: 'center', width: '100%' } as const) : null),
   },
-  incomingTitle: {
+  modalTitle: {
     fontSize: 20,
-    fontWeight: '800',
-    color: '#1B5E20',
-  },
-  incomingSubtitle: {
-    fontSize: 16,
-    color: '#2E7D32',
-    fontWeight: '500',
-  },
-  acceptButtonLarge: {
-    backgroundColor: '#2E7D32',
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  acceptButtonLargeText: {
-    color: '#fff',
-    fontSize: 17,
     fontWeight: '700',
-  },
-  declineButtonLarge: {
-    backgroundColor: '#EEEEEE',
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  declineButtonLargeText: {
-    color: '#616161',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  outgoingBanner: {
-    backgroundColor: '#FFF8E1',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#FFB300',
-    borderRadius: 12,
-    padding: 16,
-    gap: 8,
-  },
-  outgoingTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: '#E65100',
-  },
-  outgoingStatus: {
-    fontSize: 15,
-    color: '#F57C00',
-    fontWeight: '500',
-  },
-  outgoingExpiry: {
-    fontSize: 14,
-    color: '#666',
-  },
-  cancelInviteButton: {
-    marginTop: 8,
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderRadius: 10,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ccc',
-    backgroundColor: '#fff',
-  },
-  cancelInviteButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#666',
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#888',
-    textTransform: 'uppercase',
-  },
-  card: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#e5e5e5',
-    borderRadius: 12,
-    padding: 16,
-  },
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  statusLabel: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  soloText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  badge: {
-    backgroundColor: '#E8F5E9',
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  badgeText: {
-    color: '#2E7D32',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  section: {
-    gap: 12,
-  },
-  sectionHeading: {
-    fontSize: 18,
-    fontWeight: '600',
   },
   fieldLabel: {
     fontSize: 14,
@@ -446,51 +509,27 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    fontSize: 16,
+    fontSize: 18,
   },
-  primaryButton: {
-    backgroundColor: '#1a1a1a',
-    borderRadius: 10,
-    paddingVertical: 16,
+  codeLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#888',
+    textTransform: 'uppercase',
+  },
+  codeValue: {
+    fontSize: 28,
+    fontWeight: '800',
+    letterSpacing: 3,
+    textAlign: 'center',
+    color: '#1a1a1a',
+  },
+  modalClose: {
     alignItems: 'center',
-    marginTop: 4,
+    paddingVertical: 8,
   },
-  primaryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  dangerButton: {
-    borderRadius: 10,
-    paddingVertical: 16,
-    alignItems: 'center',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#FFCDD2',
-    backgroundColor: '#FFEBEE',
-    marginTop: 8,
-  },
-  dangerButtonText: {
-    color: '#C62828',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  success: {
-    fontSize: 14,
-    color: '#2E7D32',
-    fontWeight: '600',
-  },
-  errorText: {
-    fontSize: 14,
-    color: '#C62828',
-    backgroundColor: '#FFEBEE',
-    padding: 12,
-    borderRadius: 8,
-  },
-  warning: {
-    fontSize: 14,
+  modalCloseText: {
+    fontSize: 15,
     color: '#666',
   },
 });

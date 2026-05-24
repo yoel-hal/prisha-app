@@ -10,6 +10,7 @@ interface OnboardingState {
   complete: boolean;
   hydrate: () => Promise<void>;
   markComplete: () => Promise<void>;
+  reset: () => void;
 }
 
 export const useOnboardingStore = create<OnboardingState>((set) => ({
@@ -23,4 +24,5 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
     await persistOnboardingComplete();
     set({ complete: true, loaded: true });
   },
+  reset: () => set({ complete: false }),
 }));

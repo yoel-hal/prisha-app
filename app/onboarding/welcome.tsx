@@ -21,6 +21,13 @@ export default function WelcomeScreen() {
         >
           <Text style={styles.primaryButtonText}>{t('onboarding.getStarted')}</Text>
         </Pressable>
+
+        <Pressable
+          style={styles.secondaryButton}
+          onPress={() => router.push('/join')}
+        >
+          <Text style={styles.secondaryButtonText}>{t('partner.haveInvite')}</Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
@@ -63,5 +70,17 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 17,
     fontWeight: '600',
+  },
+  secondaryButton: {
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#ccc',
+  },
+  secondaryButtonText: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#1a1a1a',
   },
 });

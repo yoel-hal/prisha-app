@@ -20,6 +20,7 @@ import {
   reauthenticateWithCredential,
   sendPasswordResetEmail,
   signInWithCredential,
+  signInAnonymously,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   type Unsubscribe,
@@ -41,6 +42,14 @@ export function onAuthStateChanged(
   callback: (user: User | null) => void,
 ): Unsubscribe {
   return firebaseOnAuthStateChanged(auth, callback);
+}
+
+/** Anonymous sign-in so partner flows can read Firestore without a full account. */
+export async function ensurePartnerGuestAuth(): Promise<User> {
+  const user =
+    auth.currentUser ?? (await signInAnonymously(auth)).user;
+  await user.getIdToken();
+  return user;
 }
 
 const GOOGLE_WEB_CLIENT_ID_ENV = 'EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID';
