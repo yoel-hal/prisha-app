@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -14,40 +14,117 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ProfileFormFields } from '../../src/components/settings/ProfileFormFields';
-import { useProfileForm } from '../../src/hooks/useProfileForm';
+import {
+  ensureUserDocument,
+  getUserDocument,
+  saveUserProfile,
+} from '../../src/firebase/firestore';
 import type { SupportedLanguage } from '../../src/i18n';
 import { useAuthStore } from '../../src/store/authStore';
+import { useOnboardingStore } from '../../src/store/onboardingStore';
+import { hasProfileData, splitDisplayName } from '../../src/utils/profileDisplay';
 import { textStartStyle } from '../../src/utils/rtl';
 
 export default function OnboardingProfileScreen() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
-  const {
-    firstName,
-    setFirstName,
-    lastName,
-    setLastName,
-    country,
-    setCountry,
-    phone,
-    setPhone,
-    loading,
-    saving,
-    persistProfile,
-  } = useProfileForm();
+  const setStoreCountry = useOnboardingStore((state) => state.setCountry);
+  const setStoreLanguage = useOnboardingStore((state) => state.setLanguage);
+
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [country, setCountry] = useState(
+    () => useOnboardingStore.getState().country,
+  );
+  const [phone, setPhone] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!user) {
       router.replace('/onboarding/auth');
+      return;
     }
+
+    let cancelled = false;
+
+    const authProfile = useAuthStore.getState();
+    const stored = {
+      firstName: authProfile.firstName,
+      lastName: authProfile.lastName,
+      country: authProfile.country,
+      phone: authProfile.phone,
+    };
+    const fromAuth = hasProfileData(stored)
+      ? stored
+      : (() => {
+          const fromName = splitDisplayName(user.displayName);
+          return {
+            firstName: fromName.firstName,
+            lastName: fromName.lastName,
+            country: '',
+            phone: '',
+          };
+        })();
+
+    setFirstName(fromAuth.firstName);
+    setLastName(fromAuth.lastName);
+    setPhone(fromAuth.phone);
+    setCountry(useOnboardingStore.getState().country || fromAuth.country);
+
+    void (async () => {
+      try {
+        await ensureUserDocument(user.uid, user.email ?? '');
+        const doc = await getUserDocument(user.uid);
+        if (cancelled || !doc) {
+          return;
+        }
+
+        setFirstName(doc.firstName.trim() || fromAuth.firstName);
+        setLastName(doc.lastName.trim() || fromAuth.lastName);
+        setPhone(doc.phone.trim() || fromAuth.phone);
+
+        const storeCountry = useOnboardingStore.getState().country;
+        if (!storeCountry && doc.country.trim()) {
+          setCountry(doc.country.trim());
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [user, router]);
 
   async function handleContinue() {
+    if (!user) {
+      return;
+    }
+
     const language = i18n.language as SupportedLanguage;
-    const saved = await persistProfile(language);
-    if (saved) {
+    setStoreLanguage(language);
+    setStoreCountry(country);
+
+    setSaving(true);
+    try {
+      await saveUserProfile(
+        user.uid,
+        { firstName, lastName, country, phone, language },
+        user.email ?? undefined,
+      );
+      useAuthStore.getState().setUserProfile({ firstName, lastName, country, phone });
+      console.log(
+        '[onboarding profile] store before minhag',
+        useOnboardingStore.getState(),
+      );
       router.push('/onboarding/minhag');
+    } finally {
+      setSaving(false);
     }
   }
 

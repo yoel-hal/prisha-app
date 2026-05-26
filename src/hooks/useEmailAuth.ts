@@ -97,7 +97,7 @@ export function useEmailAuth() {
       return;
     }
 
-    navigateAfterSignIn(router, result.user);
+    void navigateAfterSignIn(router, result.user);
   }, [clearMessages, validateCredentials, email, password, router]);
 
   const register = useCallback(async () => {

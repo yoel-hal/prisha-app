@@ -1,0 +1,45 @@
+# Prisha Tracker — Cursor Rules
+
+## Project Overview
+This is a React Native + Expo app for tracking ימי פרישה (Jewish family purity laws).
+It supports iOS, Android, and Web from a single codebase.
+
+## Tech Stack
+- Framework: React Native + Expo (SDK 51+) with Expo Router (file-based routing)
+- Backend: Firebase (Firestore, Auth, Cloud Functions)
+- Auth: Google Sign-In, Apple Sign-In, Email/Password
+- State: Zustand
+- Styling: NativeWind (Tailwind for React Native)
+- i18n: i18next + react-i18next (Hebrew + English, full RTL support for Hebrew)
+- Hebrew calendar: @hebcal/core
+- TypeScript: strict mode
+
+## Project Structure
+Follow the structure in docs/PLANNING.md exactly.
+All halachic calculations live in src/calculations/ as pure functions with no UI or Firebase imports.
+All Firebase logic lives in src/firebase/.
+All screens live in app/.
+All reusable components live in src/components/.
+
+## Critical Rules
+- ALWAYS use TypeScript. Never write plain .js files.
+- ALWAYS write RTL-compatible layouts (use 'start'/'end' not 'left'/'right').
+- NEVER put business logic inside screen files — screens are thin, logic goes in hooks or the calculations engine.
+- ALWAYS add a JSDoc comment to every calculation function citing the halachic source.
+- NEVER import Firebase inside src/calculations/ — that folder must stay pure.
+- When creating a new component always ask: does this belong in src/components/common, calendar, period, or settings?
+- All user-facing strings must go through i18n — never hardcode Hebrew or English text.
+
+## Minhagim Supported
+ashkenaz | sfarad | chabad | teimani | yireim
+
+## Languages
+Hebrew (he) — RTL, primary
+English (en) — LTR, primary
+User picks at signup. Both are equal.
+
+## Code Style
+- Functional components only, no class components
+- Custom hooks for all data fetching and business logic
+- Zustand stores for global state
+- Explicit TypeScript types for everything — no 'any'

@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+import { Icon } from '@/components/common/Icon';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -82,7 +82,7 @@ export function PinKeypad({ title, subtitle, error, onComplete }: PinKeypadProps
                 accessibilityRole="button"
                 accessibilityLabel="Backspace"
               >
-                <Feather name="delete" size={22} color="#1a1a1a" />
+                <Icon name="delete" size={22} color="#1a1a1a" />
               </Pressable>
             );
           }

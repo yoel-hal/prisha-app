@@ -151,7 +151,29 @@ export async function bootstrapCoupleForAuthUser(
   });
 
   try {
-    const resolvedCoupleId = await ensureCoupleForUser(userId, authEmail ?? '');
+    const userDoc = await getUserDocument(userId);
+    if (!isCurrentBootstrap()) {
+      return;
+    }
+
+    if (!userDoc?.onboardingComplete) {
+      log('[bootstrapCoupleForAuthUser] skipped — onboarding not complete');
+      return;
+    }
+
+    if (userDoc) {
+      useAuthStore.getState().setUserProfile({
+        firstName: userDoc.firstName ?? '',
+        lastName: userDoc.lastName ?? '',
+        country: userDoc.country ?? '',
+        phone: userDoc.phone ?? '',
+      });
+    }
+
+    let resolvedCoupleId = userDoc.coupleId;
+    if (!resolvedCoupleId) {
+      resolvedCoupleId = await ensureCoupleForUser(userId, authEmail ?? '');
+    }
     if (!isCurrentBootstrap()) {
       log('[bootstrapCoupleForAuthUser] stale after ensureCoupleForUser');
       return;
@@ -164,16 +186,6 @@ export async function bootstrapCoupleForAuthUser(
     if (!isCurrentBootstrap()) {
       log('[bootstrapCoupleForAuthUser] stale after refreshOwnerCoupleData');
       return;
-    }
-
-    const userDoc = await getUserDocument(userId);
-    if (userDoc) {
-      useAuthStore.getState().setUserProfile({
-        firstName: userDoc.firstName ?? '',
-        lastName: userDoc.lastName ?? '',
-        country: userDoc.country ?? '',
-        phone: userDoc.phone ?? '',
-      });
     }
   } finally {
     if (isCurrentBootstrap()) {
@@ -207,9 +219,6 @@ export async function bootstrapPartnerMode(): Promise<boolean> {
     session.ownerName,
   );
   useAuthStore.getState().setCoupleId(session.coupleId);
-
-  const { useOnboardingStore } = await import('../store/onboardingStore');
-  await useOnboardingStore.getState().markComplete();
 
   await useSettingsStore.getState().loadSettings(session.coupleId);
 

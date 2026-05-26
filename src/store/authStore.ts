@@ -21,6 +21,7 @@ interface AuthState {
   ownerUserId: string | null;
   ownerName: string | null;
   isCoupleBootstrapping: boolean;
+  firestoreOnboardingComplete: boolean;
   appLockEnabled: boolean;
   appLockType: AppLockType | null;
   isAppLocked: boolean;
@@ -33,6 +34,7 @@ interface AuthState {
     ownerName: string | null,
   ) => void;
   setCoupleBootstrapping: (bootstrapping: boolean) => void;
+  setFirestoreOnboardingComplete: (complete: boolean) => void;
   resetCoupleState: () => void;
   setAppLock: (enabled: boolean, type: AppLockType | null) => void;
   setIsAppLocked: (locked: boolean) => void;
@@ -53,6 +55,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   ownerUserId: null,
   ownerName: null,
   isCoupleBootstrapping: false,
+  firestoreOnboardingComplete: false,
   appLockEnabled: false,
   appLockType: null,
   isAppLocked: false,
@@ -64,6 +67,7 @@ export const useAuthStore = create<AuthState>((set) => ({
           ...emptyProfile,
           coupleId: null,
           isCoupleBootstrapping: false,
+          firestoreOnboardingComplete: false,
           isAppLocked: false,
         };
       }
@@ -78,6 +82,7 @@ export const useAuthStore = create<AuthState>((set) => ({
               ...emptyProfile,
               coupleId: null,
               isCoupleBootstrapping: false,
+              firestoreOnboardingComplete: false,
             }
           : {}),
       };
@@ -94,6 +99,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isPartnerMode: isPartner, ownerUserId, ownerName }),
   setCoupleBootstrapping: (bootstrapping) =>
     set({ isCoupleBootstrapping: bootstrapping }),
+  setFirestoreOnboardingComplete: (complete) =>
+    set({ firestoreOnboardingComplete: complete }),
   resetCoupleState: () =>
     set({
       ownerUserId: null,

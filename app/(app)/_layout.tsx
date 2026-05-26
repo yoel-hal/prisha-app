@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+import { Icon } from '@/components/common/Icon';
 import { Tabs, useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -100,7 +100,7 @@ export default function AppLayout() {
               options={{
                 title: t('navigation.calendar'),
                 tabBarIcon: ({ color, size }) => (
-                  <Feather name="calendar" size={size} color={color} />
+                  <Icon name="calendar" size={size} color={color} />
                 ),
               }}
             />
@@ -109,7 +109,7 @@ export default function AppLayout() {
               options={{
                 title: t('navigation.add'),
                 tabBarIcon: ({ color, size }) => (
-                  <Feather name="plus-circle" size={size} color={color} />
+                  <Icon name="plus-circle" size={size} color={color} />
                 ),
               }}
             />
@@ -118,7 +118,7 @@ export default function AppLayout() {
               options={{
                 title: t('navigation.settings'),
                 tabBarIcon: ({ color, size }) => (
-                  <Feather name="settings" size={size} color={color} />
+                  <Icon name="settings" size={size} color={color} />
                 ),
               }}
             />

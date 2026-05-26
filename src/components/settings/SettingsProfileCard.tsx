@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+import { Icon } from '@/components/common/Icon';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useAuthStore } from '../../store/authStore';
@@ -47,7 +47,7 @@ export function SettingsProfileCard({
           {avatar}
           {showEditIcon ? (
             <View style={styles.avatarEditBadge}>
-              <Feather name="edit-2" size={12} color="#fff" />
+              <Icon name="edit-2" size={12} color="#fff" />
             </View>
           ) : null}
         </Pressable>

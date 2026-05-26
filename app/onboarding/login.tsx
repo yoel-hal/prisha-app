@@ -29,7 +29,7 @@ export default function OnboardingLoginScreen() {
   const { email, setEmail, password, setPassword, loading, error, signIn } = useEmailAuth();
 
   function handleOAuthLogin(user: User) {
-    navigateAfterSignIn(router, user);
+    void navigateAfterSignIn(router, user);
   }
 
   return (

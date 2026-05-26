@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import type { TFunction } from 'i18next';
 import { Platform } from 'react-native';
@@ -20,7 +19,6 @@ import {
   useSettingsStore,
 } from '../store';
 import { showAlert } from './alert';
-import { ONBOARDING_COMPLETE_KEY } from './onboarding';
 
 const DEFAULT_CHUMROT = {
   kavuah: false,
@@ -41,6 +39,7 @@ export function consumeDeleteAccountConfirmed(): boolean {
 }
 
 function clearAllStores(): void {
+  useAuthStore.getState().setFirestoreOnboardingComplete(false);
   useAuthStore.getState().setUser(null);
   usePeriodsStore.setState({ periods: [], isLoading: true });
   useSettingsStore.setState({
@@ -49,8 +48,7 @@ function clearAllStores(): void {
     notifications: DEFAULT_NOTIFICATION_SETTINGS,
     calendar: DEFAULT_CALENDAR_SETTINGS,
   });
-  useOnboardingStore.setState({ loaded: true, complete: false });
-  void AsyncStorage.removeItem(ONBOARDING_COMPLETE_KEY);
+  useOnboardingStore.getState().reset();
 }
 
 export async function performDeleteAccount(t: TFunction): Promise<void> {

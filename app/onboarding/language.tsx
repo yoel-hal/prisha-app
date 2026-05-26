@@ -5,18 +5,22 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { setAppLanguage, type SupportedLanguage } from '../../src/i18n';
+import { useOnboardingStore } from '../../src/store/onboardingStore';
 
 export default function LanguageScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const setLanguage = useOnboardingStore((state) => state.setLanguage);
   const [selected, setSelected] = useState<SupportedLanguage>('en');
 
   async function selectLanguage(language: SupportedLanguage) {
     setSelected(language);
+    setLanguage(language);
     await setAppLanguage(language);
   }
 
   async function handleContinue() {
+    setLanguage(selected);
     await setAppLanguage(selected);
     router.push('/onboarding/auth');
   }

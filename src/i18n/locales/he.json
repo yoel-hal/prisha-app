@@ -76,6 +76,7 @@
     "account": "חשבון",
     "profile": "פרופיל",
     "profileSaved": "הפרופיל נשמר",
+    "saved": "נשמר",
     "deleteAccount": "מחק חשבון",
     "saveChanges": "לשמור שינויים?",
     "saveConfirm": "שמור",
@@ -267,6 +268,13 @@
     "haveInvite": "יש לי הזמנה?",
     "partnerModeNote": "את צופה באפליקציה של {{name}}",
     "restrictedFeature": "עריכת פרופיל זמינה רק לבעל/ת החשבון."
+  },
+  "betaGate": {
+    "title": "האפליקציה בבנייה",
+    "subtitle": "נחזור בקרוב עם משהו מיוחד",
+    "codePlaceholder": "קוד גישה",
+    "submit": "כניסה",
+    "error": "קוד שגוי, נסה שוב"
   },
   "appLock": {
     "title": "נעילת אפליקציה",

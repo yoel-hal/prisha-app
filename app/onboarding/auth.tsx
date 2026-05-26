@@ -15,7 +15,7 @@ export default function OnboardingAuthChooserScreen() {
 
   useEffect(() => {
     if (user) {
-      navigateAfterSignIn(router, user);
+      void navigateAfterSignIn(router, user);
     }
   }, [user, router]);
 

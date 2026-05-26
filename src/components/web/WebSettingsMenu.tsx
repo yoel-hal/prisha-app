@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+import { Icon } from '@/components/common/Icon';
 import { usePathname, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -70,7 +70,7 @@ function MenuRow({
         </Text>
         {showBadge ? <View style={styles.menuBadge} /> : null}
       </View>
-      <Feather
+      <Icon
         name={isAppRTL() ? 'chevron-left' : 'chevron-right'}
         size={18}
         color={active ? '#1a1a1a' : '#bbb'}

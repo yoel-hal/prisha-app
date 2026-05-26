@@ -1,8 +1,12 @@
+import '../global.css';
+
+import { useFonts } from 'expo-font';
 import { Redirect, Stack, useRouter, useSegments } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
+  Platform,
   StyleSheet,
   Text,
   View,
@@ -12,43 +16,41 @@ import type { User } from 'firebase/auth';
 
 import { DesktopWebShell } from '../src/components/common/DesktopWebShell';
 import '../src/i18n';
-import { getSettings } from '../src/firebase/firestore';
+import { getUserDocument } from '../src/firebase/firestore';
 import {
   bootstrapCoupleForAuthUser,
   bootstrapPartnerMode,
 } from '../src/hooks/useCouple';
 import { useAuthStore } from '../src/store/authStore';
-import { useOnboardingStore } from '../src/store/onboardingStore';
 import { useSettingsStore } from '../src/store/settingsStore';
 import { log } from '../src/utils/log';
-import {
-  getIncompleteOnboardingHref,
-  profileFromAuthStore,
-  type IncompleteOnboardingHref,
-} from '../src/utils/onboardingRoute';
 
 function RootLayout() {
   const { t } = useTranslation();
   const router = useRouter();
   const segments = useSegments();
+  const [fontsLoaded] = useFonts(
+    Platform.OS === 'web'
+      ? {}
+      : {
+          Feather: require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Feather.ttf'),
+        },
+  );
+  const webFontsReady = Platform.OS === 'web';
   const [user, setUser] = useState<User | null | undefined>(undefined);
   const [partnerSessionChecked, setPartnerSessionChecked] = useState(false);
+  const [userDocReady, setUserDocReady] = useState(false);
   const [coupleBootstrapped, setCoupleBootstrapped] = useState(false);
-  const [settingsChecked, setSettingsChecked] = useState(false);
-  const [incompleteOnboardingHref, setIncompleteOnboardingHref] =
-    useState<IncompleteOnboardingHref>('/onboarding/profile');
-  const settingsCheckedForRef = useRef<string | null>(null);
-  const onboardingLoaded = useOnboardingStore((state) => state.loaded);
-  const onboardingComplete = useOnboardingStore((state) => state.complete);
-  const hydrateOnboarding = useOnboardingStore((state) => state.hydrate);
   const setAuthUser = useAuthStore((state) => state.setUser);
+  const setFirestoreOnboardingComplete = useAuthStore(
+    (state) => state.setFirestoreOnboardingComplete,
+  );
+  const onboardingComplete = useAuthStore(
+    (state) => state.firestoreOnboardingComplete,
+  );
   const isPartnerMode = useAuthStore((state) => state.isPartnerMode);
   const coupleId = useAuthStore((state) => state.coupleId);
   const loadSettings = useSettingsStore((state) => state.loadSettings);
-
-  useEffect(() => {
-    void hydrateOnboarding();
-  }, [hydrateOnboarding]);
 
   useEffect(() => {
     void (async () => {
@@ -71,8 +73,8 @@ function RootLayout() {
         }
         if (!nextUser && !useAuthStore.getState().isPartnerMode) {
           setCoupleBootstrapped(false);
-          settingsCheckedForRef.current = null;
-          setSettingsChecked(true);
+          setUserDocReady(false);
+          setFirestoreOnboardingComplete(false);
         }
       });
     });
@@ -85,42 +87,80 @@ function RootLayout() {
   useEffect(() => {
     if (!partnerSessionChecked || isPartnerMode) {
       if (isPartnerMode) {
+        setUserDocReady(true);
+        setFirestoreOnboardingComplete(true);
         setCoupleBootstrapped(true);
-        setSettingsChecked(true);
       }
       return;
     }
 
-    if (user?.isAnonymous) {
-      log('[RootLayout] skipping bootstrap — anonymous partner user');
-      setCoupleBootstrapped(true);
-      setSettingsChecked(true);
+    if (user === undefined) {
       return;
     }
 
-    if (!user?.uid) {
-      setCoupleBootstrapped(!user);
-      setSettingsChecked(true);
+    if (!user) {
+      setUserDocReady(true);
+      setFirestoreOnboardingComplete(false);
+      setCoupleBootstrapped(true);
+      return;
+    }
+
+    if (user.isAnonymous) {
+      setUserDocReady(true);
+      setFirestoreOnboardingComplete(true);
+      setCoupleBootstrapped(true);
+      return;
+    }
+
+    let cancelled = false;
+    setUserDocReady(false);
+
+    void (async () => {
+      const doc = await getUserDocument(user.uid);
+      if (cancelled) {
+        return;
+      }
+
+      const complete = doc?.onboardingComplete === true;
+      setFirestoreOnboardingComplete(complete);
+      setUserDocReady(true);
+
+      if (doc) {
+        useAuthStore.getState().setUserProfile({
+          firstName: doc.firstName,
+          lastName: doc.lastName,
+          country: doc.country,
+          phone: doc.phone,
+        });
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.uid, partnerSessionChecked, isPartnerMode, user, setFirestoreOnboardingComplete]);
+
+  useEffect(() => {
+    if (!partnerSessionChecked || isPartnerMode) {
+      return;
+    }
+
+    if (!user?.uid || !userDocReady || !onboardingComplete) {
+      if (!onboardingComplete) {
+        setCoupleBootstrapped(true);
+      }
       return;
     }
 
     let cancelled = false;
     setCoupleBootstrapped(false);
-    setSettingsChecked(false);
-    settingsCheckedForRef.current = null;
 
-    log('[RootLayout] bootstrapping couple for user', {
+    log('[RootLayout] bootstrapping couple for onboarded user', {
       uid: user.uid,
-      email: user.email ?? null,
-      hasEmail: Boolean(user.email),
     });
 
     void bootstrapCoupleForAuthUser(user.uid, user.email).finally(() => {
       if (!cancelled) {
-        const { coupleId: resolvedCoupleId } = useAuthStore.getState();
-        log('[RootLayout] couple bootstrap complete', {
-          coupleId: resolvedCoupleId,
-        });
         setCoupleBootstrapped(true);
       }
     });
@@ -128,7 +168,14 @@ function RootLayout() {
     return () => {
       cancelled = true;
     };
-  }, [user?.uid, user?.email, isPartnerMode, partnerSessionChecked]);
+  }, [
+    user?.uid,
+    user?.email,
+    isPartnerMode,
+    partnerSessionChecked,
+    userDocReady,
+    onboardingComplete,
+  ]);
 
   useEffect(() => {
     if (coupleId) {
@@ -137,7 +184,7 @@ function RootLayout() {
   }, [coupleId, loadSettings]);
 
   useEffect(() => {
-    if (!partnerSessionChecked) {
+    if (!partnerSessionChecked || !userDocReady || !fontsLoaded) {
       return;
     }
 
@@ -154,118 +201,62 @@ function RootLayout() {
       return;
     }
 
-    if (user === undefined || !onboardingLoaded) {
+    if (user === undefined) {
       return;
     }
 
     if (user && !coupleBootstrapped) {
-      setSettingsChecked(false);
       return;
     }
 
-    let cancelled = false;
+    const inAuthGroup = segments[0] === '(auth)';
+    const inAppGroup = segments[0] === '(app)';
+    const inOnboarding = segments[0] === 'onboarding';
+    const onJoin = segments[0] === 'join';
 
-    void (async () => {
-      let resumeHref: IncompleteOnboardingHref = '/onboarding/profile';
-
-      if (user) {
-        const resolvedCoupleId = coupleId ?? useAuthStore.getState().coupleId;
-        const settingsCacheKey = `${user.uid}:${resolvedCoupleId ?? ''}`;
-
-        if (settingsCheckedForRef.current !== settingsCacheKey) {
-          setSettingsChecked(false);
-
-          if (resolvedCoupleId) {
-            const settings = await getSettings(resolvedCoupleId);
-            if (cancelled) {
-              return;
-            }
-            resumeHref = getIncompleteOnboardingHref(
-              profileFromAuthStore(),
-              settings !== null,
-              user,
-            );
-          } else {
-            resumeHref = getIncompleteOnboardingHref(
-              profileFromAuthStore(),
-              false,
-              user,
-            );
-          }
-          if (cancelled) {
-            return;
-          }
-
-          settingsCheckedForRef.current = settingsCacheKey;
-          setIncompleteOnboardingHref(resumeHref);
-          setSettingsChecked(true);
-        } else {
-          resumeHref = incompleteOnboardingHref;
-        }
-      } else {
-        setSettingsChecked(true);
-      }
-
-      const inAuthGroup = segments[0] === '(auth)';
-      const inAppGroup = segments[0] === '(app)';
-      const inOnboarding = segments[0] === 'onboarding';
-      const onJoin = segments[0] === 'join';
-
-      const onboardingStep = (segments as readonly string[])[1];
-      if (
-        inOnboarding &&
-        onboardingStep !== undefined &&
-        (onboardingStep === 'minhag' ||
-          onboardingStep === 'chumrot' ||
-          onboardingStep === 'done')
-      ) {
+    if (!user) {
+      if (inAuthGroup || inOnboarding || onJoin) {
         return;
       }
+      router.replace('/(auth)/beta-gate');
+      return;
+    }
 
-      if (!user) {
-        if (inAuthGroup || inOnboarding || onJoin) {
-          return;
-        }
-        router.replace('/onboarding/welcome');
+    if (!onboardingComplete) {
+      if (inOnboarding) {
         return;
       }
+      router.replace('/onboarding/welcome');
+      return;
+    }
 
-      if (!onboardingComplete) {
-        if (inOnboarding) {
-          return;
-        }
-        router.replace(resumeHref);
-        return;
-      }
+    if (inOnboarding) {
+      router.replace('/calendar');
+      return;
+    }
 
-      if (!inAppGroup) {
-        router.replace('/calendar');
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
+    if (!inAppGroup) {
+      router.replace('/calendar');
+    }
   }, [
     user,
     onboardingComplete,
-    onboardingLoaded,
     coupleBootstrapped,
-    coupleId,
-    incompleteOnboardingHref,
     segments,
     router,
     isPartnerMode,
     partnerSessionChecked,
+    userDocReady,
+    fontsLoaded,
   ]);
 
   const isAuthLoading = !isPartnerMode && user === undefined;
   const isBootstrapping =
+    (!fontsLoaded && !webFontsReady) ||
     !partnerSessionChecked ||
     isAuthLoading ||
-    (!isPartnerMode && !onboardingLoaded) ||
-    (!isPartnerMode && !!user && !coupleBootstrapped) ||
-    (!isPartnerMode && !!user && !settingsChecked);
+    (!isPartnerMode && !!user && !userDocReady) ||
+    (!isPartnerMode && !!user && onboardingComplete && !coupleBootstrapped);
   const inAuthGroup = segments[0] === '(auth)';
   const inAppGroup = segments[0] === '(app)';
   const inOnboarding = segments[0] === 'onboarding';
@@ -293,6 +284,14 @@ function RootLayout() {
     onboardingComplete &&
     !inAppGroup;
 
+  if (!fontsLoaded && !webFontsReady) {
+    return (
+      <View style={styles.fontLoading}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
   return (
     <GestureHandlerRootView style={styles.root}>
       <DesktopWebShell>
@@ -311,10 +310,10 @@ function RootLayout() {
         ) : null}
         {showPartnerRedirect ? <Redirect href="/calendar" /> : null}
         {showLoggedOutRedirect ? (
-          <Redirect href="/onboarding/welcome" />
+          <Redirect href="/(auth)/beta-gate" />
         ) : null}
         {showLoggedInIncompleteRedirect ? (
-          <Redirect href={incompleteOnboardingHref} />
+          <Redirect href="/onboarding/welcome" />
         ) : null}
         {showLoggedInCompleteRedirect ? (
           <Redirect href="/calendar" />
@@ -329,6 +328,12 @@ export default RootLayout;
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+  },
+  fontLoading: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,

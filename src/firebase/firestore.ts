@@ -21,7 +21,9 @@ import {
 
 import type {
   CalendarSettings,
+  Chumrot,
   HebrewDate,
+  Minhag,
   NotificationLeadHours,
   NotificationSettings,
   Period,
@@ -30,7 +32,34 @@ import type {
 const DEFAULT_EVENT_TITLE = 'פרישה';
 import { db } from './config';
 
-const SETTINGS_DOC_ID = 'default';
+const SETTINGS_DOC_ID = 'main';
+
+const DEFAULT_ONBOARDING_NOTIFICATIONS: NotificationSettings = {
+  enabled: false,
+  leadHours: 24,
+  onahBeinonit: true,
+  haflaga: true,
+  yomHaChodesh: true,
+};
+
+const DEFAULT_ONBOARDING_CALENDAR: CalendarSettings = {
+  syncEnabled: false,
+  eventTitle: DEFAULT_EVENT_TITLE,
+  syncedEventIds: {},
+};
+
+export type OnboardingLanguage = 'he' | 'en';
+
+export interface CompleteOnboardingData {
+  email: string;
+  language: OnboardingLanguage;
+  minhag: Minhag;
+  chumrot: Chumrot;
+  country: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+}
 
 export type UserRole = 'owner' | 'partner';
 
@@ -44,6 +73,9 @@ export interface UserDocument {
   createdAt: string;
   coupleId: string | null;
   role: string;
+  onboardingComplete: boolean;
+  minhag?: Minhag;
+  chumrot?: Chumrot;
 }
 
 export type UserProfileFields = Pick<
@@ -51,7 +83,20 @@ export type UserProfileFields = Pick<
   'firstName' | 'lastName' | 'country' | 'phone'
 >;
 
+function mapChumrot(data: unknown): Chumrot | undefined {
+  if (!data || typeof data !== 'object') {
+    return undefined;
+  }
+  const record = data as Record<string, unknown>;
+  return {
+    kavuah: record.kavuah === true,
+    veshetEinah: record.veshetEinah === true,
+    onahBeinonitIfHaflaga: record.onahBeinonitIfHaflaga === true,
+  };
+}
+
 function mapUserDocument(data: DocumentData): UserDocument {
+  const minhag = data.minhag;
   return {
     email: typeof data.email === 'string' ? data.email : '',
     firstName: typeof data.firstName === 'string' ? data.firstName : '',
@@ -62,6 +107,9 @@ function mapUserDocument(data: DocumentData): UserDocument {
     createdAt: typeof data.createdAt === 'string' ? data.createdAt : '',
     coupleId: typeof data.coupleId === 'string' ? data.coupleId : null,
     role: typeof data.role === 'string' ? data.role : '',
+    onboardingComplete: data.onboardingComplete === true,
+    minhag: typeof minhag === 'string' ? (minhag as Minhag) : undefined,
+    chumrot: mapChumrot(data.chumrot),
   };
 }
 
@@ -76,6 +124,7 @@ function defaultUserDocument(email: string): UserDocument {
     createdAt: new Date().toISOString(),
     coupleId: null,
     role: '',
+    onboardingComplete: false,
   };
 }
 
@@ -296,6 +345,17 @@ export async function getUserDocument(
   return mapUserDocument(snapshot.data());
 }
 
+export async function updateUserCountryAndLanguage(
+  userId: string,
+  country: string,
+  language: OnboardingLanguage,
+): Promise<void> {
+  await updateDoc(userRef(userId), {
+    country: country.trim(),
+    language,
+  });
+}
+
 export async function saveUserProfile(
   userId: string,
   profile: UserProfileFields & { language?: string },
@@ -331,6 +391,7 @@ export async function saveUserProfile(
     role: existing?.role ?? '',
     email: existing?.email ?? '',
     createdAt: existing?.createdAt ?? new Date().toISOString(),
+    onboardingComplete: existing?.onboardingComplete ?? false,
   };
 }
 
@@ -404,6 +465,54 @@ export async function createCouple(
   });
 
   console.log('[createCouple] success', { coupleId, members: writtenMembers });
+
+  return coupleId;
+}
+
+/**
+ * Persists onboarding choices, creates the couple workspace, and marks onboarding complete.
+ */
+export async function completeOnboarding(
+  userId: string,
+  data: CompleteOnboardingData,
+): Promise<string> {
+  console.log('[completeOnboarding] data', data);
+
+  const newCoupleRef = doc(collection(db, 'couples'));
+  const coupleId = newCoupleRef.id;
+  const normalizedCountry = data.country.trim();
+
+  await setDoc(
+    userRef(userId),
+    {
+      email: normalizeEmail(data.email),
+      language: data.language,
+      country: normalizedCountry,
+      firstName: data.firstName?.trim() ?? '',
+      lastName: data.lastName?.trim() ?? '',
+      phone: data.phone?.trim() ?? '',
+      onboardingComplete: true,
+      createdAt: serverTimestamp(),
+    },
+    { merge: true },
+  );
+
+  await setDoc(newCoupleRef, {
+    members: [userId],
+    createdAt: serverTimestamp(),
+  });
+
+  await setDoc(doc(db, 'couples', coupleId, 'settings', SETTINGS_DOC_ID), {
+    minhag: data.minhag,
+    chumrot: data.chumrot,
+    notifications: DEFAULT_ONBOARDING_NOTIFICATIONS,
+    calendar: DEFAULT_ONBOARDING_CALENDAR,
+  });
+
+  await updateDoc(userRef(userId), {
+    coupleId,
+    role: 'owner',
+  });
 
   return coupleId;
 }

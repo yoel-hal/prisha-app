@@ -1,4 +1,5 @@
-import { Feather } from '@expo/vector-icons';
+import type { WebIconName } from '@/components/common/iconPaths';
+import { Icon } from '@/components/common/Icon';
 import type { Href } from 'expo-router';
 import { usePathname, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -14,7 +15,7 @@ import { BuyMeCoffeeButton } from '../common/BuyMeCoffeeButton';
 type NavItem = {
   href: Href;
   labelKey: string;
-  icon: keyof typeof Feather.glyphMap;
+  icon: WebIconName;
   match: (pathname: string) => boolean;
 };
 
@@ -63,7 +64,7 @@ export function WebSidebar() {
               style={[styles.navItem, active && styles.navItemActive]}
               onPress={() => router.push(item.href)}
             >
-              <Feather
+              <Icon
                 name={item.icon}
                 size={20}
                 color={active ? '#1a1a1a' : '#666'}

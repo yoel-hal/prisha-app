@@ -1,19 +1,18 @@
 import type { useRouter } from 'expo-router';
 import type { User } from 'firebase/auth';
 
-import { useOnboardingStore } from '../store/onboardingStore';
-import {
-  getIncompleteOnboardingHref,
-  profileFromAuthStore,
-} from './onboardingRoute';
+import { getUserDocument } from '../firebase/firestore';
 
 type AppRouter = ReturnType<typeof useRouter>;
 
-export function navigateAfterSignIn(router: AppRouter, user: User): void {
-  const onboardingComplete = useOnboardingStore.getState().complete;
-  if (onboardingComplete) {
+export async function navigateAfterSignIn(
+  router: AppRouter,
+  user: User,
+): Promise<void> {
+  const doc = await getUserDocument(user.uid);
+  if (doc?.onboardingComplete === true) {
     router.replace('/calendar');
     return;
   }
-  router.replace(getIncompleteOnboardingHref(profileFromAuthStore(), false, user));
+  router.replace('/onboarding/profile');
 }

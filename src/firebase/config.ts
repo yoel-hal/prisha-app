@@ -1,4 +1,3 @@
-import Constants from 'expo-constants';
 import { getApp, getApps, initializeApp, type FirebaseApp, type FirebaseOptions } from 'firebase/app';
 import {
   browserLocalPersistence,
@@ -10,52 +9,25 @@ import { getFirestore, type Firestore } from 'firebase/firestore';
 import { getFunctions, type Functions } from 'firebase/functions';
 import { Platform } from 'react-native';
 
-const FIREBASE_ENV_KEYS = {
-  apiKey: 'EXPO_PUBLIC_FIREBASE_API_KEY',
-  authDomain: 'EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN',
-  projectId: 'EXPO_PUBLIC_FIREBASE_PROJECT_ID',
-  storageBucket: 'EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET',
-  messagingSenderId: 'EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
-  appId: 'EXPO_PUBLIC_FIREBASE_APP_ID',
-} as const;
+const firebaseConfig: FirebaseOptions = {
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY ?? '',
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN ?? '',
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID ?? '',
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET ?? '',
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID ?? '',
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID ?? '',
+};
 
-function readEnv(key: string): string | undefined {
-  const fromProcess = process.env[key];
-  if (fromProcess) {
-    return fromProcess;
-  }
-
-  const extra = Constants.expoConfig?.extra;
-  if (extra && typeof extra === 'object' && key in extra) {
-    const value = extra[key as keyof typeof extra];
-    return typeof value === 'string' ? value : undefined;
-  }
-
-  return undefined;
-}
-
-function buildFirebaseConfig(): FirebaseOptions {
-  const config: Record<keyof typeof FIREBASE_ENV_KEYS, string> = {
-    apiKey: '',
-    authDomain: '',
-    projectId: '',
-    storageBucket: '',
-    messagingSenderId: '',
-    appId: '',
-  };
-
+function assertFirebaseConfig(): void {
   const missing: string[] = [];
-
-  for (const [field, envKey] of Object.entries(FIREBASE_ENV_KEYS) as Array<
-    [keyof typeof FIREBASE_ENV_KEYS, string]
-  >) {
-    const value = readEnv(envKey);
-    if (!value) {
-      missing.push(envKey);
-    } else {
-      config[field] = value;
-    }
+  if (!firebaseConfig.apiKey) missing.push('EXPO_PUBLIC_FIREBASE_API_KEY');
+  if (!firebaseConfig.authDomain) missing.push('EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN');
+  if (!firebaseConfig.projectId) missing.push('EXPO_PUBLIC_FIREBASE_PROJECT_ID');
+  if (!firebaseConfig.storageBucket) missing.push('EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET');
+  if (!firebaseConfig.messagingSenderId) {
+    missing.push('EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID');
   }
+  if (!firebaseConfig.appId) missing.push('EXPO_PUBLIC_FIREBASE_APP_ID');
 
   if (missing.length > 0) {
     throw new Error(
@@ -63,15 +35,14 @@ function buildFirebaseConfig(): FirebaseOptions {
         'Copy .env.example to .env and fill in your Firebase project values.',
     );
   }
-
-  return config;
 }
 
 function getOrInitializeApp(): FirebaseApp {
   if (getApps().length > 0) {
     return getApp();
   }
-  return initializeApp(buildFirebaseConfig());
+  assertFirebaseConfig();
+  return initializeApp(firebaseConfig);
 }
 
 function getOrInitializeAuth(firebaseApp: FirebaseApp): Auth {

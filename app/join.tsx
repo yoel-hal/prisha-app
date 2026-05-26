@@ -14,7 +14,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ensurePartnerGuestAuth } from '../src/firebase/auth';
 import { validatePartnerAccess } from '../src/firebase/firestore';
 import { useAuthStore } from '../src/store/authStore';
-import { useOnboardingStore } from '../src/store/onboardingStore';
 import { useSettingsStore } from '../src/store/settingsStore';
 import { savePartnerSession } from '../src/utils/partnerSession';
 import { textStartStyle } from '../src/utils/rtl';
@@ -53,7 +52,6 @@ export default function JoinPartnerScreen() {
         result.ownerName,
       );
       useAuthStore.getState().setCoupleId(result.coupleId);
-      await useOnboardingStore.getState().markComplete();
       await useSettingsStore.getState().loadSettings(result.coupleId);
       router.replace('/calendar');
     } catch {

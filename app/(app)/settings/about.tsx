@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+import { Icon } from '@/components/common/Icon';
 import Constants from 'expo-constants';
 import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -104,7 +104,7 @@ function LinkRow({
       accessibilityRole="link"
     >
       <Text style={[styles.rowLabel, textStartStyle()]}>{label}</Text>
-      <Feather
+      <Icon
         name={isAppRTL() ? 'chevron-left' : 'chevron-right'}
         size={20}
         color="#999"

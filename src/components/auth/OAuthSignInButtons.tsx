@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+import { Icon } from '@/components/common/Icon';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -76,7 +76,7 @@ export function OAuthSignInButtons({ onSuccess, disabled = false }: OAuthSignInB
           <ActivityIndicator color="#fff" />
         ) : (
           <>
-            <Feather name="mail" size={20} color="#fff" />
+            <Icon name="mail" size={20} color="#fff" />
             <Text style={styles.buttonText}>{t('auth.continueWithGoogle')}</Text>
           </>
         )}
@@ -88,7 +88,7 @@ export function OAuthSignInButtons({ onSuccess, disabled = false }: OAuthSignInB
           onPress={() => void handleAppleSignIn()}
           disabled={isDisabled}
         >
-          <Feather name="smartphone" size={20} color="#fff" />
+          <Icon name="smartphone" size={20} color="#fff" />
           <Text style={styles.buttonText}>{t('auth.continueWithApple')}</Text>
         </Pressable>
       ) : null}

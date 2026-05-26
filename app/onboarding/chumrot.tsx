@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Chumrot } from '../../src/calculations/types';
 import OnboardingSkipButton from '../../src/components/onboarding/OnboardingSkipButton';
-import { useSettings } from '../../src/hooks/useSettings';
+import { useOnboardingStore } from '../../src/store/onboardingStore';
 import { textStartStyle } from '../../src/utils/rtl';
 import { webScreenScrollStyles } from '../../src/utils/webScroll';
 
@@ -43,18 +43,22 @@ export default function OnboardingChumrotScreen() {
   const webScroll = webScreenScrollStyles();
   const { t } = useTranslation();
   const router = useRouter();
-  const { selectChumrot } = useSettings();
+  const setStoreChumrot = useOnboardingStore((state) => state.setChumrot);
   const [chumrot, setChumrot] = useState<Chumrot>(DEFAULT_CHUMROT);
   const [saving, setSaving] = useState(false);
 
   const goNext = useCallback(
-    async (next: Chumrot) => {
+    (next: Chumrot) => {
       setSaving(true);
-      await selectChumrot(next);
+      setStoreChumrot(next);
+      console.log(
+        '[onboarding chumrot] store before done',
+        useOnboardingStore.getState(),
+      );
       setSaving(false);
       router.push('/onboarding/done');
     },
-    [selectChumrot, router],
+    [setStoreChumrot, router],
   );
 
   function toggle(key: ChumraKey, value: boolean) {

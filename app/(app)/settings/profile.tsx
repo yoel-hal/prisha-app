@@ -1,63 +1,112 @@
 import { Stack, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
-  Alert,
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ProfileFormFields } from '../../../src/components/settings/ProfileFormFields';
-import { useProfileForm } from '../../../src/hooks/useProfileForm';
+import {
+  getUserDocument,
+  saveUserProfile,
+  updateUserCountryAndLanguage,
+  type OnboardingLanguage,
+} from '../../../src/firebase/firestore';
+import { setAppLanguage, type SupportedLanguage } from '../../../src/i18n';
 import { useAuthStore } from '../../../src/store/authStore';
 import { textStartStyle } from '../../../src/utils/rtl';
 import { webScreenScrollStyles } from '../../../src/utils/webScroll';
+
+function isSupportedLanguage(value: string): value is SupportedLanguage {
+  return value === 'he' || value === 'en';
+}
 
 export default function ProfileSettingsScreen() {
   const { t } = useTranslation();
   const webScroll = webScreenScrollStyles();
   const router = useRouter();
+  const user = useAuthStore((state) => state.user);
   const isPartnerMode = useAuthStore((state) => state.isPartnerMode);
-  const {
-    firstName,
-    setFirstName,
-    lastName,
-    setLastName,
-    country,
-    setCountry,
-    phone,
-    setPhone,
-    loading,
-    saving,
-    persistProfile,
-  } = useProfileForm();
+  const setUserProfile = useAuthStore((state) => state.setUserProfile);
 
-  async function confirmSave() {
-    const saved = await persistProfile();
-    if (saved) {
-      router.back();
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [country, setCountry] = useState('');
+  const [phone, setPhone] = useState('');
+  const [language, setLanguage] = useState<OnboardingLanguage>('en');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!user?.uid) {
+      setLoading(false);
+      return;
     }
-  }
 
-  function handleSavePress() {
-    Alert.alert(t('settings.saveChanges'), undefined, [
-      { text: t('settings.cancel'), style: 'cancel' },
-      {
-        text: t('settings.saveConfirm'),
-        onPress: () => {
-          void confirmSave();
-        },
-      },
-    ]);
+    let cancelled = false;
+    setLoading(true);
+
+    void (async () => {
+      const doc = await getUserDocument(user.uid);
+      if (cancelled) {
+        return;
+      }
+
+      if (doc) {
+        setFirstName(doc.firstName);
+        setLastName(doc.lastName);
+        setCountry(doc.country);
+        setPhone(doc.phone);
+        if (isSupportedLanguage(doc.language)) {
+          setLanguage(doc.language);
+        }
+      }
+
+      setLoading(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.uid]);
+
+  async function handleSave() {
+    if (!user?.uid || isPartnerMode) {
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await updateUserCountryAndLanguage(user.uid, country, language);
+      await saveUserProfile(
+        user.uid,
+        { firstName, lastName, country, phone },
+        user.email ?? undefined,
+      );
+      await setAppLanguage(language);
+      setUserProfile({ firstName, lastName, country, phone });
+      router.back();
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
     <>
-      <Stack.Screen options={{ title: t('settings.profile') }} />
+      <Stack.Screen
+        options={{
+          title: t('settings.profile'),
+          gestureEnabled: !saving,
+          headerBackVisible: !saving,
+        }}
+      />
       <SafeAreaView style={[styles.safe, webScroll.safe]} edges={['bottom']}>
         <ScrollView
           style={[styles.scroll, webScroll.scroll]}
@@ -73,17 +122,37 @@ export default function ProfileSettingsScreen() {
           {loading ? (
             <ActivityIndicator style={styles.loader} />
           ) : (
-            <ProfileFormFields
-              firstName={firstName}
-              setFirstName={setFirstName}
-              lastName={lastName}
-              setLastName={setLastName}
-              country={country}
-              setCountry={setCountry}
-              phone={phone}
-              setPhone={setPhone}
-              disabled={saving || isPartnerMode}
-            />
+            <>
+              <Text style={[styles.sectionLabel, textStartStyle()]}>
+                {t('settings.language')}
+              </Text>
+              <View style={styles.languageRow}>
+                <LanguageButton
+                  label="עברית"
+                  active={language === 'he'}
+                  onPress={() => setLanguage('he')}
+                  disabled={saving || isPartnerMode}
+                />
+                <LanguageButton
+                  label="English"
+                  active={language === 'en'}
+                  onPress={() => setLanguage('en')}
+                  disabled={saving || isPartnerMode}
+                />
+              </View>
+
+              <ProfileFormFields
+                firstName={firstName}
+                setFirstName={setFirstName}
+                lastName={lastName}
+                setLastName={setLastName}
+                country={country}
+                setCountry={setCountry}
+                phone={phone}
+                setPhone={setPhone}
+                disabled={saving || isPartnerMode}
+              />
+            </>
           )}
 
           {!isPartnerMode ? (
@@ -93,7 +162,7 @@ export default function ProfileSettingsScreen() {
                 (saving || loading) && styles.saveDisabled,
                 pressed && !saving && !loading && styles.savePressed,
               ]}
-              onPress={handleSavePress}
+              onPress={() => void handleSave()}
               disabled={saving || loading}
               accessibilityRole="button"
             >
@@ -107,6 +176,35 @@ export default function ProfileSettingsScreen() {
         </ScrollView>
       </SafeAreaView>
     </>
+  );
+}
+
+function LanguageButton({
+  label,
+  active,
+  onPress,
+  disabled,
+}: {
+  label: string;
+  active: boolean;
+  onPress: () => void;
+  disabled: boolean;
+}) {
+  return (
+    <Pressable
+      style={[styles.languageButton, active && styles.languageButtonActive]}
+      onPress={onPress}
+      disabled={disabled}
+    >
+      <Text
+        style={[
+          styles.languageButtonText,
+          active && styles.languageButtonTextActive,
+        ]}
+      >
+        {label}
+      </Text>
+    </Pressable>
   );
 }
 
@@ -131,6 +229,36 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#3a5a9a',
     lineHeight: 22,
+  },
+  sectionLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#444',
+    marginBottom: -12,
+  },
+  languageRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  languageButton: {
+    flex: 1,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#ddd',
+    borderRadius: 10,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  languageButtonActive: {
+    backgroundColor: '#1a1a1a',
+    borderColor: '#1a1a1a',
+  },
+  languageButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  languageButtonTextActive: {
+    color: '#fff',
   },
   saveButton: {
     backgroundColor: '#1a1a1a',

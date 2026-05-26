@@ -76,6 +76,7 @@
     "account": "Account",
     "profile": "Profile",
     "profileSaved": "Profile saved",
+    "saved": "Saved",
     "deleteAccount": "Delete Account",
     "saveChanges": "Save changes?",
     "saveConfirm": "Save",
@@ -267,6 +268,13 @@
     "haveInvite": "Have an invite?",
     "partnerModeNote": "You are viewing {{name}}'s app",
     "restrictedFeature": "Profile editing is only available to the account owner."
+  },
+  "betaGate": {
+    "title": "App Under Construction",
+    "subtitle": "We'll be back soon with something special",
+    "codePlaceholder": "Access Code",
+    "submit": "Enter",
+    "error": "Wrong code, try again"
   },
   "appLock": {
     "title": "App Lock",

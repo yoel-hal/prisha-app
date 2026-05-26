@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+import { Icon } from '@/components/common/Icon';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -48,7 +48,7 @@ function SettingsRow({
       onPress={onPress}
     >
       <Text style={[styles.rowLabel, textStartStyle()]}>{label}</Text>
-      <Feather
+      <Icon
         name={isAppRTL() ? 'chevron-left' : 'chevron-right'}
         size={20}
         color="#999"
@@ -117,7 +117,7 @@ export default function SettingsScreen() {
                 <Text style={styles.avatarText}>{initials}</Text>
               </View>
               <View style={styles.avatarEditBadge}>
-                <Feather name="edit-2" size={12} color="#fff" />
+                <Icon name="edit-2" size={12} color="#fff" />
               </View>
             </Pressable>
             <View style={styles.accountInfo}>

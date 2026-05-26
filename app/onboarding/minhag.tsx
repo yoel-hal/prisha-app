@@ -12,8 +12,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import OnboardingSkipButton from '../../src/components/onboarding/OnboardingSkipButton';
 import type { Minhag } from '../../src/calculations/types';
-import { useSettings } from '../../src/hooks/useSettings';
 import { useAuthStore } from '../../src/store/authStore';
+import { useOnboardingStore } from '../../src/store/onboardingStore';
 import { hasProfileData } from '../../src/utils/profileDisplay';
 import { textStartStyle } from '../../src/utils/rtl';
 import { webScreenScrollStyles } from '../../src/utils/webScroll';
@@ -38,7 +38,7 @@ export default function OnboardingMinhagScreen() {
   const webScroll = webScreenScrollStyles();
   const { t } = useTranslation();
   const router = useRouter();
-  const { selectMinhag } = useSettings();
+  const setMinhag = useOnboardingStore((state) => state.setMinhag);
   const firstName = useAuthStore((state) => state.firstName);
   const lastName = useAuthStore((state) => state.lastName);
   const country = useAuthStore((state) => state.country);
@@ -54,13 +54,13 @@ export default function OnboardingMinhagScreen() {
   }, [firstName, lastName, country, phone, router]);
 
   const goNext = useCallback(
-    async (minhag: Minhag) => {
+    (minhag: Minhag) => {
       setSaving(true);
-      await selectMinhag(minhag);
+      setMinhag(minhag);
       setSaving(false);
       router.push('/onboarding/chumrot');
     },
-    [selectMinhag, router],
+    [setMinhag, router],
   );
 
   return (
