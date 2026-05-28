@@ -23,7 +23,6 @@ const MINHAGIM: Minhag[] = [
   'sfarad',
   'chabad',
   'teimani',
-  'yireim',
 ];
 
 const DESC_KEYS: Record<Minhag, string> = {
@@ -31,7 +30,6 @@ const DESC_KEYS: Record<Minhag, string> = {
   sfarad: 'minhag.sfaradDesc',
   chabad: 'minhag.chabadDesc',
   teimani: 'minhag.teimaniDesc',
-  yireim: 'minhag.yireimDesc',
 };
 
 export default function OnboardingMinhagScreen() {

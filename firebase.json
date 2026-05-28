@@ -10,6 +10,14 @@
       "**/.*",
       "**/node_modules/**"
     ],
+    "headers": [
+      {
+        "source": "/fonts/*.ttf",
+        "headers": [
+          { "key": "Content-Type", "value": "font/ttf" }
+        ]
+      }
+    ],
     "rewrites": [
       {
         "source": "**",

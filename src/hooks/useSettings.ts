@@ -11,7 +11,6 @@ const MINHAGIM: Minhag[] = [
   'sfarad',
   'chabad',
   'teimani',
-  'yireim',
 ];
 
 export function useSettings() {

@@ -93,6 +93,8 @@ function mapChumrot(data: unknown): Chumrot | undefined {
     kavuah: record.kavuah === true,
     veshetEinah: record.veshetEinah === true,
     onahBeinonitIfHaflaga: record.onahBeinonitIfHaflaga === true,
+    bothOnotOnBeinonit: record.bothOnotOnBeinonit === true,
+    bothOnotOnYomHaChodesh: record.bothOnotOnYomHaChodesh === true,
   };
 }
 
@@ -259,8 +261,8 @@ function mapCalendar(data: DocumentData): CalendarSettings {
 
 function mapSettings(data: DocumentData): UserSettings {
   const chumrot = data.chumrot;
-  const minhag = data.minhag;
-  if (typeof minhag !== 'string') {
+  const rawMinhag = data.minhag;
+  if (typeof rawMinhag !== 'string') {
     throw new Error('Invalid settings document: missing minhag');
   }
 
@@ -269,13 +271,27 @@ function mapSettings(data: DocumentData): UserSettings {
       ? (chumrot as Record<string, unknown>)
       : {};
 
+  const chumrotMapped: Chumrot = {
+    kavuah: chumrotRecord.kavuah === true,
+    veshetEinah: chumrotRecord.veshetEinah === true,
+    onahBeinonitIfHaflaga: chumrotRecord.onahBeinonitIfHaflaga === true,
+    bothOnotOnBeinonit: chumrotRecord.bothOnotOnBeinonit === true,
+    bothOnotOnYomHaChodesh: chumrotRecord.bothOnotOnYomHaChodesh === true,
+  };
+
+  let minhag: UserSettings['minhag'] = rawMinhag as UserSettings['minhag'];
+  // MIGRATION: "yireim" was removed as a minhag in refactor v2.
+  // Users who had minhag "yireim" are migrated to ashkenaz +
+  // bothOnotOnBeinonit + bothOnotOnYomHaChodesh = true.
+  if (rawMinhag === 'yireim') {
+    minhag = 'ashkenaz';
+    chumrotMapped.bothOnotOnBeinonit = true;
+    chumrotMapped.bothOnotOnYomHaChodesh = true;
+  }
+
   return {
-    minhag: minhag as UserSettings['minhag'],
-    chumrot: {
-      kavuah: chumrotRecord.kavuah === true,
-      veshetEinah: chumrotRecord.veshetEinah === true,
-      onahBeinonitIfHaflaga: chumrotRecord.onahBeinonitIfHaflaga === true,
-    },
+    minhag,
+    chumrot: chumrotMapped,
     notifications: mapNotifications(data),
     calendar: mapCalendar(data),
   };

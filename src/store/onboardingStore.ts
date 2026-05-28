@@ -7,6 +7,8 @@ const DEFAULT_CHUMROT: Chumrot = {
   kavuah: false,
   veshetEinah: false,
   onahBeinonitIfHaflaga: false,
+  bothOnotOnBeinonit: false,
+  bothOnotOnYomHaChodesh: false,
 };
 
 const initialState = {

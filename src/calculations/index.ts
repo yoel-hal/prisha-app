@@ -1,6 +1,6 @@
 import { calcHaflaga } from './haflaga';
 import { calcOnahBeinonit } from './onahBeinonit';
-import type { Minhag, Period, VesetResult } from './types';
+import type { Chumrot, Minhag, Period, VesetResult } from './types';
 import { calcYomHaChodesh } from './yomHaChodesh';
 
 function sortPeriodsAsc(a: Period, b: Period): number {
@@ -26,24 +26,29 @@ function compareVesetResults(a: VesetResult, b: VesetResult): number {
 }
 
 /**
- * Computes all three standard vestos (onah beinonit, haflaga, yom ha'chodesh) for the given history.
- * Uses the most recent period as the anchor for onah beinonit and yom ha'chodesh; passes the full
- * list to haflaga (which internally uses the last two by civil sort order).
- * Sources: Shulchan Aruch Yoreh De'ah 189:2, 189:4, 189:6.
+ * Computes all three standard vestos for the given period history.
+ * Passes minhag to select the base strategy and chumrot to apply
+ * additional strictnesses on top.
+ * Sources: Shulchan Aruch Yoreh De'ah 189:2, 189:4, 189:6
  *
- * @param periods - Recorded periods (unsorted; will be ordered where needed)
- * @param minhag - Minhag affecting onah beinonit / yom ha'chodesh detail
+ * @param periods - All recorded periods (unsorted)
+ * @param minhag  - Community tradition
+ * @param chumrot - Additional strictnesses
  */
-export function calcAllVesetim(periods: Period[], minhag: Minhag): VesetResult[] {
+export function calcAllVesetim(
+  periods: Period[],
+  minhag: Minhag,
+  chumrot: Chumrot,
+): VesetResult[] {
   const latest = getMostRecentPeriod(periods);
   const out: VesetResult[] = [];
 
   if (latest) {
-    out.push(...calcOnahBeinonit(latest, minhag));
-    out.push(...calcYomHaChodesh(latest, minhag));
+    out.push(...calcOnahBeinonit(latest, minhag, chumrot));
+    out.push(...calcYomHaChodesh(latest, minhag, chumrot));
   }
 
-  out.push(...calcHaflaga(periods, minhag));
+  out.push(...calcHaflaga(periods, minhag, chumrot));
 
   return out.sort(compareVesetResults);
 }

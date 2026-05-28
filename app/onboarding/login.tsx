@@ -95,6 +95,7 @@ export default function OnboardingLoginScreen() {
             </Text>
           </Pressable>
 
+
           {error ? (
             <Text style={[authFormStyles.error, textStartStyle()]} accessibilityRole="alert">
               {error}
@@ -117,6 +118,12 @@ export default function OnboardingLoginScreen() {
             <Text style={authFormStyles.linkText}>{t('auth.noAccount')}</Text>
             <Pressable onPress={() => router.push('/onboarding/register')} disabled={loading}>
               <Text style={authFormStyles.linkAction}>{t('auth.createAccount')}</Text>
+            </Pressable>
+          </View>
+          <View style={authFormStyles.linkRow}>
+            <Text style={authFormStyles.linkText}>{t('auth.JoinAsPartner')}</Text>
+            <Pressable onPress={() => router.push('/join')}>
+              <Text style={authFormStyles.linkAction}>{t('auth.partnerLogin')}</Text>
             </Pressable>
           </View>
         </ScrollView>

@@ -31,6 +31,16 @@ const CHUMRA_ROWS: { key: ChumraKey; labelKey: string; descKey: string }[] = [
     labelKey: 'chumrot.onahBeinonitIfHaflaga',
     descKey: 'chumrot.onahBeinonitIfHaflagaDesc',
   },
+  {
+    key: 'bothOnotOnBeinonit',
+    labelKey: 'chumrot.bothOnotOnBeinonit',
+    descKey: 'chumrot.bothOnotOnBeinonitDesc',
+  },
+  {
+    key: 'bothOnotOnYomHaChodesh',
+    labelKey: 'chumrot.bothOnotOnYomHaChodesh',
+    descKey: 'chumrot.bothOnotOnYomHaChodeshDesc',
+  },
 ];
 
 const MINHAGIM: Minhag[] = [
@@ -38,7 +48,6 @@ const MINHAGIM: Minhag[] = [
   'sfarad',
   'chabad',
   'teimani',
-  'yireim',
 ];
 
 const DESC_KEYS: Record<Minhag, string> = {
@@ -46,7 +55,6 @@ const DESC_KEYS: Record<Minhag, string> = {
   sfarad: 'minhag.sfaradDesc',
   chabad: 'minhag.chabadDesc',
   teimani: 'minhag.teimaniDesc',
-  yireim: 'minhag.yireimDesc',
 };
 
 export default function CustomizationScreen() {

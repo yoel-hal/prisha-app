@@ -21,6 +21,8 @@ const DEFAULT_CHUMROT: Chumrot = {
   kavuah: false,
   veshetEinah: false,
   onahBeinonitIfHaflaga: false,
+  bothOnotOnBeinonit: false,
+  bothOnotOnYomHaChodesh: false,
 };
 
 type ChumraKey = keyof Chumrot;
@@ -36,6 +38,16 @@ const CHUMRA_ROWS: { key: ChumraKey; labelKey: string; descKey: string }[] = [
     key: 'onahBeinonitIfHaflaga',
     labelKey: 'chumrot.onahBeinonitIfHaflaga',
     descKey: 'chumrot.onahBeinonitIfHaflagaDesc',
+  },
+  {
+    key: 'bothOnotOnBeinonit',
+    labelKey: 'chumrot.bothOnotOnBeinonit',
+    descKey: 'chumrot.bothOnotOnBeinonitDesc',
+  },
+  {
+    key: 'bothOnotOnYomHaChodesh',
+    labelKey: 'chumrot.bothOnotOnYomHaChodesh',
+    descKey: 'chumrot.bothOnotOnYomHaChodeshDesc',
   },
 ];
 

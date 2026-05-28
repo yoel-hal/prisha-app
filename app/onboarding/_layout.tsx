@@ -11,6 +11,7 @@ export default function OnboardingLayout() {
       <Stack.Screen name="auth" />
       <Stack.Screen name="register" />
       <Stack.Screen name="login" />
+      <Stack.Screen name="partner-code" />
       <Stack.Screen name="forgot-password" />
       <Stack.Screen name="profile" />
       <Stack.Screen name="minhag" />

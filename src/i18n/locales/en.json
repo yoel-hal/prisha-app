@@ -95,13 +95,11 @@
     "sfarad": "Sfarad",
     "chabad": "Chabad",
     "teimani": "Teimani",
-    "yireim": "Yireim",
     "confirm": "Confirm",
     "ashkenazDesc": "Follows Ashkenazi custom for vestos calculations, including standard onah beinonit and haflaga rules. Haflaga is counted from the day after the previous period began. Commonly used in Israel and the diaspora Ashkenazi community.",
     "sfaradDesc": "Follows Sephardic custom with distinct rules for onah beinonit and veset ha-chodesh. Haflaga intervals follow the Sephardic approach to counting days between periods. Widely used in Sephardic and Mizrahi communities.",
     "chabadDesc": "Follows Chabad/Lubavitch custom, which may differ in how onah beinonit is calculated and when haflaga days apply. Some Chabad poskim are more lenient on certain vestos in specific circumstances.",
-    "teimaniDesc": "Follows Yemenite (Baladi) custom with its own traditions for vestos timing and onah calculations. Day and night onot may be calculated differently than Ashkenaz or Sephardic practice.",
-    "yireimDesc": "Follows the stringent approach of the Yireim, applying additional chumrot where relevant. May treat certain vestos more strictly, including considerations around kavuah and overlapping vestos."
+    "teimaniDesc": "Follows Yemenite (Baladi) custom with its own traditions for vestos timing and onah calculations. Day and night onot may be calculated differently than Ashkenaz or Sephardic practice."
   },
   "vesetTypes": {
     "haflagah": "Haflagah",
@@ -112,8 +110,7 @@
     "ashkenaz": "Ashkenaz",
     "sfarad": "Sfarad",
     "chabad": "Chabad",
-    "teimani": "Teimani",
-    "yireim": "Yireim"
+    "teimani": "Teimani"
   },
   "onah": {
     "day": "Day",
@@ -141,7 +138,10 @@
     "allSet": "You're all set",
     "allSetDesc": "Your preferences are saved. Start tracking your prisha days on the calendar.",
     "start": "Start",
-    "skip": "Skip"
+    "skip": "Skip",
+    "partnerLogin": "Join as partner",
+    "JoinAsPartner": "Partner?"
+
   },
   "chumrot": {
     "kavuah": "Kavuah",
@@ -149,7 +149,11 @@
     "veshetEinah": "Veset she-einah",
     "veshetEinahDesc": "Apply rules for a veset that did not occur on the expected date.",
     "onahBeinonitIfHaflaga": "Onah beinonit with haflaga",
-    "onahBeinonitIfHaflagaDesc": "Also apply onah beinonit when a haflaga veset falls on the same day."
+    "onahBeinonitIfHaflagaDesc": "Also apply onah beinonit when a haflaga veset falls on the same day.",
+    "bothOnotOnBeinonit": "Keep both onot on day 30 (Ohr Zarua)",
+    "bothOnotOnBeinonitDesc": "Observe both day and night onah on the 30th day. Enable if your rav follows the Ohr Zarua.",
+    "bothOnotOnYomHaChodesh": "Keep both onot on yom hachodesh (Kreisi uPleisi)",
+    "bothOnotOnYomHaChodeshDesc": "Observe both day and night onah on the Hebrew calendar date. Enable if your rav follows the Kreisi uPleisi."
   },
   "couple": {
     "title": "Couple Sync",

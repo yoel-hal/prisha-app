@@ -1,55 +1,45 @@
+import { minhagRegistry } from './minhagim';
+import type { Chumrot, Minhag, Period, VesetResult } from './types';
+
 /**
- * Yom HaChodesh — same Hebrew calendar day next Hebrew month, same onah.
+ * Computes yom hachodesh (same Hebrew date next month) vest.
+ * Delegates base logic to the minhag strategy, then applies chumrot on top.
  * Source: Shulchan Aruch Yoreh De'ah 189:6
+ *
+ * @param period  - Anchor period whose Hebrew day-of-month defines the vest
+ * @param minhag  - Community tradition
+ * @param chumrot - Additional strictnesses applied on top of the minhag base
  */
-
-import { addHebrewMonths, formatGregorianLocal, hebrewDateToGregorian } from './onah';
-import type { Minhag, Period, VesetResult } from './types';
-
-function vesetId(
-  type: VesetResult['type'],
-  sourcePeriodId: string,
-  dateGregorian: string,
-  onah: VesetResult['onah'],
-): string {
-  return `veset-${type}-${sourcePeriodId}-${dateGregorian}-${onah}`;
-}
-
-function resultFor(
+export function calcYomHaChodesh(
   period: Period,
   minhag: Minhag,
-  dateHebrew: Period['dateHebrew'],
-  onah: Period['onah'],
-): VesetResult {
-  const dateGregorian = formatGregorianLocal(hebrewDateToGregorian(dateHebrew));
-  return {
-    id: vesetId('yomHaChodesh', period.id, dateGregorian, onah),
-    type: 'yomHaChodesh',
-    dateGregorian,
-    dateHebrew,
-    onah,
-    sourcePeriodId: period.id,
-    minhagLabel: minhag,
-    isKavuah: false,
-  };
-}
+  chumrot: Chumrot,
+): VesetResult[] {
+  const base = minhagRegistry[minhag].calcYomHaChodesh(period);
 
-/**
- * Computes yom ha'chodesh (calendar-day vest in the next Hebrew month).
- * Source: Shulchan Aruch Yoreh De'ah 189:6.
- *
- * @param period - Anchor period whose Hebrew date defines the day-of-month
- * @param minhag - Some communities keep both onot on that Hebrew date (yireim)
- */
-export function calcYomHaChodesh(period: Period, minhag: Minhag): VesetResult[] {
-  const nextMonthHebrew = addHebrewMonths(period.dateHebrew, 1);
-
-  if (minhag === 'yireim') {
-    return [
-      resultFor(period, minhag, nextMonthHebrew, 'day'),
-      resultFor(period, minhag, nextMonthHebrew, 'night'),
-    ];
+  // Apply chumra: bothOnotOnYomHaChodesh means keep BOTH day and night
+  // on that Hebrew date next month, regardless of base minhag result.
+  if (chumrot.bothOnotOnYomHaChodesh) {
+    const dateGregorian = base[0]!.dateGregorian;
+    const hasDay = base.some((r) => r.onah === 'day');
+    const hasNight = base.some((r) => r.onah === 'night');
+    const extra: VesetResult[] = [];
+    if (!hasDay) {
+      extra.push({
+        ...base[0]!,
+        id: `veset-yomHaChodesh-${period.id}-${dateGregorian}-day`,
+        onah: 'day',
+      });
+    }
+    if (!hasNight) {
+      extra.push({
+        ...base[0]!,
+        id: `veset-yomHaChodesh-${period.id}-${dateGregorian}-night`,
+        onah: 'night',
+      });
+    }
+    return [...base, ...extra];
   }
 
-  return [resultFor(period, minhag, nextMonthHebrew, period.onah)];
+  return base;
 }

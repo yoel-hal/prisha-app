@@ -8,10 +8,11 @@ import { useSettingsStore } from '../store/settingsStore';
 export function useVesetCalculations(): { vesetim: VesetResult[] } {
   const periods = usePeriodsStore((state) => state.periods);
   const minhag = useSettingsStore((state) => state.minhag);
+  const chumrot = useSettingsStore((state) => state.chumrot);
 
   const vesetim = useMemo(
-    () => calcAllVesetim(periods, minhag),
-    [periods, minhag],
+    () => calcAllVesetim(periods, minhag, chumrot),
+    [periods, minhag, chumrot],
   );
 
   return { vesetim };

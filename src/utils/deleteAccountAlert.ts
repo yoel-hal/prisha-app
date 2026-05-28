@@ -24,6 +24,8 @@ const DEFAULT_CHUMROT = {
   kavuah: false,
   veshetEinah: false,
   onahBeinonitIfHaflaga: false,
+  bothOnotOnBeinonit: false,
+  bothOnotOnYomHaChodesh: false,
 } as const;
 
 let deleteAccountConfirmed = false;

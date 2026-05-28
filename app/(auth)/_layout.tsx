@@ -9,6 +9,7 @@ export default function AuthLayout() {
       <Stack.Screen name="beta-gate" />
       <Stack.Screen name="login" />
       <Stack.Screen name="register" />
+      <Stack.Screen name="partner_login" />
     </Stack>
   );
 }

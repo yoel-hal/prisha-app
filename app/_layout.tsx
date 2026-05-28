@@ -20,7 +20,7 @@ import { getUserDocument } from '../src/firebase/firestore';
 import {
   bootstrapCoupleForAuthUser,
   bootstrapPartnerMode,
-} from '../src/hooks/useCouple';
+} from '../src/hooks/useCouple';  
 import { useAuthStore } from '../src/store/authStore';
 import { useSettingsStore } from '../src/store/settingsStore';
 import { log } from '../src/utils/log';

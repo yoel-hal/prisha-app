@@ -16,6 +16,7 @@ export function useAddPeriod() {
   const coupleId = useAuthStore((state) => state.coupleId);
   const user = useAuthStore((state) => state.user);
   const minhag = useSettingsStore((state) => state.minhag);
+  const chumrot = useSettingsStore((state) => state.chumrot);
 
   const [gregorianDate, setGregorianDate] = useState(() => new Date());
   const [hebrewDate, setHebrewDate] = useState<HebrewDate>(() =>
@@ -65,14 +66,14 @@ export function useAddPeriod() {
       const allPeriods = [...existing, newPeriod].sort((a, b) =>
         a.dateGregorian.localeCompare(b.dateGregorian),
       );
-      const vesetim = calcAllVesetim(allPeriods, minhag);
+      const vesetim = calcAllVesetim(allPeriods, minhag, chumrot);
       setConfirmationVesetim(vesetim);
       setNotes('');
       return true;
     } finally {
       setIsSaving(false);
     }
-  }, [coupleId, user, gregorianDate, hebrewDate, onah, notes, minhag]);
+  }, [coupleId, user, gregorianDate, hebrewDate, onah, notes, minhag, chumrot]);
 
   return {
     gregorianDate,

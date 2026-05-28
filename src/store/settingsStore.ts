@@ -13,6 +13,8 @@ const DEFAULT_CHUMROT: Chumrot = {
   kavuah: false,
   veshetEinah: false,
   onahBeinonitIfHaflaga: false,
+  bothOnotOnBeinonit: false,
+  bothOnotOnYomHaChodesh: false,
 };
 
 export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
