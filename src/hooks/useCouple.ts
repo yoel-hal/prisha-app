@@ -69,8 +69,8 @@ export function useCouple() {
       }
 
       const access = await getPartnerAccess(currentUser.uid);
-      console.log('[useCouple] getPartnerAccess result', JSON.stringify(access));
-      console.log('[useCouple] setting partnerAccess', access?.isActive ? 'ACTIVE' : 'null/inactive');
+      log('[useCouple] getPartnerAccess result', JSON.stringify(access));
+      log('[useCouple] setting partnerAccess', access?.isActive ? 'ACTIVE' : 'null/inactive');
       setPartnerAccess(access?.isActive ? access : null);
       await refreshOwnerCoupleData(currentCoupleId);
     } finally {

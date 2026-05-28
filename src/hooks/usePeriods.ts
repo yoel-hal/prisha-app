@@ -16,7 +16,7 @@ export function usePeriods(): { periods: ReturnType<typeof usePeriodsStore.getSt
       return;
     }
 
-    usePeriodsStore.setState({ isLoading: true });
+    usePeriodsStore.getState().setLoading(true);
 
     const unsubscribe = subscribeToPeriods(coupleId, (nextPeriods) => {
       setPeriods(nextPeriods);

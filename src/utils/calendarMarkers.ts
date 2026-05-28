@@ -33,13 +33,12 @@ export function buildMarkedDates(
   periods: Period[],
   vesetim: VesetResult[],
 ): MarkedDates {
-  const byDate = new Map<string, CalendarMarkerKind[]>();
+  const byDate = new Map<string, Set<CalendarMarkerKind>>();
 
   const addMarker = (date: string, kind: CalendarMarkerKind) => {
-    const existing = byDate.get(date) ?? [];
-    if (!existing.includes(kind)) {
-      byDate.set(date, [...existing, kind]);
-    }
+    const existing = byDate.get(date) ?? new Set<CalendarMarkerKind>();
+    existing.add(kind);
+    byDate.set(date, existing);
   };
 
   for (const period of periods) {
@@ -54,7 +53,7 @@ export function buildMarkedDates(
 
   for (const [date, kinds] of byDate) {
     marked[date] = {
-      dots: kinds.map((kind) => ({
+      dots: [...kinds].map((kind) => ({
         key: kind,
         color: MARKER_COLORS[kind],
       })),

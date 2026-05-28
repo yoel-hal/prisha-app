@@ -7,7 +7,6 @@ import { AppState, Platform, StyleSheet, View, type AppStateStatus } from 'react
 import { NotificationScheduler } from '../../src/components/app/NotificationScheduler';
 import { AppLockGate } from '../../src/components/common/AppLockGate';
 import { PartnerModeBanner } from '../../src/components/common/PartnerModeBanner';
-import CoupleDebugOverlay from '../../src/components/dev/CoupleDebugOverlay';
 import { WebAppShell } from '../../src/components/web/WebAppShell';
 import { signOut } from '../../src/firebase/auth';
 import { checkPartnerAccessValid } from '../../src/firebase/firestore';
@@ -17,6 +16,10 @@ import { useDesktopWeb } from '../../src/hooks/useDesktopWeb';
 import { usePeriods } from '../../src/hooks/usePeriods';
 import { useAuthStore } from '../../src/store/authStore';
 import { clearPartnerSession } from '../../src/utils/partnerSession';
+
+const CoupleDebugOverlay = __DEV__
+  ? require('../../src/components/dev/CoupleDebugOverlay').default
+  : null;
 
 export default function AppLayout() {
   const { t } = useTranslation();

@@ -7,6 +7,7 @@ import type {
   NotificationSettings,
 } from '../calculations/types';
 import { getSettings, saveSettings as saveSettingsToFirestore } from '../firebase/firestore';
+import { log, logError } from '../utils/log';
 
 const DEFAULT_CHUMROT: Chumrot = {
   kavuah: false,
@@ -56,23 +57,31 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       calendar: { ...state.calendar, syncedEventIds },
     })),
   loadSettings: async (coupleId) => {
-    const settings = await getSettings(coupleId);
-    if (settings) {
-      set({
-        minhag: settings.minhag,
-        chumrot: settings.chumrot,
-        notifications: settings.notifications,
-        calendar: settings.calendar,
-      });
+    try {
+      const settings = await getSettings(coupleId);
+      if (settings) {
+        set({
+          minhag: settings.minhag,
+          chumrot: settings.chumrot,
+          notifications: settings.notifications,
+          calendar: settings.calendar,
+        });
+      }
+    } catch (error) {
+      logError('loadSettings failed', error);
     }
   },
   saveSettings: async (coupleId) => {
-    const { minhag, chumrot, notifications, calendar } = get();
-    await saveSettingsToFirestore(coupleId, {
-      minhag,
-      chumrot,
-      notifications,
-      calendar,
-    });
+    try {
+      const { minhag, chumrot, notifications, calendar } = get();
+      await saveSettingsToFirestore(coupleId, {
+        minhag,
+        chumrot,
+        notifications,
+        calendar,
+      });
+    } catch (error) {
+      throw error;
+    }
   },
 }));

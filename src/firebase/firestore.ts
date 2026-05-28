@@ -31,6 +31,7 @@ import type {
 } from '../calculations/types';
 const DEFAULT_EVENT_TITLE = 'פרישה';
 import { db } from './config';
+import { log, logError } from '../utils/log';
 
 const SETTINGS_DOC_ID = 'main';
 
@@ -438,7 +439,7 @@ export async function createCouple(
     createdAt: serverTimestamp(),
   };
 
-  console.log('[createCouple] writing couple document', { coupleId, coupleData });
+  log('[createCouple] writing couple document', { coupleId, coupleData });
 
   await setDoc(newCoupleRef, coupleData);
 
@@ -450,7 +451,7 @@ export async function createCouple(
     !Array.isArray(writtenMembers) ||
     !writtenMembers.includes(userId)
   ) {
-    console.error('[createCouple] verification failed', {
+    logError('[createCouple] verification failed', {
       coupleId,
       exists: written.exists(),
       data: written.data(),
@@ -464,7 +465,7 @@ export async function createCouple(
     role: 'owner',
   });
 
-  console.log('[createCouple] success', { coupleId, members: writtenMembers });
+  log('[createCouple] success', { coupleId, members: writtenMembers });
 
   return coupleId;
 }
@@ -476,7 +477,7 @@ export async function completeOnboarding(
   userId: string,
   data: CompleteOnboardingData,
 ): Promise<string> {
-  console.log('[completeOnboarding] data', data);
+  log('[completeOnboarding] data', data);
 
   const newCoupleRef = doc(collection(db, 'couples'));
   const coupleId = newCoupleRef.id;
