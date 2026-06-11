@@ -100,3 +100,8 @@ export function formatGregorianLocal(date: Date): string {
   const d = date.getDate();
   return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 }
+
+/** Parses a `YYYY-MM-DD` string as local civil noon (no UTC shift). */
+export function parseGregorianLocal(value: string): Date {
+  return new Date(`${value}T12:00:00`);
+}

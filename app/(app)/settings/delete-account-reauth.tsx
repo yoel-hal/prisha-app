@@ -1,5 +1,5 @@
 import { Stack, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -15,6 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { authFormStyles } from '../../../src/components/auth/authFormStyles';
+import { useAuthStore } from '../../../src/store/authStore';
 import {
   consumeDeleteAccountConfirmed,
   submitDeleteAccountPassword,
@@ -26,9 +27,12 @@ export default function DeleteAccountReauthScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const webScroll = webScreenScrollStyles();
+  const isDeletingAccount = useAuthStore((state) => state.isDeletingAccount);
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const passwordRef = useRef<TextInput>(null);
+  const busy = submitting || isDeletingAccount;
 
   useEffect(() => {
     if (!consumeDeleteAccountConfirmed()) {
@@ -78,14 +82,17 @@ export default function DeleteAccountReauthScreen() {
                 {t('auth.password')}
               </Text>
               <TextInput
+                ref={passwordRef}
                 style={authFormStyles.input}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
                 autoCapitalize="none"
                 autoCorrect={false}
-                editable={!submitting}
+                editable={!busy}
                 textContentType="password"
+                returnKeyType="done"
+                onSubmitEditing={() => void handleDelete()}
               />
             </View>
 
@@ -96,12 +103,12 @@ export default function DeleteAccountReauthScreen() {
             <Pressable
               style={[
                 styles.deleteButton,
-                (submitting || password.trim() === '') && styles.deleteButtonDisabled,
+                (busy || password.trim() === '') && styles.deleteButtonDisabled,
               ]}
               onPress={() => void handleDelete()}
-              disabled={submitting || password.trim() === ''}
+              disabled={busy || password.trim() === ''}
             >
-              {submitting ? (
+              {busy ? (
                 <ActivityIndicator color="#fff" />
               ) : (
                 <Text style={styles.deleteButtonText}>

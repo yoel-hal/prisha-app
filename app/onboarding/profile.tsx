@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -9,10 +9,12 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import type { CountryPickerFieldHandle } from '../../src/components/common/CountryPickerField';
 import { ProfileFormFields } from '../../src/components/settings/ProfileFormFields';
 import {
   ensureUserDocument,
@@ -40,6 +42,10 @@ export default function OnboardingProfileScreen() {
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const firstNameRef = useRef<TextInput>(null);
+  const lastNameRef = useRef<TextInput>(null);
+  const countryPickerRef = useRef<CountryPickerFieldHandle>(null);
+  const phoneRef = useRef<TextInput>(null);
 
   useEffect(() => {
     if (!user) {
@@ -159,6 +165,11 @@ export default function OnboardingProfileScreen() {
               phone={phone}
               setPhone={setPhone}
               disabled={saving}
+              firstNameRef={firstNameRef}
+              lastNameRef={lastNameRef}
+              countryPickerRef={countryPickerRef}
+              phoneRef={phoneRef}
+              onPhoneSubmitEditing={() => void handleContinue()}
             />
           )}
         </ScrollView>

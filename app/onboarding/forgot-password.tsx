@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import {
@@ -23,6 +24,11 @@ export default function OnboardingForgotPasswordScreen() {
   const router = useRouter();
   const textStart = useAlignStart();
   const { email, setEmail, loading, error, successMessage, forgotPassword } = useEmailAuth();
+  const emailRef = useRef<TextInput>(null);
+
+  function handleSubmit() {
+    void forgotPassword();
+  }
 
   return (
     <SafeAreaView style={[authFormStyles.safe, webScroll.safe]} edges={['top', 'bottom']}>
@@ -43,6 +49,7 @@ export default function OnboardingForgotPasswordScreen() {
           <View style={authFormStyles.field}>
             <Text style={[authFormStyles.label, textStartStyle()]}>{t('auth.email')}</Text>
             <TextInput
+              ref={emailRef}
               style={authFormStyles.input}
               value={email}
               onChangeText={setEmail}
@@ -55,6 +62,8 @@ export default function OnboardingForgotPasswordScreen() {
               textAlign={textStart}
               placeholder={t('auth.emailPlaceholder')}
               placeholderTextColor="#999"
+              returnKeyType="done"
+              onSubmitEditing={handleSubmit}
             />
           </View>
 

@@ -1,5 +1,5 @@
 import { Stack, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -8,10 +8,12 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import type { CountryPickerFieldHandle } from '../../../src/components/common/CountryPickerField';
 import { ProfileFormFields } from '../../../src/components/settings/ProfileFormFields';
 import {
   getUserDocument,
@@ -43,6 +45,10 @@ export default function ProfileSettingsScreen() {
   const [language, setLanguage] = useState<OnboardingLanguage>('en');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const firstNameRef = useRef<TextInput>(null);
+  const lastNameRef = useRef<TextInput>(null);
+  const countryPickerRef = useRef<CountryPickerFieldHandle>(null);
+  const phoneRef = useRef<TextInput>(null);
 
   useEffect(() => {
     if (!user?.uid) {
@@ -151,6 +157,11 @@ export default function ProfileSettingsScreen() {
                 phone={phone}
                 setPhone={setPhone}
                 disabled={saving || isPartnerMode}
+                firstNameRef={firstNameRef}
+                lastNameRef={lastNameRef}
+                countryPickerRef={countryPickerRef}
+                phoneRef={phoneRef}
+                onPhoneSubmitEditing={() => void handleSave()}
               />
             </>
           )}

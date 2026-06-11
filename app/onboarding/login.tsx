@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import {
@@ -27,6 +28,12 @@ export default function OnboardingLoginScreen() {
   const router = useRouter();
   const textStart = useAlignStart();
   const { email, setEmail, password, setPassword, loading, error, signIn } = useEmailAuth();
+  const emailRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInput>(null);
+
+  function handleSubmit() {
+    void signIn();
+  }
 
   function handleOAuthLogin(user: User) {
     void navigateAfterSignIn(router, user);
@@ -52,6 +59,7 @@ export default function OnboardingLoginScreen() {
           <View style={authFormStyles.field}>
             <Text style={[authFormStyles.label, textStartStyle()]}>{t('auth.email')}</Text>
             <TextInput
+              ref={emailRef}
               style={authFormStyles.input}
               value={email}
               onChangeText={setEmail}
@@ -64,12 +72,16 @@ export default function OnboardingLoginScreen() {
               textAlign={textStart}
               placeholder={t('auth.emailPlaceholder')}
               placeholderTextColor="#999"
+              returnKeyType="next"
+              blurOnSubmit={false}
+              onSubmitEditing={() => passwordRef.current?.focus()}
             />
           </View>
 
           <View style={authFormStyles.field}>
             <Text style={[authFormStyles.label, textStartStyle()]}>{t('auth.password')}</Text>
             <TextInput
+              ref={passwordRef}
               style={authFormStyles.input}
               value={password}
               onChangeText={setPassword}
@@ -82,6 +94,8 @@ export default function OnboardingLoginScreen() {
               textAlign={textStart}
               placeholder={t('auth.passwordPlaceholder')}
               placeholderTextColor="#999"
+              returnKeyType="done"
+              onSubmitEditing={handleSubmit}
             />
           </View>
 

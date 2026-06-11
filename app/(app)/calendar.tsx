@@ -1,4 +1,4 @@
-import { Calendar } from 'react-native-calendars';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CalendarDayPanel } from '../../src/components/calendar/CalendarDayPanel';
 import { CalendarDaySheet } from '../../src/components/calendar/CalendarDaySheet';
+import { CalendarView } from '../../src/components/calendar/CalendarView';
 import { UpcomingVesetimList } from '../../src/components/calendar/UpcomingVesetimList';
 import { WebMainContent } from '../../src/components/web/WebMainContent';
 import { useCalendar } from '../../src/hooks/useCalendar';
@@ -22,6 +23,10 @@ import { isAppRTL, textStartStyle } from '../../src/utils/rtl';
 export default function CalendarScreen() {
   const { t } = useTranslation();
   const isDesktopWeb = useDesktopWeb();
+  const [displayMonth, setDisplayMonth] = useState<Date>(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  });
   usePeriods();
   const { vesetim } = useVesetCalculations();
   const {
@@ -58,21 +63,13 @@ export default function CalendarScreen() {
         </View>
       ) : (
         <>
-          <Calendar
-            markingType="multi-dot"
+          <CalendarView
+            displayMonth={displayMonth}
+            onDisplayMonthChange={setDisplayMonth}
             markedDates={markedDates}
             onDayPress={onDayPress}
             onMonthChange={onMonthChange}
-            enableSwipeMonths
-            style={isDesktopWeb ? styles.calendarDesktop : styles.calendar}
-            theme={{
-              todayTextColor: '#1a1a1a',
-              selectedDayBackgroundColor: '#1a1a1a',
-              arrowColor: '#1a1a1a',
-              textDayFontSize: isDesktopWeb ? 16 : 14,
-              textMonthFontSize: isDesktopWeb ? 18 : 16,
-              textDayHeaderFontSize: isDesktopWeb ? 14 : 12,
-            }}
+            isDesktopWeb={isDesktopWeb}
           />
           {!hasData ? (
             <Text style={styles.empty}>{t('calendar.noData')}</Text>
@@ -150,15 +147,6 @@ const styles = StyleSheet.create({
   gregorianMonth: {
     fontSize: 15,
     color: '#666',
-  },
-  calendar: {
-    paddingStart: 8,
-    paddingEnd: 8,
-  },
-  calendarDesktop: {
-    paddingStart: 0,
-    paddingEnd: 0,
-    minHeight: 420,
   },
   centered: {
     flex: 1,

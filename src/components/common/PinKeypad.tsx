@@ -1,6 +1,6 @@
 import { Icon } from '@/components/common/Icon';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { textStartStyle } from '../../utils/rtl';
 
@@ -29,23 +29,50 @@ export function PinKeypad({ title, subtitle, error, onComplete }: PinKeypadProps
     onCompleteRef.current(pin);
   }, [digits]);
 
+  const handleDelete = useCallback(() => {
+    setDigits((current) => current.slice(0, -1));
+  }, []);
+
+  const handleDigit = useCallback((digit: string) => {
+    setDigits((current) => {
+      if (current.length >= PIN_LENGTH) {
+        return current;
+      }
+      return current + digit;
+    });
+  }, []);
+
   const handleKeyPress = useCallback((key: (typeof KEYPAD_KEYS)[number]) => {
     if (key === 'blank') {
       return;
     }
 
     if (key === 'backspace') {
-      setDigits((current) => current.slice(0, -1));
+      handleDelete();
       return;
     }
 
-    setDigits((current) => {
-      if (current.length >= PIN_LENGTH) {
-        return current;
+    handleDigit(key);
+  }, [handleDelete, handleDigit]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key >= '0' && e.key <= '9') {
+        e.preventDefault();
+        handleDigit(e.key);
+        return;
       }
-      return current + key;
-    });
-  }, []);
+      if (e.key === 'Backspace') {
+        e.preventDefault();
+        handleDelete();
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleDigit, handleDelete]);
 
   return (
     <View style={styles.container}>

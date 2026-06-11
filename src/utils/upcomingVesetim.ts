@@ -1,4 +1,13 @@
+import { formatGregorianLocal } from '../calculations/onah';
 import type { VesetResult } from '../calculations/types';
+
+/** All vestos on or after today, sorted ascending by date. */
+export function getFutureVesetim(vesetim: VesetResult[]): VesetResult[] {
+  const today = formatGregorianLocal(new Date());
+  return vesetim
+    .filter((veset) => veset.dateGregorian >= today)
+    .sort((a, b) => a.dateGregorian.localeCompare(b.dateGregorian));
+}
 
 /** Vestos from today through the next N calendar months, sorted by date. */
 export function getUpcomingVesetim(

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { forwardRef, useImperativeHandle, useMemo, useState } from 'react';
 import {
   FlatList,
   Modal,
@@ -43,6 +43,10 @@ const COUNTRIES: { code: string; en: string; he: string }[] = [
   { code: 'IN', en: 'India', he: 'הודו' },
 ];
 
+export type CountryPickerFieldHandle = {
+  open: () => void;
+};
+
 type CountryPickerFieldProps = {
   value: string;
   onChange: (countryName: string) => void;
@@ -50,16 +54,25 @@ type CountryPickerFieldProps = {
   editable?: boolean;
 };
 
-export function CountryPickerField({
-  value,
-  onChange,
-  placeholder,
-  editable = true,
-}: CountryPickerFieldProps) {
+export const CountryPickerField = forwardRef<
+  CountryPickerFieldHandle,
+  CountryPickerFieldProps
+>(function CountryPickerField(
+  { value, onChange, placeholder, editable = true },
+  ref,
+) {
   const { i18n } = useTranslation();
   const isHebrew = i18n.language === 'he';
   const [modalVisible, setModalVisible] = useState(false);
   const [search, setSearch] = useState('');
+
+  useImperativeHandle(ref, () => ({
+    open: () => {
+      if (editable) {
+        setModalVisible(true);
+      }
+    },
+  }));
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -132,7 +145,7 @@ export function CountryPickerField({
       </Modal>
     </>
   );
-}
+});
 
 const styles = StyleSheet.create({
   trigger: {

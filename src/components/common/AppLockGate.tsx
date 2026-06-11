@@ -1,24 +1,29 @@
-import type { ReactNode } from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAppLock } from '../../hooks/useAppLock';
 import { useAuthStore } from '../../store/authStore';
+import { usePinStore } from '../../store/pinStore';
 import { textStartStyle } from '../../utils/rtl';
 import { PinKeypad } from './PinKeypad';
 
 type AppLockGateProps = {
-  children: ReactNode;
+  visible: boolean;
 };
 
-export function AppLockGate({ children }: AppLockGateProps) {
+export function AppLockGate({ visible }: AppLockGateProps) {
   const { t } = useTranslation();
-  const appLockEnabled = useAuthStore((state) => state.appLockEnabled);
   const appLockType = useAuthStore((state) => state.appLockType);
-  const isAppLocked = useAuthStore((state) => state.isAppLocked);
-  const setIsAppLocked = useAuthStore((state) => state.setIsAppLocked);
+  const isUnlocked = usePinStore((state) => state.isUnlocked);
+  const setUnlocked = usePinStore((state) => state.setUnlocked);
   const { verifyPin, verifyBiometric, hasStoredPin } = useAppLock();
 
   const [showPinFallback, setShowPinFallback] = useState(false);
@@ -31,38 +36,38 @@ export function AppLockGate({ children }: AppLockGateProps) {
     try {
       const success = await verifyBiometric(t('appLock.biometricPrompt'));
       if (success) {
-        setIsAppLocked(false);
+        setUnlocked(true);
         setShowPinFallback(false);
         setPinError(null);
       }
     } finally {
       setBiometricLoading(false);
     }
-  }, [setIsAppLocked, t, verifyBiometric]);
+  }, [setUnlocked, t, verifyBiometric]);
 
   useEffect(() => {
-    if (!isAppLocked || appLockType !== 'biometric' || showPinFallback) {
+    if (!visible || isUnlocked || appLockType !== 'biometric' || showPinFallback) {
       return;
     }
 
     void runBiometricUnlock();
-  }, [appLockType, isAppLocked, runBiometricUnlock, showPinFallback]);
+  }, [appLockType, isUnlocked, runBiometricUnlock, showPinFallback, visible]);
 
   useEffect(() => {
-    if (!isAppLocked) {
+    if (!visible || isUnlocked) {
       setShowPinFallback(false);
       setPinError(null);
       return;
     }
 
     void hasStoredPin().then(setPinFallbackAvailable);
-  }, [hasStoredPin, isAppLocked]);
+  }, [hasStoredPin, isUnlocked, visible]);
 
   const handlePinComplete = useCallback(
     async (pin: string) => {
       const valid = await verifyPin(pin);
       if (valid) {
-        setIsAppLocked(false);
+        setUnlocked(true);
         setPinError(null);
         setShowPinFallback(false);
         return;
@@ -70,18 +75,18 @@ export function AppLockGate({ children }: AppLockGateProps) {
 
       setPinError(t('appLock.wrongPin'));
     },
-    [setIsAppLocked, t, verifyPin],
+    [setUnlocked, t, verifyPin],
   );
 
-  if (!appLockEnabled || !isAppLocked) {
-    return children;
+  if (!visible || isUnlocked) {
+    return null;
   }
 
   const showPinEntry =
     appLockType === 'pin' || (appLockType === 'biometric' && showPinFallback);
 
   return (
-    <View style={styles.overlay}>
+    <View style={styles.overlay} pointerEvents="auto">
       <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
         <View style={styles.content}>
           <Text style={[styles.lockedTitle, textStartStyle()]}>

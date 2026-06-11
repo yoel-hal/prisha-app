@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { isAppRTL, textStartStyle } from '../../../src/utils/rtl';
 import { webScreenScrollStyles } from '../../../src/utils/webScroll';
 
-const GITHUB_URL = 'https://github.com';
+const GITHUB_URL = 'https://links.payboxapp.com/bPTLaIaYv3b'
 const PRIVACY_EMAIL = 'privacy@prisha-app.com';
 
 const PRIVACY_SECTIONS = [

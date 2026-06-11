@@ -27,6 +27,23 @@ service cloud.firestore {
       return isCoupleMember(coupleId) || coupleHasActivePartnerAccess(coupleId);
     }
 
+    function coupleInviteDoc(coupleId) {
+      return get(/databases/$(database)/documents/couples/$(coupleId)/public/invite);
+    }
+
+    function hasValidCoupleInvite(coupleId) {
+      return coupleInviteDoc(coupleId).data.inviteExpiresAt > request.time;
+    }
+
+    function isJoiningCoupleViaInvite(coupleId) {
+      return isAuthenticated()
+        && hasValidCoupleInvite(coupleId)
+        && resource.data.members.size() == 1
+        && request.resource.data.members.size() == 2
+        && request.auth.uid in request.resource.data.members
+        && !(request.auth.uid in resource.data.members);
+    }
+
     match /users/{userId} {
       allow read, write: if isOwner(userId);
 
@@ -35,8 +52,21 @@ service cloud.firestore {
         allow read: if isAuthenticated();
         allow update: if isAuthenticated()
           && resource.data.isActive == true
-          && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['partnerLastSeen']);
+          && (
+            (request.auth.uid == userId)
+            || (
+              request.auth.uid == request.resource.data.partnerUid
+              && (!('partnerUid' in resource.data) || resource.data.partnerUid == null)
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                'partnerUid',
+                'partnerConnectedAt',
+                'partnerLastSeen',
+                'isActive',
+              ])
+            )
+            || request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['partnerLastSeen'])
+          );
       }
     }
 
@@ -46,16 +76,23 @@ service cloud.firestore {
     }
 
     match /couples/{coupleId} {
-      allow read: if canAccessCouple(coupleId);
+      allow get: if canAccessCouple(coupleId)
+        || (isAuthenticated() && hasValidCoupleInvite(coupleId));
+      allow list: if canAccessCouple(coupleId);
 
       allow create: if isAuthenticated()
         && request.auth.uid in request.resource.data.members
         && request.resource.data.members.size() == 1;
 
-      allow update: if isCoupleMember(coupleId);
+      allow update: if isCoupleMember(coupleId) || isJoiningCoupleViaInvite(coupleId);
 
       allow delete: if isCoupleMember(coupleId)
         && resource.data.members.size() <= 1;
+
+      match /public/{docId} {
+        allow read: if isAuthenticated();
+        allow write: if isCoupleMember(coupleId);
+      }
 
       match /periods/{periodId} {
         allow read, write: if canAccessCouple(coupleId);
@@ -63,6 +100,8 @@ service cloud.firestore {
 
       match /settings/{settingsId} {
         allow read, write: if canAccessCouple(coupleId);
+        allow create: if isAuthenticated()
+          && request.auth.uid in get(/databases/$(database)/documents/couples/$(coupleId)).data.members;
       }
     }
   }

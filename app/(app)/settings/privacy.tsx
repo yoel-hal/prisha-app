@@ -21,6 +21,7 @@ import { textStartStyle } from '../../../src/utils/rtl';
 import { webScreenScrollStyles } from '../../../src/utils/webScroll';
 
 type PinSetupStep = 'enter' | 'confirm';
+type PinModalMode = 'setup' | 'disable';
 
 export default function PrivacySettingsScreen() {
   const { t } = useTranslation();
@@ -31,26 +32,54 @@ export default function PrivacySettingsScreen() {
     enrollPin,
     enrollBiometric,
     disableLock,
+    verifyPin,
+    verifyBiometric,
     isLockAvailable,
   } = useAppLock();
 
   const [showTypePicker, setShowTypePicker] = useState(false);
   const [showPinModal, setShowPinModal] = useState(false);
+  const [pinModalMode, setPinModalMode] = useState<PinModalMode>('setup');
   const [pinSetupStep, setPinSetupStep] = useState<PinSetupStep>('enter');
   const [pendingPin, setPendingPin] = useState('');
   const [pinError, setPinError] = useState<string | null>(null);
   const [enrollingBiometric, setEnrollingBiometric] = useState(false);
+  const [disablingLock, setDisablingLock] = useState(false);
   const pinSetupStepRef = useRef(pinSetupStep);
   pinSetupStepRef.current = pinSetupStep;
   const pendingPinRef = useRef(pendingPin);
   pendingPinRef.current = pendingPin;
 
-  const resetPinSetup = useCallback(() => {
+  const resetPinModal = useCallback(() => {
     setShowPinModal(false);
+    setPinModalMode('setup');
     setPinSetupStep('enter');
     setPendingPin('');
     setPinError(null);
+    setDisablingLock(false);
   }, []);
+
+  const startDisableLock = useCallback(async () => {
+    if (appLockType === 'biometric') {
+      setDisablingLock(true);
+      try {
+        const success = await verifyBiometric(t('appLock.confirmDisablePin'));
+        if (!success) {
+          return;
+        }
+        await disableLock();
+      } finally {
+        setDisablingLock(false);
+      }
+      return;
+    }
+
+    setPinModalMode('disable');
+    setPinSetupStep('enter');
+    setPendingPin('');
+    setPinError(null);
+    setShowPinModal(true);
+  }, [appLockType, disableLock, t, verifyBiometric]);
 
   const handleToggle = useCallback(
     (enabled: boolean) => {
@@ -59,22 +88,14 @@ export default function PrivacySettingsScreen() {
         return;
       }
 
-      showAlert(t('appLock.confirmDisable'), undefined, [
-        { text: t('deleteAccount.cancel'), style: 'cancel' },
-        {
-          text: t('appLock.disable'),
-          style: 'destructive',
-          onPress: () => {
-            void disableLock();
-          },
-        },
-      ]);
+      void startDisableLock();
     },
-    [disableLock, t],
+    [startDisableLock],
   );
 
   const handleSelectPin = useCallback(() => {
     setShowTypePicker(false);
+    setPinModalMode('setup');
     setPinSetupStep('enter');
     setPendingPin('');
     setPinError(null);
@@ -95,8 +116,27 @@ export default function PrivacySettingsScreen() {
     }
   }, [enrollBiometric, t]);
 
+  const handleDisablePinComplete = useCallback(
+    async (pin: string) => {
+      const valid = await verifyPin(pin);
+      if (!valid) {
+        setPinError(t('appLock.wrongPin'));
+        return;
+      }
+
+      await disableLock();
+      resetPinModal();
+    },
+    [disableLock, resetPinModal, t, verifyPin],
+  );
+
   const handlePinComplete = useCallback(
     async (pin: string) => {
+      if (pinModalMode === 'disable') {
+        await handleDisablePinComplete(pin);
+        return;
+      }
+
       if (pinSetupStepRef.current === 'enter') {
         pendingPinRef.current = pin;
         setPendingPin(pin);
@@ -114,10 +154,10 @@ export default function PrivacySettingsScreen() {
       }
 
       await enrollPin(pin);
-      resetPinSetup();
+      resetPinModal();
       showAlert(t('appLock.pinSet'));
     },
-    [enrollPin, resetPinSetup, t],
+    [enrollPin, handleDisablePinComplete, pinModalMode, resetPinModal, t],
   );
 
   const lockTypeLabel =
@@ -153,7 +193,7 @@ export default function PrivacySettingsScreen() {
             <Switch
               value={appLockEnabled}
               onValueChange={handleToggle}
-              disabled={enrollingBiometric}
+              disabled={enrollingBiometric || disablingLock}
             />
           </View>
         </ScrollView>
@@ -203,23 +243,25 @@ export default function PrivacySettingsScreen() {
         visible={showPinModal}
         transparent
         animationType="slide"
-        onRequestClose={resetPinSetup}
+        onRequestClose={resetPinModal}
       >
         <View style={styles.pinModalBackdrop}>
           <View style={styles.pinModalCard}>
             <PinKeypad
-              key={pinSetupStep}
+              key={`${pinModalMode}-${pinSetupStep}-${pinError ?? 'idle'}`}
               title={
-                pinSetupStep === 'enter'
-                  ? t('appLock.enterPin')
-                  : t('appLock.confirmPin')
+                pinModalMode === 'disable'
+                  ? t('appLock.confirmDisablePin')
+                  : pinSetupStep === 'enter'
+                    ? t('appLock.enterPin')
+                    : t('appLock.confirmPin')
               }
               error={pinError}
               onComplete={(pin) => {
                 void handlePinComplete(pin);
               }}
             />
-            <Pressable style={styles.pinModalCancel} onPress={resetPinSetup}>
+            <Pressable style={styles.pinModalCancel} onPress={resetPinModal}>
               <Text style={styles.cancelOptionText}>{t('deleteAccount.cancel')}</Text>
             </Pressable>
           </View>

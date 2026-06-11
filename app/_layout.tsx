@@ -1,20 +1,28 @@
 import '../global.css';
 
 import { useFonts } from 'expo-font';
+import * as Linking from 'expo-linking';
+import { useURL } from 'expo-linking';
 import { Redirect, Stack, useRouter, useSegments } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
+  AppState,
   Platform,
   StyleSheet,
   Text,
   View,
+  type AppStateStatus,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import type { User } from 'firebase/auth';
 
+import { AppLockGate } from '../src/components/common/AppLockGate';
+import { DeleteAccountLoadingOverlay } from '../src/components/common/DeleteAccountLoadingOverlay';
 import { DesktopWebShell } from '../src/components/common/DesktopWebShell';
+import { Toast } from '../src/components/common/Toast';
+import { hydrateAppLockFromStorage } from '../src/hooks/useAppLock';
 import '../src/i18n';
 import { getUserDocument } from '../src/firebase/firestore';
 import {
@@ -22,6 +30,7 @@ import {
   bootstrapPartnerMode,
 } from '../src/hooks/useCouple';  
 import { useAuthStore } from '../src/store/authStore';
+import { usePinStore } from '../src/store/pinStore';
 import { useSettingsStore } from '../src/store/settingsStore';
 import { log } from '../src/utils/log';
 
@@ -51,6 +60,34 @@ function RootLayout() {
   const isPartnerMode = useAuthStore((state) => state.isPartnerMode);
   const coupleId = useAuthStore((state) => state.coupleId);
   const loadSettings = useSettingsStore((state) => state.loadSettings);
+  const appLockEnabled = useAuthStore((state) => state.appLockEnabled);
+  const lockHydrated = usePinStore((state) => state.lockHydrated);
+  const isUnlocked = usePinStore((state) => state.isUnlocked);
+  const appStateRef = useRef<AppStateStatus>(AppState.currentState);
+  const deepLinkUrl = useURL();
+  const handledDeepLinkRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    void hydrateAppLockFromStorage().finally(() => {
+      usePinStore.getState().setLockHydrated(true);
+      if (useAuthStore.getState().appLockEnabled) {
+        usePinStore.getState().resetUnlock();
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      const wasBackground = appStateRef.current.match(/inactive|background/);
+      appStateRef.current = nextState;
+
+      if (wasBackground && nextState === 'active' && useAuthStore.getState().appLockEnabled) {
+        usePinStore.getState().resetUnlock();
+      }
+    });
+
+    return () => subscription.remove();
+  }, []);
 
   useEffect(() => {
     void (async () => {
@@ -138,7 +175,8 @@ function RootLayout() {
     return () => {
       cancelled = true;
     };
-  }, [user?.uid, partnerSessionChecked, isPartnerMode, user, setFirestoreOnboardingComplete]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid, partnerSessionChecked, isPartnerMode]);
 
   useEffect(() => {
     if (!partnerSessionChecked || isPartnerMode) {
@@ -184,6 +222,51 @@ function RootLayout() {
   }, [coupleId, loadSettings]);
 
   useEffect(() => {
+    if (!deepLinkUrl || handledDeepLinkRef.current === deepLinkUrl) {
+      return;
+    }
+
+    const parsed = Linking.parse(deepLinkUrl);
+    const path = parsed.path ?? '';
+    const host = parsed.hostname ?? '';
+    if (!path.includes('invite') && host !== 'invite') {
+      return;
+    }
+
+    handledDeepLinkRef.current = deepLinkUrl;
+
+    const pathToken = path.split('/').filter(Boolean).pop();
+    const queryToken = parsed.queryParams?.token;
+    const token = (
+      typeof pathToken === 'string' && pathToken.length > 0
+        ? pathToken
+        : typeof queryToken === 'string'
+          ? queryToken
+          : Array.isArray(queryToken)
+            ? queryToken[0]
+            : undefined
+    )?.trim();
+
+    if (!token) {
+      return;
+    }
+
+    const queryPin = parsed.queryParams?.pin;
+    const pin =
+      typeof queryPin === 'string'
+        ? queryPin
+        : Array.isArray(queryPin)
+          ? queryPin[0]
+          : '';
+
+    router.push({
+      pathname: '/(app)/settings/couple',
+      params: { inviteToken: token, invitePin: pin ?? '' },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deepLinkUrl]);
+
+  useEffect(() => {
     if (!partnerSessionChecked || !userDocReady || !fontsLoaded) {
       return;
     }
@@ -213,9 +296,10 @@ function RootLayout() {
     const inAppGroup = segments[0] === '(app)';
     const inOnboarding = segments[0] === 'onboarding';
     const onJoin = segments[0] === 'join';
+    const onInvite = segments[0] === 'invite';
 
     if (!user) {
-      if (inAuthGroup || inOnboarding || onJoin) {
+      if (inAuthGroup || inOnboarding || onJoin || onInvite) {
         return;
       }
       router.replace('/(auth)/beta-gate');
@@ -235,15 +319,15 @@ function RootLayout() {
       return;
     }
 
-    if (!inAppGroup) {
+    if (!inAppGroup && segments[0] !== 'invite') {
       router.replace('/calendar');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    user,
+    user?.uid,
     onboardingComplete,
     coupleBootstrapped,
-    segments,
-    router,
+    segments[0],
     isPartnerMode,
     partnerSessionChecked,
     userDocReady,
@@ -261,6 +345,7 @@ function RootLayout() {
   const inAppGroup = segments[0] === '(app)';
   const inOnboarding = segments[0] === 'onboarding';
   const onJoin = segments[0] === 'join';
+  const onInvite = segments[0] === 'invite';
 
   const showPartnerRedirect =
     !isBootstrapping && isPartnerMode && !inAppGroup && !onJoin;
@@ -270,7 +355,8 @@ function RootLayout() {
     !user &&
     !inAuthGroup &&
     !inOnboarding &&
-    !onJoin;
+    !onJoin &&
+    !onInvite;
   const showLoggedInIncompleteRedirect =
     !isBootstrapping &&
     !isPartnerMode &&
@@ -282,7 +368,19 @@ function RootLayout() {
     !isPartnerMode &&
     !!user &&
     onboardingComplete &&
-    !inAppGroup;
+    !inAppGroup &&
+    !onInvite;
+
+  const hasProtectedSession =
+    isPartnerMode || (!!user && onboardingComplete && !user.isAnonymous);
+  const showAppLockOverlay =
+    lockHydrated &&
+    appLockEnabled &&
+    !isUnlocked &&
+    hasProtectedSession &&
+    inAppGroup;
+  const showLockHydrationVeil =
+    !lockHydrated && hasProtectedSession && inAppGroup;
 
   if (!fontsLoaded && !webFontsReady) {
     return (
@@ -298,6 +396,7 @@ function RootLayout() {
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="join" options={{ headerShown: false }} />
+          <Stack.Screen name="invite/[code]" options={{ headerShown: false }} />
           <Stack.Screen name="onboarding" />
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(app)" />
@@ -318,6 +417,10 @@ function RootLayout() {
         {showLoggedInCompleteRedirect ? (
           <Redirect href="/calendar" />
         ) : null}
+        <Toast />
+        <DeleteAccountLoadingOverlay />
+        {showLockHydrationVeil ? <View style={styles.lockHydrationVeil} /> : null}
+        <AppLockGate visible={showAppLockOverlay} />
       </DesktopWebShell>
     </GestureHandlerRootView>
   );
@@ -346,5 +449,10 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 16,
     color: '#666',
+  },
+  lockHydrationVeil: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#fff',
+    zIndex: 9999,
   },
 });

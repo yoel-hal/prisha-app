@@ -7,13 +7,6 @@ function sortPeriodsAsc(a: Period, b: Period): number {
   return a.dateGregorian.localeCompare(b.dateGregorian);
 }
 
-function getMostRecentPeriod(periods: Period[]): Period | undefined {
-  if (periods.length === 0) {
-    return undefined;
-  }
-  return [...periods].sort(sortPeriodsAsc).at(-1);
-}
-
 function compareVesetResults(a: VesetResult, b: VesetResult): number {
   const byDate = a.dateGregorian.localeCompare(b.dateGregorian);
   if (byDate !== 0) {
@@ -35,17 +28,21 @@ function compareVesetResults(a: VesetResult, b: VesetResult): number {
  * @param minhag  - Community tradition
  * @param chumrot - Additional strictnesses
  */
+export { calcHaflaga } from './haflaga';
+export { calcOnahBeinonit } from './onahBeinonit';
+export { calcYomHaChodesh } from './yomHaChodesh';
+
 export function calcAllVesetim(
   periods: Period[],
   minhag: Minhag,
   chumrot: Chumrot,
 ): VesetResult[] {
-  const latest = getMostRecentPeriod(periods);
+  const sorted = [...periods].sort(sortPeriodsAsc);
   const out: VesetResult[] = [];
 
-  if (latest) {
-    out.push(...calcOnahBeinonit(latest, minhag, chumrot));
-    out.push(...calcYomHaChodesh(latest, minhag, chumrot));
+  for (const period of sorted) {
+    out.push(...calcOnahBeinonit(period, minhag, chumrot));
+    out.push(...calcYomHaChodesh(period, minhag, chumrot));
   }
 
   out.push(...calcHaflaga(periods, minhag, chumrot));

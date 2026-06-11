@@ -1,16 +1,14 @@
 import { Icon } from '@/components/common/Icon';
 import { Tabs, useRouter } from 'expo-router';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AppState, Platform, StyleSheet, View, type AppStateStatus } from 'react-native';
+import { AppState, Platform, StyleSheet, View } from 'react-native';
 
 import { NotificationScheduler } from '../../src/components/app/NotificationScheduler';
-import { AppLockGate } from '../../src/components/common/AppLockGate';
 import { PartnerModeBanner } from '../../src/components/common/PartnerModeBanner';
 import { WebAppShell } from '../../src/components/web/WebAppShell';
 import { signOut } from '../../src/firebase/auth';
 import { checkPartnerAccessValid } from '../../src/firebase/firestore';
-import { hydrateAppLockFromStorage } from '../../src/hooks/useAppLock';
 import { useCouple } from '../../src/hooks/useCouple';
 import { useDesktopWeb } from '../../src/hooks/useDesktopWeb';
 import { usePeriods } from '../../src/hooks/usePeriods';
@@ -25,49 +23,38 @@ export default function AppLayout() {
   const { t } = useTranslation();
   const router = useRouter();
   const isDesktopWeb = useDesktopWeb();
-  const setIsAppLocked = useAuthStore((state) => state.setIsAppLocked);
-  const appStateRef = useRef<AppStateStatus>(AppState.currentState);
   usePeriods();
   useCouple();
 
   useEffect(() => {
-    void hydrateAppLockFromStorage();
-  }, []);
-
-  useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextState) => {
-      const wasBackground = appStateRef.current.match(/inactive|background/);
-      appStateRef.current = nextState;
-
-      if (wasBackground && nextState === 'active') {
-        if (useAuthStore.getState().appLockEnabled) {
-          setIsAppLocked(true);
-        }
-
-        void (async () => {
-          const { isPartnerMode: partnerMode, ownerUserId: ownerId } =
-            useAuthStore.getState();
-          if (partnerMode && ownerId) {
-            const valid = await checkPartnerAccessValid(ownerId);
-            if (!valid) {
-              await clearPartnerSession();
-              useAuthStore.getState().setPartnerMode(false, null, null);
-              useAuthStore.getState().setCoupleId(null);
-              const { useOnboardingStore } = await import('../../src/store/onboardingStore');
-              useOnboardingStore.getState().reset();
-              await signOut();
-              router.replace('/onboarding/welcome');
-            }
-          }
-        })();
+      if (nextState !== 'active') {
+        return;
       }
+
+      void (async () => {
+        const { isPartnerMode: partnerMode, ownerUserId: ownerId } =
+          useAuthStore.getState();
+        if (partnerMode && ownerId) {
+          const valid = await checkPartnerAccessValid(ownerId);
+          if (!valid) {
+            await clearPartnerSession();
+            useAuthStore.getState().setPartnerMode(false, null, null);
+            useAuthStore.getState().setCoupleId(null);
+            const { useOnboardingStore } = await import('../../src/store/onboardingStore');
+            useOnboardingStore.getState().reset();
+            await signOut();
+            router.replace('/onboarding/welcome');
+          }
+        }
+      })();
     });
 
     return () => subscription.remove();
-  }, [router, setIsAppLocked]);
+  }, [router]);
 
   return (
-    <AppLockGate>
+    <>
       <NotificationScheduler />
       <WebAppShell>
         <View style={styles.tabsHost}>
@@ -108,12 +95,34 @@ export default function AppLayout() {
               }}
             />
             <Tabs.Screen
+              name="upcoming"
+              options={{
+                title: t('navigation.upcoming'),
+                href: isDesktopWeb ? null : undefined,
+                tabBarIcon: ({ color, size }) => (
+                  <Icon name="list" size={size} color={color} />
+                ),
+              }}
+            />
+            <Tabs.Screen
+              name="edit-period/[id]"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
               name="add-period"
               options={{
                 title: t('navigation.add'),
                 tabBarIcon: ({ color, size }) => (
                   <Icon name="plus-circle" size={size} color={color} />
                 ),
+              }}
+            />
+            <Tabs.Screen
+              name="add-period-preview"
+              options={{
+                href: null,
               }}
             />
             <Tabs.Screen
@@ -129,7 +138,7 @@ export default function AppLayout() {
         </View>
       </WebAppShell>
       {__DEV__ && <CoupleDebugOverlay />}
-    </AppLockGate>
+    </>
   );
 }
 

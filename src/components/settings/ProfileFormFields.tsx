@@ -1,7 +1,11 @@
+import type { RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { CountryPickerField } from '../common/CountryPickerField';
+import {
+  CountryPickerField,
+  type CountryPickerFieldHandle,
+} from '../common/CountryPickerField';
 import { useAlignStart, textStartStyle } from '../../utils/rtl';
 
 type ProfileFormFieldsProps = {
@@ -14,6 +18,11 @@ type ProfileFormFieldsProps = {
   phone: string;
   setPhone: (value: string) => void;
   disabled?: boolean;
+  firstNameRef: RefObject<TextInput | null>;
+  lastNameRef: RefObject<TextInput | null>;
+  countryPickerRef: RefObject<CountryPickerFieldHandle | null>;
+  phoneRef: RefObject<TextInput | null>;
+  onPhoneSubmitEditing?: () => void;
 };
 
 export function ProfileFormFields({
@@ -26,15 +35,26 @@ export function ProfileFormFields({
   phone,
   setPhone,
   disabled = false,
+  firstNameRef,
+  lastNameRef,
+  countryPickerRef,
+  phoneRef,
+  onPhoneSubmitEditing,
 }: ProfileFormFieldsProps) {
   const { t } = useTranslation();
   const textStart = useAlignStart();
+
+  function handleCountryChange(value: string) {
+    setCountry(value);
+    phoneRef.current?.focus();
+  }
 
   return (
     <View style={styles.fields}>
       <View style={styles.field}>
         <Text style={[styles.label, textStartStyle()]}>{t('onboarding.firstName')}</Text>
         <TextInput
+          ref={firstNameRef}
           style={styles.input}
           value={firstName}
           onChangeText={setFirstName}
@@ -45,12 +65,16 @@ export function ProfileFormFields({
           textAlign={textStart}
           placeholder={t('onboarding.firstNamePlaceholder')}
           placeholderTextColor="#999"
+          returnKeyType="next"
+          blurOnSubmit={false}
+          onSubmitEditing={() => lastNameRef.current?.focus()}
         />
       </View>
 
       <View style={styles.field}>
         <Text style={[styles.label, textStartStyle()]}>{t('onboarding.lastName')}</Text>
         <TextInput
+          ref={lastNameRef}
           style={styles.input}
           value={lastName}
           onChangeText={setLastName}
@@ -61,14 +85,24 @@ export function ProfileFormFields({
           textAlign={textStart}
           placeholder={t('onboarding.lastNamePlaceholder')}
           placeholderTextColor="#999"
+          returnKeyType="next"
+          blurOnSubmit={false}
+          onSubmitEditing={() => {
+            if (country.trim()) {
+              phoneRef.current?.focus();
+            } else {
+              countryPickerRef.current?.open();
+            }
+          }}
         />
       </View>
 
       <View style={styles.field}>
         <Text style={[styles.label, textStartStyle()]}>{t('onboarding.country')}</Text>
         <CountryPickerField
+          ref={countryPickerRef}
           value={country}
-          onChange={setCountry}
+          onChange={handleCountryChange}
           placeholder={t('onboarding.countryPlaceholder')}
           editable={!disabled}
         />
@@ -77,6 +111,7 @@ export function ProfileFormFields({
       <View style={styles.field}>
         <Text style={[styles.label, textStartStyle()]}>{t('onboarding.phone')}</Text>
         <TextInput
+          ref={phoneRef}
           style={styles.input}
           value={phone}
           onChangeText={setPhone}
@@ -87,6 +122,8 @@ export function ProfileFormFields({
           textAlign={textStart}
           placeholder={t('onboarding.phonePlaceholder')}
           placeholderTextColor="#999"
+          returnKeyType="done"
+          onSubmitEditing={onPhoneSubmitEditing}
         />
       </View>
     </View>

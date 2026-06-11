@@ -3,30 +3,13 @@ import type { TFunction } from 'i18next';
 import { Platform } from 'react-native';
 
 import {
-  deleteUserAccount,
   isEmailPasswordUser,
   reauthenticateWithPassword,
-  RequiresReauthError,
   WrongPasswordError,
 } from '../firebase/auth';
-import { deleteAllUserData } from '../firebase/firestore';
-import {
-  DEFAULT_CALENDAR_SETTINGS,
-  DEFAULT_NOTIFICATION_SETTINGS,
-  useAuthStore,
-  useOnboardingStore,
-  usePeriodsStore,
-  useSettingsStore,
-} from '../store';
+import { useAuthStore } from '../store/authStore';
+import { showToast } from './toast';
 import { showAlert } from './alert';
-
-const DEFAULT_CHUMROT = {
-  kavuah: false,
-  veshetEinah: false,
-  onahBeinonitIfHaflaga: false,
-  bothOnotOnBeinonit: false,
-  bothOnotOnYomHaChodesh: false,
-} as const;
 
 let deleteAccountConfirmed = false;
 
@@ -40,41 +23,20 @@ export function consumeDeleteAccountConfirmed(): boolean {
   return confirmed;
 }
 
-function clearAllStores(): void {
-  useAuthStore.getState().setFirestoreOnboardingComplete(false);
-  useAuthStore.getState().setUser(null);
-  usePeriodsStore.setState({ periods: [], isLoading: true });
-  useSettingsStore.setState({
-    minhag: 'ashkenaz',
-    chumrot: DEFAULT_CHUMROT,
-    notifications: DEFAULT_NOTIFICATION_SETTINGS,
-    calendar: DEFAULT_CALENDAR_SETTINGS,
-  });
-  useOnboardingStore.getState().reset();
-}
-
-export async function performDeleteAccount(t: TFunction): Promise<void> {
-  const user = useAuthStore.getState().user;
-  if (!user) {
+function handleRequiresReauth(t: TFunction): void {
+  if (isEmailPasswordUser()) {
+    markDeleteAccountConfirmed();
+    router.push('/settings/delete-account-reauth');
     return;
   }
 
-  const coupleId = useAuthStore.getState().coupleId ?? '';
+  showToast(t('deleteAccount.reauthMessage'));
+}
 
-  try {
-    await deleteAllUserData(user.uid, coupleId);
-    await deleteUserAccount();
-    clearAllStores();
-    router.replace('/onboarding/welcome');
-  } catch (error) {
-    if (
-      error instanceof RequiresReauthError ||
-      (error instanceof Error && error.message === 'REQUIRES_REAUTH')
-    ) {
-      showAlert(t('deleteAccount.reauthMessage'));
-      return;
-    }
-    showAlert(t('deleteAccount.errorMessage'));
+export async function performDeleteAccount(t: TFunction): Promise<void> {
+  const result = await useAuthStore.getState().deleteAccount(t);
+  if (result === 'requires_reauth') {
+    handleRequiresReauth(t);
   }
 }
 
@@ -90,7 +52,7 @@ async function reauthenticateAndDelete(t: TFunction, password: string): Promise<
     await reauthenticateWithPassword(password);
   } catch (error) {
     if (isWrongPasswordError(error)) {
-      showAlert(t('deleteAccount.wrongPassword'));
+      showToast(t('deleteAccount.wrongPassword'));
       return;
     }
     throw error;

@@ -1,16 +1,21 @@
 import {
   addDoc,
   arrayRemove,
+  arrayUnion,
   collection,
+  collectionGroup,
   deleteDoc,
+  deleteField,
   doc,
   getDoc,
   getDocs,
+  limit,
   onSnapshot,
   orderBy,
   query,
   serverTimestamp,
   setDoc,
+  Timestamp,
   updateDoc,
   where,
   writeBatch,
@@ -18,6 +23,12 @@ import {
   type FieldValue,
   type Unsubscribe,
 } from 'firebase/firestore';
+
+import {
+  INVITE_CODE_LENGTH,
+  INVITE_TTL_MS,
+  buildInviteLink,
+} from '../constants/coupleInvite';
 
 import type {
   CalendarSettings,
@@ -134,6 +145,41 @@ function defaultUserDocument(email: string): UserDocument {
 export interface CoupleDocument {
   members: string[];
   createdAt: FieldValue | string;
+  inviteCode?: string;
+  inviteExpiresAt?: Timestamp;
+}
+
+export interface CoupleInvitePublic {
+  inviteCode: string;
+  inviteExpiresAt: Timestamp;
+  inviterEmail: string;
+}
+
+export interface CoupleInviteDetails {
+  code: string;
+  expiresAt: Date;
+  link: string;
+}
+
+export type CoupleInviteErrorCode =
+  | 'invalid_or_expired'
+  | 'couple_full'
+  | 'already_in_couple'
+  | 'same_couple';
+
+export class CoupleInviteError extends Error {
+  readonly code: CoupleInviteErrorCode;
+
+  constructor(code: CoupleInviteErrorCode) {
+    super(code);
+    this.code = code;
+  }
+}
+
+export interface CoupleInviteLookup {
+  coupleId: string;
+  members: string[];
+  inviterEmail: string;
 }
 
 export interface PartnerAccess {
@@ -141,7 +187,21 @@ export interface PartnerAccess {
   pinHash: string;
   createdAt: string;
   partnerLastSeen: string | null;
+  partnerUid?: string | null;
+  partnerConnectedAt?: string | null;
   isActive: boolean;
+  ownerName: string;
+  coupleId: string;
+}
+
+export type AcceptPartnerInviteResult =
+  | 'success'
+  | 'invalid'
+  | 'expired'
+  | 'already_connected';
+
+export interface AcceptPartnerInviteSuccess {
+  ownerId: string;
   ownerName: string;
   coupleId: string;
 }
@@ -156,6 +216,249 @@ function userRef(userId: string) {
 
 function coupleRef(coupleId: string) {
   return doc(db, 'couples', coupleId);
+}
+
+function couplePublicInviteRef(coupleId: string) {
+  return doc(db, 'couples', coupleId, 'public', 'invite');
+}
+
+export function generateCoupleInviteCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const array = new Uint8Array(INVITE_CODE_LENGTH);
+  crypto.getRandomValues(array);
+  let result = '';
+  for (let index = 0; index < INVITE_CODE_LENGTH; index += 1) {
+    result += chars[array[index]! % chars.length];
+  }
+  return result;
+}
+
+async function writeCoupleInviteFields(
+  coupleId: string,
+  inviterEmail: string,
+): Promise<CoupleInviteDetails> {
+  const code = generateCoupleInviteCode();
+  const expiresAt = Timestamp.fromMillis(Date.now() + INVITE_TTL_MS);
+  const normalizedEmail = normalizeEmail(inviterEmail);
+
+  await updateDoc(coupleRef(coupleId), {
+    inviteCode: code,
+    inviteExpiresAt: expiresAt,
+  });
+
+  await setDoc(couplePublicInviteRef(coupleId), {
+    inviteCode: code,
+    inviteExpiresAt: expiresAt,
+    inviterEmail: normalizedEmail,
+  });
+
+  return {
+    code,
+    expiresAt: expiresAt.toDate(),
+    link: buildInviteLink(code),
+  };
+}
+
+/**
+ * Returns an active invite for the couple, generating a new code when missing or expired.
+ */
+export async function ensureCoupleInvite(
+  coupleId: string,
+  inviterEmail: string,
+): Promise<CoupleInviteDetails> {
+  const snapshot = await getDoc(coupleRef(coupleId));
+  if (!snapshot.exists()) {
+    throw new Error('Couple not found');
+  }
+
+  const data = snapshot.data();
+  const existingCode =
+    typeof data.inviteCode === 'string' ? data.inviteCode : null;
+  const existingExpires = data.inviteExpiresAt;
+
+  if (
+    existingCode &&
+    existingExpires instanceof Timestamp &&
+    existingExpires.toMillis() > Date.now()
+  ) {
+    return {
+      code: existingCode,
+      expiresAt: existingExpires.toDate(),
+      link: buildInviteLink(existingCode),
+    };
+  }
+
+  return writeCoupleInviteFields(coupleId, inviterEmail);
+}
+
+export async function findCoupleByInviteCode(
+  rawCode: string,
+): Promise<CoupleInviteLookup | null> {
+  const code = rawCode.trim().toUpperCase();
+  if (code.length !== INVITE_CODE_LENGTH) {
+    return null;
+  }
+
+  const inviteQuery = query(
+    collectionGroup(db, 'public'),
+    where('inviteCode', '==', code),
+    where('inviteExpiresAt', '>', Timestamp.now()),
+    limit(1),
+  );
+  const snapshot = await getDocs(inviteQuery);
+  if (snapshot.empty) {
+    return null;
+  }
+
+  const inviteDoc = snapshot.docs[0]!;
+  const coupleId = inviteDoc.ref.parent.parent?.id;
+  if (!coupleId) {
+    return null;
+  }
+
+  const coupleSnap = await getDoc(coupleRef(coupleId));
+  if (!coupleSnap.exists()) {
+    return null;
+  }
+
+  const members = Array.isArray(coupleSnap.data()?.members)
+    ? (coupleSnap.data()!.members as string[])
+    : [];
+  const inviterEmail =
+    typeof inviteDoc.data().inviterEmail === 'string'
+      ? inviteDoc.data().inviterEmail
+      : '';
+
+  return {
+    coupleId,
+    members,
+    inviterEmail,
+  };
+}
+
+export async function acceptCoupleInvite(
+  userId: string,
+  userEmail: string,
+  rawCode: string,
+): Promise<void> {
+  const lookup = await findCoupleByInviteCode(rawCode);
+  if (!lookup) {
+    throw new CoupleInviteError('invalid_or_expired');
+  }
+
+  if (lookup.members.includes(userId)) {
+    return;
+  }
+
+  if (lookup.members.length >= 2) {
+    throw new CoupleInviteError('couple_full');
+  }
+
+  const userDoc = await getUserDocument(userId);
+  const existingCoupleId = userDoc?.coupleId ?? null;
+
+  if (existingCoupleId === lookup.coupleId) {
+    return;
+  }
+
+  if (existingCoupleId) {
+    const existingCoupleSnap = await getDoc(coupleRef(existingCoupleId));
+    const existingMembers = existingCoupleSnap.exists()
+      ? Array.isArray(existingCoupleSnap.data()?.members)
+        ? (existingCoupleSnap.data()!.members as string[])
+        : []
+      : [];
+
+    if (existingMembers.length >= 2) {
+      throw new CoupleInviteError('already_in_couple');
+    }
+
+    if (existingMembers.length === 1 && existingMembers[0] === userId) {
+      await deleteCoupleWithSubcollections(existingCoupleId);
+    } else if (existingMembers.includes(userId)) {
+      await updateDoc(coupleRef(existingCoupleId), {
+        members: arrayRemove(userId),
+      });
+    }
+  }
+
+  await updateDoc(coupleRef(lookup.coupleId), {
+    members: arrayUnion(userId),
+    inviteCode: deleteField(),
+    inviteExpiresAt: deleteField(),
+  });
+  await deleteDoc(couplePublicInviteRef(lookup.coupleId));
+
+  await setDoc(
+    userRef(userId),
+    {
+      email: normalizeEmail(userEmail),
+      coupleId: lookup.coupleId,
+      role: 'partner',
+    },
+    { merge: true },
+  );
+}
+
+export async function disconnectFromCouple(
+  userId: string,
+  coupleId: string,
+): Promise<string> {
+  const coupleSnap = await getDoc(coupleRef(coupleId));
+  if (!coupleSnap.exists()) {
+    return createCouple(userId, (await getUserDocument(userId))?.email ?? '');
+  }
+
+  const members = Array.isArray(coupleSnap.data()?.members)
+    ? (coupleSnap.data()!.members as string[])
+    : [];
+
+  if (!members.includes(userId)) {
+    return createCouple(userId, (await getUserDocument(userId))?.email ?? '');
+  }
+
+  const remainingMembers = members.filter((memberId) => memberId !== userId);
+
+  if (remainingMembers.length === 0) {
+    await deleteCoupleWithSubcollections(coupleId);
+  } else {
+    await updateDoc(coupleRef(coupleId), {
+      members: arrayRemove(userId),
+    });
+  }
+
+  const newCoupleId = await createCouple(userId, (await getUserDocument(userId))?.email ?? '');
+  await setDoc(
+    userRef(userId),
+    { coupleId: newCoupleId, role: 'owner' },
+    { merge: true },
+  );
+  return newCoupleId;
+}
+
+export async function getCoupleMemberEmails(
+  coupleId: string,
+  currentUserId: string,
+): Promise<{ partnerEmail: string | null; memberCount: number }> {
+  const coupleSnap = await getDoc(coupleRef(coupleId));
+  if (!coupleSnap.exists()) {
+    return { partnerEmail: null, memberCount: 0 };
+  }
+
+  const members = Array.isArray(coupleSnap.data()?.members)
+    ? (coupleSnap.data()!.members as string[])
+    : [];
+  const partnerId = members.find((memberId) => memberId !== currentUserId) ?? null;
+
+  if (!partnerId) {
+    return { partnerEmail: null, memberCount: members.length };
+  }
+
+  const partnerDoc = await getUserDocument(partnerId);
+  return {
+    partnerEmail: partnerDoc?.email ?? null,
+    memberCount: members.length,
+  };
 }
 
 function partnerAccessRef(userId: string) {
@@ -184,6 +487,29 @@ function isHebrewDate(value: unknown): value is HebrewDate {
     typeof record.month === 'number' &&
     typeof record.day === 'number'
   );
+}
+
+/** Omits empty/whitespace notes so Firestore documents stay clean. */
+function periodNotesForFirestore(notes?: string): string | undefined {
+  const trimmed = notes?.trim();
+  return trimmed ? trimmed : undefined;
+}
+
+function periodToFirestoreData(period: Omit<Period, 'id'>): DocumentData {
+  const data: DocumentData = {
+    dateGregorian: period.dateGregorian,
+    dateHebrew: period.dateHebrew,
+    onah: period.onah,
+    createdAt: period.createdAt,
+    createdBy: period.createdBy,
+  };
+
+  const notes = periodNotesForFirestore(period.notes);
+  if (notes !== undefined) {
+    data.notes = notes;
+  }
+
+  return data;
 }
 
 function mapPeriod(id: string, data: DocumentData): Period {
@@ -301,11 +627,7 @@ export async function addPeriod(
   coupleId: string,
   period: Omit<Period, 'id'>,
 ): Promise<string> {
-  const data = {
-    ...period,
-    notes: period.notes ?? null,
-  };
-  const ref = await addDoc(periodsRef(coupleId), data);
+  const ref = await addDoc(periodsRef(coupleId), periodToFirestoreData(period));
   return ref.id;
 }
 
@@ -313,6 +635,50 @@ export async function getPeriods(coupleId: string): Promise<Period[]> {
   const q = query(periodsRef(coupleId), orderBy('dateGregorian', 'asc'));
   const snapshot = await getDocs(q);
   return snapshot.docs.map((document) => mapPeriod(document.id, document.data()));
+}
+
+function partialPeriodToFirestore(
+  payload: Partial<Omit<Period, 'id'>>,
+): DocumentData {
+  const data: DocumentData = {};
+
+  if (payload.dateGregorian !== undefined) {
+    data.dateGregorian = payload.dateGregorian;
+  }
+  if (payload.dateHebrew !== undefined) {
+    data.dateHebrew = payload.dateHebrew;
+  }
+  if (payload.onah !== undefined) {
+    data.onah = payload.onah;
+  }
+  if (payload.createdAt !== undefined) {
+    data.createdAt = payload.createdAt;
+  }
+  if (payload.createdBy !== undefined) {
+    data.createdBy = payload.createdBy;
+  }
+  if ('notes' in payload) {
+    const notes = periodNotesForFirestore(payload.notes);
+    if (notes !== undefined) {
+      data.notes = notes;
+    } else {
+      data.notes = deleteField();
+    }
+  }
+
+  return data;
+}
+
+export async function updatePeriod(
+  coupleId: string,
+  periodId: string,
+  payload: Partial<Period>,
+): Promise<void> {
+  const { id: _id, ...fields } = payload;
+  await updateDoc(
+    doc(periodsRef(coupleId), periodId),
+    partialPeriodToFirestore(fields),
+  );
 }
 
 export async function deletePeriod(
@@ -428,7 +794,7 @@ export async function ensureUserDocument(
   }
 
   const userDoc = defaultUserDocument(normalizedEmail);
-  await setDoc(userRef(userId), userDoc);
+  await setDoc(userRef(userId), userDoc, { merge: true });
   return userDoc;
 }
 
@@ -450,14 +816,27 @@ export async function createCouple(
   const newCoupleRef = doc(collection(db, 'couples'));
   const coupleId = newCoupleRef.id;
 
+  const code = generateCoupleInviteCode();
+  const expiresAt = Timestamp.fromMillis(Date.now() + INVITE_TTL_MS);
+  const normalizedEmail = normalizeEmail(email);
+
   const coupleData = {
     members: [userId],
     createdAt: serverTimestamp(),
+    inviteCode: code,
+    inviteExpiresAt: expiresAt,
   };
 
   log('[createCouple] writing couple document', { coupleId, coupleData });
 
-  await setDoc(newCoupleRef, coupleData);
+  const batch = writeBatch(db);
+  batch.set(newCoupleRef, coupleData);
+  batch.set(couplePublicInviteRef(coupleId), {
+    inviteCode: code,
+    inviteExpiresAt: expiresAt,
+    inviterEmail: normalizedEmail,
+  });
+  await batch.commit();
 
   const written = await getDoc(newCoupleRef);
   const writtenMembers = written.data()?.members;
@@ -476,10 +855,10 @@ export async function createCouple(
   }
 
   await setDoc(userRef(userId), {
-    email: normalizeEmail(email),
+    email: normalizedEmail,
     coupleId,
     role: 'owner',
-  });
+  }, { merge: true });
 
   log('[createCouple] success', { coupleId, members: writtenMembers });
 
@@ -514,22 +893,30 @@ export async function completeOnboarding(
     { merge: true },
   );
 
-  await setDoc(newCoupleRef, {
+  const code = generateCoupleInviteCode();
+  const expiresAt = Timestamp.fromMillis(Date.now() + INVITE_TTL_MS);
+  const normalizedEmail = normalizeEmail(data.email);
+
+  const batch = writeBatch(db);
+  batch.set(newCoupleRef, {
     members: [userId],
     createdAt: serverTimestamp(),
+    inviteCode: code,
+    inviteExpiresAt: expiresAt,
   });
-
-  await setDoc(doc(db, 'couples', coupleId, 'settings', SETTINGS_DOC_ID), {
+  batch.set(couplePublicInviteRef(coupleId), {
+    inviteCode: code,
+    inviteExpiresAt: expiresAt,
+    inviterEmail: normalizedEmail,
+  });
+  batch.set(userRef(userId), { coupleId, role: 'owner' }, { merge: true });
+  batch.set(doc(db, 'couples', coupleId, 'settings', SETTINGS_DOC_ID), {
     minhag: data.minhag,
     chumrot: data.chumrot,
     notifications: DEFAULT_ONBOARDING_NOTIFICATIONS,
     calendar: DEFAULT_ONBOARDING_CALENDAR,
   });
-
-  await updateDoc(userRef(userId), {
-    coupleId,
-    role: 'owner',
-  });
+  await batch.commit();
 
   return coupleId;
 }
@@ -582,6 +969,115 @@ export async function createPartnerAccess(
   await setDoc(partnerAccessRef(userId), access);
   await setDoc(partnerTokenRef(token), { ownerId: userId });
   return token;
+}
+
+/**
+ * Links a signed-in user as the guest partner for an invite token + PIN.
+ */
+export async function acceptPartnerInvite(
+  partnerUid: string,
+  token: string,
+  pin: string,
+): Promise<AcceptPartnerInviteResult> {
+  const normalizedToken = token.trim().toUpperCase();
+  const tokenSnap = await getDoc(partnerTokenRef(normalizedToken));
+  if (!tokenSnap.exists()) {
+    return 'invalid';
+  }
+
+  const { ownerId } = tokenSnap.data() as { ownerId: string };
+  if (!ownerId) {
+    return 'invalid';
+  }
+
+  const accessSnap = await getDoc(partnerAccessRef(ownerId));
+  if (!accessSnap.exists()) {
+    return 'invalid';
+  }
+
+  const data = accessSnap.data() as PartnerAccess;
+  if (!data.isActive) {
+    return 'expired';
+  }
+  if (data.token !== normalizedToken) {
+    return 'invalid';
+  }
+
+  const pinHash = await hashPin(pin);
+  if (data.pinHash !== pinHash) {
+    return 'invalid';
+  }
+
+  if (data.partnerUid && data.partnerUid !== partnerUid) {
+    return 'already_connected';
+  }
+
+  if (data.partnerUid === partnerUid) {
+    return 'success';
+  }
+
+  const now = new Date().toISOString();
+  await setDoc(
+    partnerAccessRef(ownerId),
+    {
+      partnerUid,
+      isActive: true,
+      partnerConnectedAt: now,
+      partnerLastSeen: now,
+    },
+    { merge: true },
+  );
+
+  await setDoc(
+    userRef(partnerUid),
+    {
+      coupleId: data.coupleId,
+      ownerUid: ownerId,
+      isPartnerMode: true,
+      role: 'partner',
+    },
+    { merge: true },
+  );
+
+  return 'success';
+}
+
+export async function getPartnerInviteDetails(
+  token: string,
+  pin: string,
+): Promise<AcceptPartnerInviteSuccess | null> {
+  const normalizedToken = token.trim().toUpperCase();
+  const tokenSnap = await getDoc(partnerTokenRef(normalizedToken));
+  if (!tokenSnap.exists()) {
+    return null;
+  }
+
+  const { ownerId } = tokenSnap.data() as { ownerId: string };
+  if (!ownerId) {
+    return null;
+  }
+
+  const accessSnap = await getDoc(partnerAccessRef(ownerId));
+  if (!accessSnap.exists()) {
+    return null;
+  }
+
+  const data = accessSnap.data() as PartnerAccess;
+  const pinHash = await hashPin(pin);
+  if (
+    !data.isActive ||
+    data.token !== normalizedToken ||
+    data.pinHash !== pinHash ||
+    !data.coupleId
+  ) {
+    return null;
+  }
+
+  return {
+    ownerId,
+    ownerName: data.ownerName,
+    coupleId: data.coupleId,
+  };
 }
 
 export async function validatePartnerAccess(
@@ -683,6 +1179,7 @@ async function deleteCoupleWithSubcollections(coupleId: string): Promise<void> {
   await deleteAllDocsInCollection(
     collection(db, 'couples', coupleId, 'settings'),
   );
+  await deleteDoc(couplePublicInviteRef(coupleId)).catch(() => undefined);
   await deleteDoc(coupleRef(coupleId));
 }
 
@@ -708,9 +1205,6 @@ export async function deleteAllUserData(
   }
 
   await revokePartnerAccess(userId);
-  await setDoc(
-    userRef(userId),
-    { coupleId: null, role: '' },
-    { merge: true },
-  );
+  await deleteDoc(partnerAccessRef(userId));
+  await deleteDoc(userRef(userId));
 }

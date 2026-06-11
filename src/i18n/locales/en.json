@@ -1,6 +1,7 @@
 {
   "navigation": {
     "calendar": "Calendar",
+    "upcoming": "Upcoming",
     "add": "Add Period",
     "settings": "Settings"
   },
@@ -8,24 +9,50 @@
     "loading": "Loading…",
     "done": "Done",
     "cancel": "Cancel",
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "edit": "Edit"
   },
   "period": {
     "add": "Add Period",
+    "edit": "Edit Period",
     "date": "Date",
     "onah": "Onah",
     "day": "Day / יום",
     "night": "Night / לילה",
     "notes": "Notes (optional)",
     "save": "Save",
+    "preview": "Preview",
+    "previewNext": "Preview →",
+    "previewTitle": "Review period",
+    "previewChanges": "Preview Changes",
+    "sectionPeriodDay": "Period day",
+    "sectionUpcoming": "Upcoming restrictions",
+    "haflagaNotEnoughData": "— not enough data",
+    "backToEdit": "← Edit",
+    "saveConfirm": "Save ✓",
+    "delete": "Delete Period",
+    "deleteConfirmTitle": "Delete period?",
+    "deleteConfirmMessage": "This cannot be undone. Vestos derived from this period will be removed.",
     "saved": "Period saved",
     "confirmation": "Upcoming vestos:",
+    "notFound": "Period not found.",
     "gregorian": "Gregorian",
     "hebrew": "Hebrew",
-    "year": "Year"
+    "year": "Year",
+    "pastPeriods": "Past periods",
+    "showPastPeriods": "Show past periods",
+    "hidePastPeriods": "Hide past periods",
+    "haflagaNoData": "Not enough data"
+  },
+  "upcoming": {
+    "edit": "Edit",
+    "delete": "Delete",
+    "noFuture": "No upcoming vestos from today onward."
   },
   "calendar": {
     "title": "Calendar",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
     "noData": "Add a period to see vestos on the calendar.",
     "upcomingVesetim": "Upcoming vestos",
     "noUpcoming": "No vestos in the next three months.",
@@ -72,6 +99,7 @@
     "calendarSync": "Calendar Sync",
     "privacy": "Privacy",
     "coupleSync": "Couple Sync",
+    "partnerGuestNeedsCouple": "Finish setup before creating guest access.",
     "about": "About",
     "account": "Account",
     "profile": "Profile",
@@ -181,7 +209,12 @@
     "inviteAccepted": "You are now connected with your partner",
     "connectedToPartner": "Connected to partner!",
     "noPartner": "No partner connected",
-    "partnerConnected": "Connected with {{email}}"
+    "partnerConnected": "Connected with {{email}}",
+    "enterInviteCode": "Have a code? Enter it here",
+    "inviteShareFailed": "Could not create invite link. Please try again.",
+    "inviteAcceptFailed": "Could not accept invite. Please try again.",
+    "alreadyInCouple": "You are already connected to a partner.",
+    "coupleFull": "This invite has already been used."
   },
   "about": {
     "privacyPolicy": "Privacy Policy",
@@ -243,6 +276,7 @@
     "enterPassword": "Enter your password to confirm",
     "wrongPassword": "Wrong password. Account not deleted.",
     "reauthMessage": "For security, please sign out and sign back in, then try deleting your account again.",
+    "deleting": "Deleting your account…",
     "successMessage": "Your account has been deleted.",
     "errorMessage": "Could not delete your account. Please try again."
   },
@@ -265,10 +299,15 @@
     "joinTitle": "Join Partner's App",
     "joinDescription": "Enter the invite code and PIN shared by your partner.",
     "enterCode": "Invite Code",
+    "enterToken": "Invite token",
     "enterPin": "PIN",
     "connect": "Connect",
     "invalidCode": "Invalid code or PIN. Please check and try again.",
     "connectionFailed": "Connection failed. Please try again.",
+    "inviteExpired": "This invite is no longer active.",
+    "alreadyConnected": "This invite has already been used.",
+    "haveCode": "Already have a code from your partner?",
+    "enterInviteCode": "Enter invite code",
     "haveInvite": "Have an invite?",
     "partnerModeNote": "You are viewing {{name}}'s app",
     "restrictedFeature": "Profile editing is only available to the account owner."
@@ -294,6 +333,7 @@
     "biometricPrompt": "Authenticate to unlock",
     "biometricUnavailable": "Biometric authentication is not available on this device.",
     "confirmDisable": "Disable app lock?",
+    "confirmDisablePin": "Enter your PIN to disable app lock",
     "locked": "App locked"
   }
 }

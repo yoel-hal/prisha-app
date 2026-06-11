@@ -27,10 +27,17 @@ const NAV_ITEMS: NavItem[] = [
     match: (pathname) => pathname.includes('/calendar'),
   },
   {
+    href: '/upcoming',
+    labelKey: 'navigation.upcoming',
+    icon: 'list',
+    match: (pathname) => pathname.includes('/upcoming'),
+  },
+  {
     href: '/add-period',
     labelKey: 'navigation.add',
     icon: 'plus-circle',
-    match: (pathname) => pathname.includes('/add-period'),
+    match: (pathname) =>
+      pathname.includes('/add-period') || pathname.includes('/edit-period'),
   },
   {
     href: '/settings',

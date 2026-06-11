@@ -1,6 +1,7 @@
 {
   "navigation": {
     "calendar": "לוח שנה",
+    "upcoming": "קרובות",
     "add": "הוספת וסת",
     "settings": "הגדרות"
   },
@@ -8,24 +9,50 @@
     "loading": "טוען…",
     "done": "סיום",
     "cancel": "ביטול",
-    "comingSoon": "בקרוב"
+    "comingSoon": "בקרוב",
+    "edit": "עריכה"
   },
   "period": {
     "add": "הוספת וסת",
+    "edit": "עריכת וסת",
     "date": "תאריך",
     "onah": "עונה",
     "day": "יום / Day",
     "night": "לילה / Night",
     "notes": "הערות (אופציונלי)",
     "save": "שמירה",
+    "preview": "תצוגה מקדימה",
+    "previewNext": "תצוגה מקדימה ←",
+    "previewTitle": "סקירת וסת",
+    "previewChanges": "תצוגה מקדימה של השינויים",
+    "sectionPeriodDay": "יום הווסת",
+    "sectionUpcoming": "ימי פרישה",
+    "haflagaNotEnoughData": "— אין מספיק נתונים",
+    "backToEdit": "עריכה →",
+    "saveConfirm": "שמירה ✓",
+    "delete": "מחיקת וסת",
+    "deleteConfirmTitle": "למחוק את הוסת?",
+    "deleteConfirmMessage": "לא ניתן לבטל. וסתות שנגזרו מוסת זו יוסרו.",
     "saved": "הוסת נשמרה",
     "confirmation": "וסתות קרובות:",
+    "notFound": "הוסת לא נמצאה.",
     "gregorian": "לועזי",
     "hebrew": "עברי",
-    "year": "שנה"
+    "year": "שנה",
+    "pastPeriods": "וסתות קודמות",
+    "showPastPeriods": "הצג וסתות קודמות",
+    "hidePastPeriods": "הסתר וסתות קודמות",
+    "haflagaNoData": "אין מספיק נתונים"
+  },
+  "upcoming": {
+    "edit": "עריכה",
+    "delete": "מחיקה",
+    "noFuture": "אין וסתות קרובות מהיום והלאה."
   },
   "calendar": {
     "title": "לוח שנה",
+    "previousMonth": "חודש קודם",
+    "nextMonth": "חודש הבא",
     "noData": "הוסיפי וסת כדי לראות וסתות בלוח.",
     "upcomingVesetim": "וסתות קרובות",
     "noUpcoming": "אין וסתות בשלושת החודשים הקרובים.",
@@ -72,6 +99,7 @@
     "calendarSync": "סנכרון יומן",
     "privacy": "פרטיות",
     "coupleSync": "סנכרון זוגי",
+    "partnerGuestNeedsCouple": "יש להשלים את ההגדרה לפני יצירת גישת אורח.",
     "about": "אודות",
     "account": "חשבון",
     "profile": "פרופיל",
@@ -178,7 +206,12 @@
     "inviteAccepted": "התחברתם בהצלחה לבן/בת הזוג",
     "connectedToPartner": "התחברתם לבן/בת הזוג!",
     "noPartner": "אין בן/בת זוג מחובר/ת",
-    "partnerConnected": "מחובר/ת ל-{{email}}"
+    "partnerConnected": "מחובר/ת ל-{{email}}",
+    "enterInviteCode": "יש לכם קוד? הזינו אותו כאן",
+    "inviteShareFailed": "לא ניתן ליצור קישור הזמנה. נסו שוב.",
+    "inviteAcceptFailed": "לא ניתן לקבל את ההזמנה. נסו שוב.",
+    "alreadyInCouple": "כבר מחובר/ת לבן/בת זוג.",
+    "coupleFull": "ההזמנה כבר נוצלה."
   },
   "about": {
     "privacyPolicy": "מדיניות פרטיות",
@@ -243,6 +276,7 @@
     "enterPassword": "הזיני את הסיסמה לאישור",
     "wrongPassword": "סיסמה שגויה. החשבון לא נמחק.",
     "reauthMessage": "מטעמי אבטחה, התנתקי והתחברי מחדש, ואז נסי למחוק את החשבון שוב.",
+    "deleting": "מוחקת את החשבון…",
     "successMessage": "החשבון שלך נמחק.",
     "errorMessage": "לא ניתן למחוק את החשבון. נסי שוב."
   },
@@ -265,10 +299,15 @@
     "joinTitle": "הצטרפות לאפליקציה של בן/בת הזוג",
     "joinDescription": "הזיני את קוד ההזמנה וה-PIN ששיתף/ה איתך בן/בת הזוג.",
     "enterCode": "קוד הזמנה",
+    "enterToken": "קוד הזמנה",
     "enterPin": "PIN",
     "connect": "התחברות",
     "invalidCode": "קוד או PIN שגויים. בדקי ונסי שוב.",
     "connectionFailed": "ההתחברות נכשלה. נסי שוב.",
+    "inviteExpired": "תוקף ההזמנה פג.",
+    "alreadyConnected": "ההזמנה כבר נוצלה.",
+    "haveCode": "כבר יש לכם קוד מבן/בת הזוג?",
+    "enterInviteCode": "הזנת קוד הזמנה",
     "haveInvite": "יש לי הזמנה?",
     "partnerModeNote": "את צופה באפליקציה של {{name}}",
     "restrictedFeature": "עריכת פרופיל זמינה רק לבעל/ת החשבון."
@@ -294,6 +333,7 @@
     "biometricPrompt": "אמתי זהות כדי לפתוח",
     "biometricUnavailable": "אימות ביומטרי אינו זמין במכשיר זה.",
     "confirmDisable": "לבטל את נעילת האפליקציה?",
+    "confirmDisablePin": "הזיני PIN כדי לבטל את נעילת האפליקציה",
     "locked": "האפליקציה נעולה"
   }
 }
