@@ -2,6 +2,7 @@ import { Stack } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -41,6 +42,7 @@ export default function CalendarSyncSettingsScreen() {
   const [saving, setSaving] = useState(false);
   const [savedMessage, setSavedMessage] = useState(false);
   const [permissionDenied, setPermissionDenied] = useState(false);
+  const isWeb = Platform.OS === 'web';
 
   useEffect(() => {
     setDraft(stored);
@@ -116,12 +118,17 @@ export default function CalendarSyncSettingsScreen() {
               {t('calendar.syncEnable')}
             </Text>
             <Switch
-              value={draft.syncEnabled}
+              value={!isWeb && draft.syncEnabled}
               onValueChange={(value) => void handleSyncToggle(value)}
+              disabled={isWeb}
             />
           </View>
 
-          {permissionDenied ? (
+          {isWeb ? (
+            <Text style={[styles.hint, textStartStyle()]}>
+              {t('calendar.webUnsupported')}
+            </Text>
+          ) : permissionDenied ? (
             <Text style={[styles.hint, styles.error, textStartStyle()]}>
               {t('calendar.permissionDenied')}
             </Text>
@@ -138,6 +145,8 @@ export default function CalendarSyncSettingsScreen() {
             }
             placeholder={t('calendar.eventTitlePlaceholder')}
             textAlign={alignStart()}
+            returnKeyType="done"
+            onSubmitEditing={() => void handleSave()}
           />
 
           <Text style={[styles.sectionLabel, textStartStyle()]}>

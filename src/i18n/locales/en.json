@@ -66,6 +66,7 @@
     "eventTitlePlaceholder": "e.g. פרישה",
     "syncSaved": "Calendar preferences saved",
     "permissionDenied": "Calendar access was denied. Enable it in system settings to sync events.",
+    "webUnsupported": "Calendar sync is only available on the mobile app.",
     "addSuccess": "Added to your device calendar",
     "addError": "Could not add to calendar. Try again.",
     "preview": "Preview",

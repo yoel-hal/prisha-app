@@ -25,8 +25,11 @@ export function PinKeypad({ title, subtitle, error, onComplete }: PinKeypadProps
     }
 
     const pin = digits;
-    setDigits('');
-    onCompleteRef.current(pin);
+    const timer = setTimeout(() => {
+      setDigits('');
+      onCompleteRef.current(pin);
+    }, 120);
+    return () => clearTimeout(timer);
   }, [digits]);
 
   const handleDelete = useCallback(() => {
