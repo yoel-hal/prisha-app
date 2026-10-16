@@ -72,7 +72,32 @@ function getOrInitializeAuth(firebaseApp: FirebaseApp): Auth {
   }
 }
 
+/**
+ * App Check on web (reCAPTCHA Enterprise). Skipped when no site key is set, during
+ * static rendering, and on native (the JS SDK has no native attestation providers).
+ * Enforcement is switched on separately in the Firebase console.
+ */
+function initializeWebAppCheck(firebaseApp: FirebaseApp): void {
+  const siteKey = process.env.EXPO_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY;
+  if (Platform.OS !== 'web' || typeof window === 'undefined' || !siteKey) {
+    return;
+  }
+
+  if (__DEV__) {
+    // Prints a debug token in the browser console; register it in the console for localhost.
+    (globalThis as { FIREBASE_APPCHECK_DEBUG_TOKEN?: boolean }).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+  }
+
+  const { initializeAppCheck, ReCaptchaEnterpriseProvider } =
+    require('firebase/app-check') as typeof import('firebase/app-check');
+  initializeAppCheck(firebaseApp, {
+    provider: new ReCaptchaEnterpriseProvider(siteKey),
+    isTokenAutoRefreshEnabled: true,
+  });
+}
+
 const app = getOrInitializeApp();
+initializeWebAppCheck(app);
 
 export const auth: Auth = getOrInitializeAuth(app);
 export const db: Firestore = getFirestore(app);
