@@ -41,7 +41,13 @@ async function seed(partnerAccess: Record<string, unknown>) {
     const admin = ctx.firestore();
     await setDoc(doc(admin, 'users', OWNER), { coupleId: COUPLE });
     await setDoc(doc(admin, 'couples', COUPLE), { members: [OWNER] });
-    await setDoc(doc(admin, 'couples', COUPLE, 'periods', 'p1'), { onah: 'day' });
+    await setDoc(doc(admin, 'couples', COUPLE, 'periods', 'p1'), {
+      dateGregorian: '2026-10-01',
+      dateHebrew: { year: 5787, month: 7, day: 19 },
+      onah: 'day',
+      createdAt: '2026-10-01T10:00:00.000Z',
+      createdBy: OWNER,
+    });
     await setDoc(doc(admin, 'couples', COUPLE, 'settings', 's1'), { minhag: 'ashkenaz' });
     await setDoc(doc(admin, 'users', OWNER, 'partnerAccess', 'current'), {
       token: TOKEN,
@@ -79,7 +85,7 @@ describe('couple data with partner access active', () => {
   test('a stranger cannot read or write periods once a partner is linked', async () => {
     await seed({ partnerUid: PARTNER });
     await assertFails(getDoc(periodRef(STRANGER)));
-    await assertFails(setDoc(periodRef(STRANGER), { onah: 'night' }));
+    await assertFails(updateDoc(periodRef(STRANGER), { onah: 'night' }));
     await assertFails(getDoc(doc(db(STRANGER), 'couples', COUPLE, 'settings', 's1')));
   });
 
@@ -93,7 +99,7 @@ describe('couple data with partner access active', () => {
     await seed({ partnerUid: PARTNER });
     await assertSucceeds(getDoc(periodRef(PARTNER)));
     await assertSucceeds(getDocs(collection(db(PARTNER), 'couples', COUPLE, 'periods')));
-    await assertSucceeds(setDoc(periodRef(PARTNER), { onah: 'night' }));
+    await assertSucceeds(updateDoc(periodRef(PARTNER), { onah: 'night' }));
     await assertSucceeds(getDoc(doc(db(PARTNER), 'couples', COUPLE, 'settings', 's1')));
   });
 
@@ -105,7 +111,7 @@ describe('couple data with partner access active', () => {
   test('couple members keep full access', async () => {
     await seed({ partnerUid: PARTNER });
     await assertSucceeds(getDoc(periodRef(OWNER)));
-    await assertSucceeds(setDoc(periodRef(OWNER), { onah: 'night' }));
+    await assertSucceeds(updateDoc(periodRef(OWNER), { onah: 'night' }));
   });
 
   test('signed-out users get nothing', async () => {
@@ -309,5 +315,120 @@ describe('couple invites by code', () => {
     );
     await assertSucceeds(deleteDoc(doc(joinerDb, 'couples', COUPLE, 'public', 'invite')));
     await assertSucceeds(deleteDoc(doc(joinerDb, 'coupleInvites', CODE)));
+  });
+});
+
+describe('data validation', () => {
+  const validPeriod = () => ({
+    dateGregorian: '2026-10-16',
+    dateHebrew: { year: 5787, month: 8, day: 5 },
+    onah: 'day',
+    createdAt: new Date().toISOString(),
+    createdBy: OWNER,
+  });
+  const newPeriodRef = (uid: string) => doc(db(uid), 'couples', COUPLE, 'periods', 'p2');
+  const settingsRef = (uid: string) => doc(db(uid), 'couples', COUPLE, 'settings', 's1');
+
+  test('the onboarding batch (couple, invites, settings, user) succeeds', async () => {
+    const ownerDb = db(OWNER);
+    const expires = Timestamp.fromMillis(Date.now() + 60 * 60 * 1000);
+    const batch = writeBatch(ownerDb);
+    batch.set(doc(ownerDb, 'couples', 'onboard'), {
+      members: [OWNER],
+      createdAt: Timestamp.now(),
+      inviteCode: 'ONB234',
+      inviteExpiresAt: expires,
+    });
+    batch.set(doc(ownerDb, 'couples', 'onboard', 'public', 'invite'), {
+      inviteCode: 'ONB234',
+      inviteExpiresAt: expires,
+      inviterEmail: 'owner@example.com',
+    });
+    batch.set(doc(ownerDb, 'coupleInvites', 'ONB234'), {
+      coupleId: 'onboard',
+      inviteExpiresAt: expires,
+      inviterEmail: 'owner@example.com',
+    });
+    batch.set(doc(ownerDb, 'users', OWNER), { coupleId: 'onboard', role: 'owner' }, { merge: true });
+    batch.set(doc(ownerDb, 'couples', 'onboard', 'settings', 'main'), {
+      minhag: 'ashkenaz',
+      chumrot: { kavuah: false },
+      notifications: {},
+      calendar: {},
+    });
+    await assertSucceeds(batch.commit());
+  });
+
+  test('a valid period can be added, edited and deleted', async () => {
+    await seed({ partnerUid: PARTNER });
+    await assertSucceeds(setDoc(newPeriodRef(OWNER), { ...validPeriod(), notes: 'note' }));
+    await assertSucceeds(updateDoc(newPeriodRef(OWNER), { onah: 'night', notes: deleteField() }));
+    await assertSucceeds(setDoc(doc(db(PARTNER), 'couples', COUPLE, 'periods', 'p3'), validPeriod()));
+    await assertSucceeds(deleteDoc(newPeriodRef(OWNER)));
+  });
+
+  test('invalid periods are rejected', async () => {
+    await seed({});
+    await assertFails(setDoc(newPeriodRef(OWNER), { ...validPeriod(), onah: 'evening' }));
+    await assertFails(setDoc(newPeriodRef(OWNER), { ...validPeriod(), dateHebrew: 'yesterday' }));
+    await assertFails(setDoc(newPeriodRef(OWNER), { ...validPeriod(), extra: true }));
+    await assertFails(setDoc(newPeriodRef(OWNER), { ...validPeriod(), notes: 'x'.repeat(2001) }));
+    const { createdBy: _createdBy, ...missing } = validPeriod();
+    await assertFails(setDoc(newPeriodRef(OWNER), missing));
+  });
+
+  test('settings accept known fields and minhagim only', async () => {
+    await seed({});
+    await assertSucceeds(setDoc(settingsRef(OWNER), { minhag: 'chabad' }, { merge: true }));
+    await assertFails(setDoc(settingsRef(OWNER), { minhag: 'made-up' }, { merge: true }));
+    await assertFails(setDoc(settingsRef(OWNER), { isAdmin: true }, { merge: true }));
+    await assertFails(setDoc(settingsRef(OWNER), { chumrot: 'all' }, { merge: true }));
+  });
+
+  test('a member can only remove themselves from the couple', async () => {
+    await seed({});
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'couples', COUPLE), { members: [OWNER, PARTNER] });
+    });
+    const coupleRefFor = (uid: string) => doc(db(uid), 'couples', COUPLE);
+    await assertFails(updateDoc(coupleRefFor(OWNER), { members: [OWNER] }));
+    await assertFails(updateDoc(coupleRefFor(OWNER), { members: [OWNER, PARTNER, STRANGER] }));
+    await assertFails(updateDoc(coupleRefFor(OWNER), { somethingElse: true }));
+    await assertSucceeds(updateDoc(coupleRefFor(PARTNER), { members: [OWNER] }));
+  });
+
+  test('a joiner can only add themselves and clear the invite', async () => {
+    await seed({});
+    const expires = Timestamp.fromMillis(Date.now() + 60 * 60 * 1000);
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'couples', COUPLE), {
+        members: [OWNER],
+        inviteCode: 'ABC234',
+        inviteExpiresAt: expires,
+      });
+      await setDoc(doc(ctx.firestore(), 'couples', COUPLE, 'public', 'invite'), {
+        inviteCode: 'ABC234',
+        inviteExpiresAt: expires,
+        inviterEmail: '',
+      });
+    });
+    const ref = doc(db(STRANGER), 'couples', COUPLE);
+    await assertFails(updateDoc(ref, { members: [STRANGER, PARTNER] }));
+    await assertFails(updateDoc(ref, { members: [OWNER, STRANGER], hijacked: true }));
+    await assertSucceeds(
+      updateDoc(ref, {
+        members: [OWNER, STRANGER],
+        inviteCode: deleteField(),
+        inviteExpiresAt: deleteField(),
+      }),
+    );
+  });
+
+  test('couple and public invite docs only accept known fields', async () => {
+    await assertFails(setDoc(doc(db(OWNER), 'couples', 'c2'), { members: [OWNER], extra: 1 }));
+    await assertSucceeds(setDoc(doc(db(OWNER), 'couples', 'c2'), { members: [OWNER] }));
+    await assertFails(
+      setDoc(doc(db(OWNER), 'couples', 'c2', 'public', 'invite'), { inviteCode: 'A', extra: 1 }),
+    );
   });
 });

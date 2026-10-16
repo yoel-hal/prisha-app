@@ -6,7 +6,9 @@
 - [ ] Move the partner PIN check into a Cloud Function — today the PIN hash is readable by anyone with an unclaimed invite code, and a 4-digit PIN cracks instantly
 - [ ] Tighten the couple invite window — any signed-in user who knows a couple ID can read the couple document (member IDs) while an invite is open
 - [ ] Add Firebase App Check — anonymous sign-in is open, so anyone can create accounts and hit Firestore/Functions
-- [ ] Validate data in the rules: period/settings fields and types, couple members can't be rewritten freely, an invite joiner can only add themselves
+
+## Bugs
+- [ ] Account/couple deletion reads `couples/{id}/invites`, which has no rule, so it is probably denied — check in the emulator and add a rule or drop that step
 
 ## Partners
 - [ ] Tell existing `/join` partners to re-enter their code and PIN (they lost access with the new rules)
@@ -43,3 +45,4 @@
 - [x] Web app rebuilt and deployed to https://prisha-tracker.web.app
 - [x] Commit `fe256e3` pushed to GitHub
 - [x] Couple invite codes fixed: lookup now uses `coupleInvites/{code}` instead of a blocked collection-group query; rules tested and deployed
+- [x] Data validation in the rules: periods, settings, couple membership changes and invite docs; batch creation uses `getAfter` (32 rule tests)
