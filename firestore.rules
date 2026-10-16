@@ -224,6 +224,11 @@ service cloud.firestore {
           && isValidPeriod(request.resource.data);
       }
 
+      // Legacy invites from before the couple-sharing redo; kept only so account deletion can clean them up.
+      match /invites/{inviteId} {
+        allow read, delete: if isCoupleMember(coupleId);
+      }
+
       match /settings/{settingsId} {
         allow read, delete: if canAccessCouple(coupleId);
         // getAfter: onboarding creates the couple and its settings in one batch.

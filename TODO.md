@@ -5,10 +5,6 @@
 - [ ] Delete `users.json` (export of 43 real accounts with password hashes) or move it somewhere private
 - [ ] Move the partner PIN check into a Cloud Function — today the PIN hash is readable by anyone with an unclaimed invite code, and a 4-digit PIN cracks instantly
 - [ ] Tighten the couple invite window — any signed-in user who knows a couple ID can read the couple document (member IDs) while an invite is open
-- [ ] Add Firebase App Check — anonymous sign-in is open, so anyone can create accounts and hit Firestore/Functions
-
-## Bugs
-- [ ] Account/couple deletion reads `couples/{id}/invites`, which has no rule, so it is probably denied — check in the emulator and add a rule or drop that step
 
 ## Partners
 - [ ] Tell existing `/join` partners to re-enter their code and PIN (they lost access with the new rules)
@@ -36,6 +32,9 @@
 - [ ] Add tests beyond the calculations: hooks and the Firestore helpers
 - [ ] Move the last hard-coded strings into i18n (`join.tsx` logo, Buy Me a Coffee label)
 
+## Later
+- [ ] Firebase App Check — guards against bots and cost abuse, not data access (the rules do that). Web code is ready (`EXPO_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY`); can't be enforced until the phones move to the native Firebase SDK. Revisit if usage graphs show abuse
+
 ## Setup on this Mac
 - [ ] Run `gh auth setup-git` once so `git push` works normally
 - [ ] Archive the old `~/FamilyPurityApp/TaharatApp` project (superseded by this one)
@@ -46,3 +45,4 @@
 - [x] Commit `fe256e3` pushed to GitHub
 - [x] Couple invite codes fixed: lookup now uses `coupleInvites/{code}` instead of a blocked collection-group query; rules tested and deployed
 - [x] Data validation in the rules: periods, settings, couple membership changes and invite docs; batch creation uses `getAfter` (32 rule tests)
+- [x] Account deletion fixed: rule for legacy `couples/{id}/invites` so a sole member can delete their couple (deletion flow covered by rule tests)

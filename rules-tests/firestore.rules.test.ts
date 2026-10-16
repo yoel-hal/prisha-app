@@ -20,6 +20,7 @@ import {
   Timestamp,
   updateDoc,
   arrayUnion,
+  arrayRemove,
   deleteField,
   writeBatch,
 } from 'firebase/firestore';
@@ -430,5 +431,56 @@ describe('data validation', () => {
     await assertFails(
       setDoc(doc(db(OWNER), 'couples', 'c2', 'public', 'invite'), { inviteCode: 'A', extra: 1 }),
     );
+  });
+});
+
+describe('account deletion', () => {
+  async function deleteAll(ownerDb: ReturnType<typeof db>, path: string[]) {
+    const snap = await getDocs(collection(ownerDb, path.join('/')));
+    await Promise.all(snap.docs.map((d) => deleteDoc(d.ref)));
+  }
+
+  test('a sole member can delete the couple and everything in it, including legacy invites', async () => {
+    await seed({ partnerUid: PARTNER });
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      const admin = ctx.firestore();
+      await setDoc(doc(admin, 'couples', COUPLE), { members: [OWNER], inviteCode: 'DEL234' });
+      await setDoc(doc(admin, 'couples', COUPLE, 'invites', 'old'), { email: 'x@example.com' });
+      await setDoc(doc(admin, 'couples', COUPLE, 'public', 'invite'), { inviteCode: 'DEL234' });
+      await setDoc(doc(admin, 'coupleInvites', 'DEL234'), { coupleId: COUPLE });
+    });
+    const ownerDb = db(OWNER);
+    // Same order as deleteAllUserData / deleteCoupleWithSubcollections.
+    await assertSucceeds(deleteDoc(doc(ownerDb, 'coupleInvites', 'DEL234')));
+    await assertSucceeds(deleteAll(ownerDb, ['couples', COUPLE, 'periods']));
+    await assertSucceeds(deleteAll(ownerDb, ['couples', COUPLE, 'invites']));
+    await assertSucceeds(deleteAll(ownerDb, ['couples', COUPLE, 'settings']));
+    await assertSucceeds(deleteDoc(doc(ownerDb, 'couples', COUPLE, 'public', 'invite')));
+    await assertSucceeds(deleteDoc(doc(ownerDb, 'couples', COUPLE)));
+    await assertSucceeds(
+      setDoc(doc(ownerDb, 'users', OWNER, 'partnerAccess', 'current'), { isActive: false }, { merge: true }),
+    );
+    await assertSucceeds(deleteDoc(doc(ownerDb, 'partnerTokens', TOKEN)));
+    await assertSucceeds(deleteDoc(doc(ownerDb, 'users', OWNER, 'partnerAccess', 'current')));
+    await assertSucceeds(deleteDoc(doc(ownerDb, 'users', OWNER)));
+  });
+
+  test('a member of a two-person couple leaves without deleting shared data', async () => {
+    await seed({});
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'couples', COUPLE), { members: [OWNER, PARTNER] });
+    });
+    await assertSucceeds(updateDoc(doc(db(PARTNER), 'couples', COUPLE), { members: arrayRemove(PARTNER) }));
+    await assertFails(deleteDoc(doc(db(OWNER), 'couples', 'not-mine')));
+  });
+
+  test('strangers cannot read or delete legacy invites', async () => {
+    await seed({});
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'couples', COUPLE, 'invites', 'old'), { email: 'x@example.com' });
+    });
+    await assertFails(getDocs(collection(db(STRANGER), 'couples', COUPLE, 'invites')));
+    await assertFails(deleteDoc(doc(db(STRANGER), 'couples', COUPLE, 'invites', 'old')));
+    await assertFails(setDoc(doc(db(OWNER), 'couples', COUPLE, 'invites', 'new'), { email: '' }));
   });
 });
