@@ -103,6 +103,25 @@ service cloud.firestore {
       allow delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
     }
 
+    // Couple invite code -> couple. Readable only by someone who already knows the code.
+    // getAfter lets a new couple and its invite be written in the same batch.
+    function isMemberAfterWrite(coupleId) {
+      return request.auth.uid in
+        getAfter(/databases/$(database)/documents/couples/$(coupleId)).data.members;
+    }
+
+    match /coupleInvites/{code} {
+      allow get: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && request.resource.data.keys().hasOnly(['coupleId', 'inviteExpiresAt', 'inviterEmail'])
+        && isMemberAfterWrite(request.resource.data.coupleId);
+      allow update: if isAuthenticated()
+        && request.resource.data.keys().hasOnly(['coupleId', 'inviteExpiresAt', 'inviterEmail'])
+        && request.resource.data.coupleId == resource.data.coupleId
+        && isMemberAfterWrite(resource.data.coupleId);
+      allow delete: if isAuthenticated() && isMemberAfterWrite(resource.data.coupleId);
+    }
+
     match /admin/stats {
       allow read: if isAdmin();
       allow write: if false;

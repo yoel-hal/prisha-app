@@ -17,6 +17,11 @@ import {
   getDoc,
   getDocs,
   setDoc,
+  Timestamp,
+  updateDoc,
+  arrayUnion,
+  deleteField,
+  writeBatch,
 } from 'firebase/firestore';
 
 const OWNER = 'owner-uid';
@@ -198,5 +203,111 @@ describe('partnerAccess', () => {
     await assertSucceeds(
       setDoc(accessRef(OWNER), { token: 'NEWTOKEN0000', pinHash: 'h', isActive: true, coupleId: COUPLE }),
     );
+  });
+});
+
+describe('couple invites by code', () => {
+  const CODE = 'ABC234';
+  const JOINER = 'joiner-uid';
+  const inviteRef = (uid: string | null, code = CODE) => doc(db(uid), 'coupleInvites', code);
+  const future = () => Timestamp.fromMillis(Date.now() + 60 * 60 * 1000);
+
+  async function seedInvite() {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      const admin = ctx.firestore();
+      await setDoc(doc(admin, 'couples', COUPLE), {
+        members: [OWNER],
+        inviteCode: CODE,
+        inviteExpiresAt: future(),
+      });
+      await setDoc(doc(admin, 'couples', COUPLE, 'public', 'invite'), {
+        inviteCode: CODE,
+        inviteExpiresAt: future(),
+        inviterEmail: 'owner@example.com',
+      });
+      await setDoc(doc(admin, 'coupleInvites', CODE), {
+        coupleId: COUPLE,
+        inviteExpiresAt: future(),
+        inviterEmail: 'owner@example.com',
+      });
+    });
+  }
+
+  test('anyone signed in can look up an invite by its code', async () => {
+    await seedInvite();
+    await assertSucceeds(getDoc(inviteRef(JOINER)));
+    await assertFails(getDoc(inviteRef(null)));
+  });
+
+  test('nobody can list invites', async () => {
+    await seedInvite();
+    await assertFails(getDocs(collection(db(JOINER), 'coupleInvites')));
+    await assertFails(getDocs(collection(db(OWNER), 'coupleInvites')));
+  });
+
+  test('a couple member can create and refresh their invite', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'couples', COUPLE), { members: [OWNER] });
+    });
+    const data = { coupleId: COUPLE, inviteExpiresAt: future(), inviterEmail: 'owner@example.com' };
+    await assertSucceeds(setDoc(inviteRef(OWNER), data));
+    await assertSucceeds(setDoc(inviteRef(OWNER), { ...data, inviteExpiresAt: future() }));
+  });
+
+  test('a new couple and its invite can be created in one batch', async () => {
+    const ownerDb = db(OWNER);
+    const batch = writeBatch(ownerDb);
+    batch.set(doc(ownerDb, 'couples', 'new-couple'), { members: [OWNER] });
+    batch.set(doc(ownerDb, 'coupleInvites', 'NEW234'), {
+      coupleId: 'new-couple',
+      inviteExpiresAt: future(),
+      inviterEmail: 'owner@example.com',
+    });
+    await assertSucceeds(batch.commit());
+  });
+
+  test("a stranger cannot create, redirect or delete someone else's invite", async () => {
+    await seedInvite();
+    await assertFails(
+      setDoc(inviteRef(STRANGER, 'XYZ234'), {
+        coupleId: COUPLE,
+        inviteExpiresAt: future(),
+        inviterEmail: 'x@example.com',
+      }),
+    );
+    await assertFails(
+      setDoc(inviteRef(STRANGER), { coupleId: 'other', inviteExpiresAt: future(), inviterEmail: '' }),
+    );
+    await assertFails(deleteDoc(inviteRef(STRANGER)));
+  });
+
+  test('invite docs cannot carry extra fields', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'couples', COUPLE), { members: [OWNER] });
+    });
+    await assertFails(
+      setDoc(inviteRef(OWNER), {
+        coupleId: COUPLE,
+        inviteExpiresAt: future(),
+        inviterEmail: '',
+        extra: true,
+      }),
+    );
+  });
+
+  test('the full join flow works for the person holding the code', async () => {
+    await seedInvite();
+    const joinerDb = db(JOINER);
+    await assertSucceeds(getDoc(doc(joinerDb, 'coupleInvites', CODE)));
+    await assertSucceeds(getDoc(doc(joinerDb, 'couples', COUPLE)));
+    await assertSucceeds(
+      updateDoc(doc(joinerDb, 'couples', COUPLE), {
+        members: arrayUnion(JOINER),
+        inviteCode: deleteField(),
+        inviteExpiresAt: deleteField(),
+      }),
+    );
+    await assertSucceeds(deleteDoc(doc(joinerDb, 'couples', COUPLE, 'public', 'invite')));
+    await assertSucceeds(deleteDoc(doc(joinerDb, 'coupleInvites', CODE)));
   });
 });

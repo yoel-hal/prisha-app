@@ -3,13 +3,11 @@ import {
   arrayRemove,
   arrayUnion,
   collection,
-  collectionGroup,
   deleteDoc,
   deleteField,
   doc,
   getDoc,
   getDocs,
-  limit,
   onSnapshot,
   orderBy,
   query,
@@ -17,7 +15,6 @@ import {
   setDoc,
   Timestamp,
   updateDoc,
-  where,
   writeBatch,
   type DocumentData,
   type FieldValue,
@@ -222,6 +219,16 @@ function couplePublicInviteRef(coupleId: string) {
   return doc(db, 'couples', coupleId, 'public', 'invite');
 }
 
+/** Top-level lookup doc keyed by invite code, so joining needs a direct get, not a query. */
+function coupleInviteRef(code: string) {
+  return doc(db, 'coupleInvites', code);
+}
+
+async function deleteCoupleInviteCode(code: string | null | undefined): Promise<void> {
+  if (!code) return;
+  await deleteDoc(coupleInviteRef(code)).catch(() => undefined);
+}
+
 export function generateCoupleInviteCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const array = new Uint8Array(INVITE_CODE_LENGTH);
@@ -248,6 +255,12 @@ async function writeCoupleInviteFields(
 
   await setDoc(couplePublicInviteRef(coupleId), {
     inviteCode: code,
+    inviteExpiresAt: expiresAt,
+    inviterEmail: normalizedEmail,
+  });
+
+  await setDoc(coupleInviteRef(code), {
+    coupleId,
     inviteExpiresAt: expiresAt,
     inviterEmail: normalizedEmail,
   });
@@ -281,6 +294,12 @@ export async function ensureCoupleInvite(
     existingExpires instanceof Timestamp &&
     existingExpires.toMillis() > Date.now()
   ) {
+    // Invites created before the coupleInvites lookup existed have no lookup doc yet.
+    await setDoc(coupleInviteRef(existingCode), {
+      coupleId,
+      inviteExpiresAt: existingExpires,
+      inviterEmail: normalizeEmail(inviterEmail),
+    });
     return {
       code: existingCode,
       expiresAt: existingExpires.toDate(),
@@ -288,6 +307,7 @@ export async function ensureCoupleInvite(
     };
   }
 
+  await deleteCoupleInviteCode(existingCode);
   return writeCoupleInviteFields(coupleId, inviterEmail);
 }
 
@@ -299,20 +319,15 @@ export async function findCoupleByInviteCode(
     return null;
   }
 
-  const inviteQuery = query(
-    collectionGroup(db, 'public'),
-    where('inviteCode', '==', code),
-    where('inviteExpiresAt', '>', Timestamp.now()),
-    limit(1),
-  );
-  const snapshot = await getDocs(inviteQuery);
-  if (snapshot.empty) {
+  const inviteSnap = await getDoc(coupleInviteRef(code));
+  if (!inviteSnap.exists()) {
     return null;
   }
 
-  const inviteDoc = snapshot.docs[0]!;
-  const coupleId = inviteDoc.ref.parent.parent?.id;
-  if (!coupleId) {
+  const invite = inviteSnap.data();
+  const coupleId = typeof invite.coupleId === 'string' ? invite.coupleId : null;
+  const expiresAt = invite.inviteExpiresAt;
+  if (!coupleId || !(expiresAt instanceof Timestamp) || expiresAt.toMillis() <= Date.now()) {
     return null;
   }
 
@@ -325,9 +340,7 @@ export async function findCoupleByInviteCode(
     ? (coupleSnap.data()!.members as string[])
     : [];
   const inviterEmail =
-    typeof inviteDoc.data().inviterEmail === 'string'
-      ? inviteDoc.data().inviterEmail
-      : '';
+    typeof invite.inviterEmail === 'string' ? invite.inviterEmail : '';
 
   return {
     coupleId,
@@ -388,6 +401,7 @@ export async function acceptCoupleInvite(
     inviteExpiresAt: deleteField(),
   });
   await deleteDoc(couplePublicInviteRef(lookup.coupleId));
+  await deleteCoupleInviteCode(rawCode.trim().toUpperCase());
 
   await setDoc(
     userRef(userId),
@@ -836,6 +850,11 @@ export async function createCouple(
     inviteExpiresAt: expiresAt,
     inviterEmail: normalizedEmail,
   });
+  batch.set(coupleInviteRef(code), {
+    coupleId,
+    inviteExpiresAt: expiresAt,
+    inviterEmail: normalizedEmail,
+  });
   await batch.commit();
 
   const written = await getDoc(newCoupleRef);
@@ -906,6 +925,11 @@ export async function completeOnboarding(
   });
   batch.set(couplePublicInviteRef(coupleId), {
     inviteCode: code,
+    inviteExpiresAt: expiresAt,
+    inviterEmail: normalizedEmail,
+  });
+  batch.set(coupleInviteRef(code), {
+    coupleId,
     inviteExpiresAt: expiresAt,
     inviterEmail: normalizedEmail,
   });
@@ -1182,6 +1206,9 @@ async function deleteAllDocsInCollection(
 }
 
 async function deleteCoupleWithSubcollections(coupleId: string): Promise<void> {
+  const coupleSnap = await getDoc(coupleRef(coupleId));
+  // Must run while the user is still a member, or the rules reject it.
+  await deleteCoupleInviteCode(coupleSnap.data()?.inviteCode as string | undefined);
   await deleteAllDocsInCollection(periodsRef(coupleId));
   await deleteAllDocsInCollection(
     collection(db, 'couples', coupleId, 'invites'),
