@@ -50,7 +50,7 @@ export default function OnboardingForgotPasswordScreen() {
             <Text style={[authFormStyles.label, textStartStyle()]}>{t('auth.email')}</Text>
             <TextInput
               ref={emailRef}
-              style={authFormStyles.input}
+              style={[authFormStyles.input, { textAlign: textStart }]}
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"

@@ -2,7 +2,6 @@ import type { ReactNode } from 'react';
 import { Platform, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { useDesktopWeb } from '../../hooks/useDesktopWeb';
-import { isAppRTL } from '../../utils/rtl';
 import { WebSidebar } from './WebSidebar';
 
 interface WebAppShellProps {
@@ -17,10 +16,8 @@ export function WebAppShell({ children }: WebAppShellProps) {
     return children;
   }
 
-  const rtl = isAppRTL();
-
   return (
-    <View style={[styles.shell, rtl ? styles.shellRtl : styles.shellLtr]}>
+    <View style={styles.shell}>
       <WebSidebar />
       <View style={styles.content}>{children}</View>
     </View>
@@ -35,13 +32,8 @@ const webShellFill: ViewStyle =
 const styles = StyleSheet.create({
   shell: {
     flex: 1,
-    ...webShellFill,
-  },
-  shellLtr: {
     flexDirection: 'row',
-  },
-  shellRtl: {
-    flexDirection: 'row-reverse',
+    ...webShellFill,
   },
   content: {
     flex: 1,

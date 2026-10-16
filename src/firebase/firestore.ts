@@ -902,7 +902,8 @@ export async function completeOnboarding(
     {
       email: normalizeEmail(data.email),
       language: data.language,
-      country: normalizedCountry,
+      // Never overwrite a country saved on the profile step with an empty one.
+      ...(normalizedCountry ? { country: normalizedCountry } : {}),
       firstName: data.firstName?.trim() ?? '',
       lastName: data.lastName?.trim() ?? '',
       phone: data.phone?.trim() ?? '',

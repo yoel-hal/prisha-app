@@ -60,7 +60,7 @@ export default function OnboardingLoginScreen() {
             <Text style={[authFormStyles.label, textStartStyle()]}>{t('auth.email')}</Text>
             <TextInput
               ref={emailRef}
-              style={authFormStyles.input}
+              style={[authFormStyles.input, { textAlign: textStart }]}
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
@@ -82,7 +82,7 @@ export default function OnboardingLoginScreen() {
             <Text style={[authFormStyles.label, textStartStyle()]}>{t('auth.password')}</Text>
             <TextInput
               ref={passwordRef}
-              style={authFormStyles.input}
+              style={[authFormStyles.input, { textAlign: textStart }]}
               value={password}
               onChangeText={setPassword}
               secureTextEntry

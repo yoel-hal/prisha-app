@@ -72,16 +72,15 @@ export default function AboutSettingsScreen() {
               {t('about.contactTitle')}
             </Text>
             <Text style={[styles.sectionBody, textStartStyle()]}>
-              {t('about.contactIntro')}{' '}
-              <Text
-                style={styles.link}
-                onPress={() =>
-                  void Linking.openURL(`mailto:${PRIVACY_EMAIL}`)
-                }
-                accessibilityRole="link"
-              >
-                {PRIVACY_EMAIL}
-              </Text>
+              {t('about.contactIntro')}
+            </Text>
+            {/* Own line so the address never wraps at its hyphen. */}
+            <Text
+              style={[styles.sectionBody, styles.link, textStartStyle()]}
+              onPress={() => void Linking.openURL(`mailto:${PRIVACY_EMAIL}`)}
+              accessibilityRole="link"
+            >
+              {PRIVACY_EMAIL}
             </Text>
           </View>
         </ScrollView>

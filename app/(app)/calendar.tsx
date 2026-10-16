@@ -18,7 +18,7 @@ import { useCalendar } from '../../src/hooks/useCalendar';
 import { useDesktopWeb } from '../../src/hooks/useDesktopWeb';
 import { usePeriods } from '../../src/hooks/usePeriods';
 import { useVesetCalculations } from '../../src/hooks/useVesetCalculations';
-import { isAppRTL, textStartStyle } from '../../src/utils/rtl';
+import { textStartStyle } from '../../src/utils/rtl';
 
 export default function CalendarScreen() {
   const { t } = useTranslation();
@@ -46,7 +46,7 @@ export default function CalendarScreen() {
       <View
         style={[
           styles.header,
-          { alignItems: isAppRTL() ? 'flex-end' : 'flex-start' },
+          { alignItems: 'flex-start' },
         ]}
       >
         <Text style={[styles.title, textStartStyle()]}>{t('calendar.title')}</Text>
@@ -83,10 +83,7 @@ export default function CalendarScreen() {
     return (
       <WebMainContent scrollable={false}>
         <View
-          style={[
-            styles.desktopRow,
-            isAppRTL() ? styles.desktopRowRtl : styles.desktopRowLtr,
-          ]}
+          style={styles.desktopRow}
         >
           <View style={styles.desktopCalendarCol}>{calendarBody}</View>
           <View style={styles.desktopSideCol}>
@@ -164,14 +161,9 @@ const styles = StyleSheet.create({
   },
   desktopRow: {
     flex: 1,
+    flexDirection: 'row',
     gap: 24,
     minHeight: 500,
-  },
-  desktopRowLtr: {
-    flexDirection: 'row',
-  },
-  desktopRowRtl: {
-    flexDirection: 'row-reverse',
   },
   desktopCalendarCol: {
     flex: 1.2,

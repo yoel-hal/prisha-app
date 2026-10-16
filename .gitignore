@@ -45,3 +45,4 @@ yarn-error.*
 # Firebase Auth user exports (contain password hashes)
 users.json
 firestore-debug.log
+firebase-debug.log

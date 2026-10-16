@@ -2,10 +2,10 @@ import { Stack } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   View,
 } from 'react-native';
@@ -22,6 +22,7 @@ import { useAuthStore } from '../../../src/store/authStore';
 import { useSettingsStore } from '../../../src/store/settingsStore';
 import { textStartStyle } from '../../../src/utils/rtl';
 import { webScreenScrollStyles } from '../../../src/utils/webScroll';
+import { AppSwitch } from '../../../src/components/common/AppSwitch';
 
 const LEAD_OPTIONS: NotificationLeadHours[] = [12, 24, 48];
 
@@ -44,6 +45,8 @@ function leadHoursLabelKey(hours: NotificationLeadHours): string {
 export default function NotificationsSettingsScreen() {
   const webScroll = webScreenScrollStyles();
   const { t } = useTranslation();
+  // expo-notifications can't schedule in the browser; reminders live in the phone app.
+  const isWeb = Platform.OS === 'web';
   const coupleId = useAuthStore((state) => state.coupleId);
   const stored = useSettingsStore((state) => state.notifications);
   const setNotifications = useSettingsStore((state) => state.setNotifications);
@@ -131,51 +134,62 @@ export default function NotificationsSettingsScreen() {
         <ScrollView style={webScroll.scroll} contentContainerStyle={styles.scroll}>
           <SettingsRow
             label={t('notifications.enable')}
-            value={draft.enabled}
+            value={!isWeb && draft.enabled}
             onValueChange={(value) => void handleMasterToggle(value)}
+            disabled={isWeb}
           />
 
-          {permissionDenied ? (
+          {isWeb ? (
+            <Text style={[styles.hint, textStartStyle()]}>
+              {t('notifications.webUnsupported')}
+            </Text>
+          ) : permissionDenied ? (
             <Text style={[styles.hint, styles.error, textStartStyle()]}>
               {t('notifications.permissionDenied')}
             </Text>
           ) : null}
 
-          <Text style={[styles.sectionLabel, textStartStyle()]}>
-            {t('notifications.leadTime')}
-          </Text>
-          <View style={styles.segmentRow}>
-            {LEAD_OPTIONS.map((hours) => (
-              <Pressable
-                key={hours}
-                style={[
-                  styles.segment,
-                  draft.leadHours === hours && styles.segmentSelected,
-                ]}
-                onPress={() => setDraft((prev) => ({ ...prev, leadHours: hours }))}
-              >
-                <Text
+          {/* Timing and per-veset options only apply while notifications are on. */}
+          <View
+            style={[styles.dependentOptions, !draft.enabled && styles.dependentOptionsOff]}
+          >
+            <Text style={[styles.sectionLabel, textStartStyle()]}>
+              {t('notifications.leadTime')}
+            </Text>
+            <View style={styles.segmentRow}>
+              {LEAD_OPTIONS.map((hours) => (
+                <Pressable
+                  key={hours}
                   style={[
-                    styles.segmentText,
-                    draft.leadHours === hours && styles.segmentTextSelected,
+                    styles.segment,
+                    draft.leadHours === hours && styles.segmentSelected,
                   ]}
+                  onPress={() => setDraft((prev) => ({ ...prev, leadHours: hours }))}
                 >
-                  {t(leadHoursLabelKey(hours))}
-                </Text>
-              </Pressable>
+                  <Text
+                    style={[
+                      styles.segmentText,
+                      draft.leadHours === hours && styles.segmentTextSelected,
+                    ]}
+                  >
+                    {t(leadHoursLabelKey(hours))}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+
+            {TYPE_TOGGLES.map((row) => (
+              <SettingsRow
+                key={row.key}
+                label={t(row.labelKey)}
+                value={draft[row.key]}
+                onValueChange={(value) =>
+                  setDraft((prev) => ({ ...prev, [row.key]: value }))
+                }
+                disabled={!draft.enabled}
+              />
             ))}
           </View>
-
-          {TYPE_TOGGLES.map((row) => (
-            <SettingsRow
-              key={row.key}
-              label={t(row.labelKey)}
-              value={draft[row.key]}
-              onValueChange={(value) =>
-                setDraft((prev) => ({ ...prev, [row.key]: value }))
-              }
-            />
-          ))}
         </ScrollView>
 
         <View style={styles.footer}>
@@ -201,15 +215,17 @@ function SettingsRow({
   label,
   value,
   onValueChange,
+  disabled = false,
 }: {
   label: string;
   value: boolean;
   onValueChange: (next: boolean) => void;
+  disabled?: boolean;
 }) {
   return (
     <View style={styles.row}>
       <Text style={[styles.rowLabel, textStartStyle()]}>{label}</Text>
-      <Switch value={value} onValueChange={onValueChange} />
+      <AppSwitch value={value} onValueChange={onValueChange} disabled={disabled} />
     </View>
   );
 }
@@ -222,6 +238,13 @@ const styles = StyleSheet.create({
   scroll: {
     padding: 20,
     gap: 8,
+  },
+  dependentOptions: {
+    gap: 8,
+  },
+  dependentOptionsOff: {
+    opacity: 0.4,
+    pointerEvents: 'none',
   },
   row: {
     flexDirection: 'row',

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 
 import type { Chumrot, Minhag } from '../calculations/types';
 import type { OnboardingLanguage } from '../firebase/firestore';
+import i18n from '../i18n';
 
 const DEFAULT_CHUMROT: Chumrot = {
   kavuah: false,
@@ -11,12 +12,16 @@ const DEFAULT_CHUMROT: Chumrot = {
   bothOnotOnYomHaChodesh: false,
 };
 
-const initialState = {
-  language: 'en' as OnboardingLanguage,
-  minhag: 'ashkenaz' as Minhag,
-  chumrot: DEFAULT_CHUMROT,
-  country: '',
-};
+// Default to the language the app is showing, so skipping the language step
+// (or reloading mid-onboarding on web) doesn't save English for a Hebrew user.
+function initialState() {
+  return {
+    language: (i18n.language === 'he' ? 'he' : 'en') as OnboardingLanguage,
+    minhag: 'ashkenaz' as Minhag,
+    chumrot: DEFAULT_CHUMROT,
+    country: '',
+  };
+}
 
 interface OnboardingState {
   language: OnboardingLanguage;
@@ -31,10 +36,10 @@ interface OnboardingState {
 }
 
 export const useOnboardingStore = create<OnboardingState>((set) => ({
-  ...initialState,
+  ...initialState(),
   setLanguage: (language) => set({ language }),
   setMinhag: (minhag) => set({ minhag }),
   setChumrot: (chumrot) => set({ chumrot }),
   setCountry: (country) => set({ country }),
-  reset: () => set(initialState),
+  reset: () => set(initialState()),
 }));

@@ -5,7 +5,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   View,
 } from 'react-native';
@@ -16,6 +15,7 @@ import OnboardingSkipButton from '../../src/components/onboarding/OnboardingSkip
 import { useOnboardingStore } from '../../src/store/onboardingStore';
 import { textStartStyle } from '../../src/utils/rtl';
 import { webScreenScrollStyles } from '../../src/utils/webScroll';
+import { AppSwitch } from '../../src/components/common/AppSwitch';
 
 const DEFAULT_CHUMROT: Chumrot = {
   kavuah: false,
@@ -130,7 +130,7 @@ function ChumraRow({
         <Text style={[styles.rowLabel, textStartStyle()]}>{label}</Text>
         <Text style={[styles.rowDesc, textStartStyle()]}>{description}</Text>
       </View>
-      <Switch value={value} onValueChange={onValueChange} />
+      <AppSwitch value={value} onValueChange={onValueChange} />
     </View>
   );
 }

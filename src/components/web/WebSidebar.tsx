@@ -9,7 +9,7 @@ import {
   DESKTOP_SIDEBAR_BORDER,
   DESKTOP_SIDEBAR_WIDTH,
 } from '../../constants/layout';
-import { isAppRTL, textStartStyle } from '../../utils/rtl';
+import { textStartStyle } from '../../utils/rtl';
 import { BuyMeCoffeeButton } from '../common/BuyMeCoffeeButton';
 
 type NavItem = {
@@ -51,16 +51,9 @@ export function WebSidebar() {
   const { t } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
-  const rtl = isAppRTL();
-
   return (
-    <View
-      style={[
-        styles.sidebar,
-        rtl ? styles.sidebarRtl : styles.sidebarLtr,
-      ]}
-    >
-      <Text style={[styles.brand, textStartStyle()]}>פרישה טרקר</Text>
+    <View style={styles.sidebar}>
+      <Text style={[styles.brand, textStartStyle()]}>{t('common.appName')}</Text>
 
       <View style={styles.nav}>
         {NAV_ITEMS.map((item) => {
@@ -105,14 +98,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 20,
     justifyContent: 'flex-start',
-  },
-  sidebarLtr: {
     borderEndWidth: StyleSheet.hairlineWidth,
     borderEndColor: DESKTOP_SIDEBAR_BORDER,
-  },
-  sidebarRtl: {
-    borderStartWidth: StyleSheet.hairlineWidth,
-    borderStartColor: DESKTOP_SIDEBAR_BORDER,
   },
   brand: {
     fontSize: 22,

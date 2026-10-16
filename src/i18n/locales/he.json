@@ -10,15 +10,16 @@
     "done": "סיום",
     "cancel": "ביטול",
     "comingSoon": "בקרוב",
-    "edit": "עריכה"
+    "edit": "עריכה",
+    "appName": "פרישה טרקר"
   },
   "period": {
     "add": "הוספת וסת",
     "edit": "עריכת וסת",
     "date": "תאריך",
     "onah": "עונה",
-    "day": "יום / Day",
-    "night": "לילה / Night",
+    "day": "יום",
+    "night": "לילה",
     "notes": "הערות (אופציונלי)",
     "save": "שמירה",
     "preview": "תצוגה מקדימה",
@@ -83,7 +84,8 @@
     "haflaga": "התראות וסת הפלגה",
     "yomHaChodesh": "התראות וסת החודש",
     "saved": "העדפות ההתראות נשמרו",
-    "permissionDenied": "הרשאת התראות נדחתה. אפשרי להפעיל בהגדרות המכשיר כדי לקבל תזכורות."
+    "permissionDenied": "הרשאת התראות נדחתה. אפשרי להפעיל בהגדרות המכשיר כדי לקבל תזכורות.",
+    "webUnsupported": "תזכורות זמינות רק באפליקציה לנייד."
   },
   "reminder": {
     "set": "הגדרת תזכורת",
@@ -93,7 +95,7 @@
   "settings": {
     "title": "הגדרות",
     "minhag": "מנהג",
-    "chumrot": "חומרות (Chumrot)",
+    "chumrot": "חומרות",
     "customization": "התאמה אישית",
     "language": "שפה",
     "notifications": "התראות",
@@ -112,7 +114,8 @@
     "cancel": "ביטול",
     "deleteAccountConfirmTitle": "מחק חשבון",
     "deleteAccountConfirmMessage": "פעולה זו תמחק לצמיתות את חשבונך וכל הנתונים. לא ניתן לבטל פעולה זו.",
-    "deleteAccountComingSoon": "מחיקת חשבון תהיה זמינה בקרוב."
+    "deleteAccountComingSoon": "מחיקת חשבון תהיה זמינה בקרוב.",
+    "general": "כללי"
   },
   "veset": {
     "onahBeinonit": "עונה בינונית",

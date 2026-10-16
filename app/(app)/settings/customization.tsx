@@ -5,7 +5,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   View,
 } from 'react-native';
@@ -16,6 +15,7 @@ import { useDesktopWeb } from '../../../src/hooks/useDesktopWeb';
 import { useSettings } from '../../../src/hooks/useSettings';
 import { textStartStyle } from '../../../src/utils/rtl';
 import { webScreenScrollStyles } from '../../../src/utils/webScroll';
+import { AppSwitch } from '../../../src/components/common/AppSwitch';
 
 type ChumraKey = keyof Chumrot;
 
@@ -164,7 +164,7 @@ function ChumraRow({
         <Text style={[styles.chumrotRowLabel, textStartStyle()]}>{label}</Text>
         <Text style={[styles.chumrotRowDesc, textStartStyle()]}>{description}</Text>
       </View>
-      <Switch value={value} onValueChange={onValueChange} />
+      <AppSwitch value={value} onValueChange={onValueChange} />
     </View>
   );
 }

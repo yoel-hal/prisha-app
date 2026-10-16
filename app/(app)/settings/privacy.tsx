@@ -7,7 +7,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   View,
 } from 'react-native';
@@ -19,6 +18,7 @@ import { useAuthStore } from '../../../src/store/authStore';
 import { showAlert } from '../../../src/utils/alert';
 import { textStartStyle } from '../../../src/utils/rtl';
 import { webScreenScrollStyles } from '../../../src/utils/webScroll';
+import { AppSwitch } from '../../../src/components/common/AppSwitch';
 
 type PinSetupStep = 'enter' | 'confirm';
 type PinModalMode = 'setup' | 'disable';
@@ -190,7 +190,7 @@ export default function PrivacySettingsScreen() {
                 </Text>
               ) : null}
             </View>
-            <Switch
+            <AppSwitch
               value={appLockEnabled}
               onValueChange={handleToggle}
               disabled={enrollingBiometric || disablingLock}

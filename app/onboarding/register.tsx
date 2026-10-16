@@ -82,7 +82,7 @@ export default function OnboardingRegisterScreen() {
               {t('onboarding.firstName')}
             </Text>
             <TextInput
-              style={authFormStyles.input}
+              style={[authFormStyles.input, { textAlign: textStart }]}
               value={firstName}
               onChangeText={setFirstName}
               autoCapitalize="words"
@@ -101,7 +101,7 @@ export default function OnboardingRegisterScreen() {
               {t('onboarding.lastName')}
             </Text>
             <TextInput
-              style={authFormStyles.input}
+              style={[authFormStyles.input, { textAlign: textStart }]}
               value={lastName}
               onChangeText={setLastName}
               autoCapitalize="words"
@@ -132,7 +132,7 @@ export default function OnboardingRegisterScreen() {
               {t('onboarding.phone')}
             </Text>
             <TextInput
-              style={authFormStyles.input}
+              style={[authFormStyles.input, { textAlign: textStart }]}
               value={phone}
               onChangeText={setPhone}
               keyboardType="phone-pad"
@@ -156,7 +156,7 @@ export default function OnboardingRegisterScreen() {
             <Text style={[authFormStyles.label, textStartStyle()]}>{t('auth.email')}</Text>
             <TextInput
               ref={emailRef}
-              style={authFormStyles.input}
+              style={[authFormStyles.input, { textAlign: textStart }]}
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
@@ -178,7 +178,7 @@ export default function OnboardingRegisterScreen() {
             <Text style={[authFormStyles.label, textStartStyle()]}>{t('auth.password')}</Text>
             <TextInput
               ref={passwordRef}
-              style={authFormStyles.input}
+              style={[authFormStyles.input, { textAlign: textStart }]}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
@@ -202,7 +202,7 @@ export default function OnboardingRegisterScreen() {
             </Text>
             <TextInput
               ref={confirmPasswordRef}
-              style={authFormStyles.input}
+              style={[authFormStyles.input, { textAlign: textStart }]}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               secureTextEntry

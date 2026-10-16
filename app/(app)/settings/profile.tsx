@@ -31,7 +31,7 @@ function isSupportedLanguage(value: string): value is SupportedLanguage {
 }
 
 export default function ProfileSettingsScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const webScroll = webScreenScrollStyles();
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
@@ -42,7 +42,9 @@ export default function ProfileSettingsScreen() {
   const [lastName, setLastName] = useState('');
   const [country, setCountry] = useState('');
   const [phone, setPhone] = useState('');
-  const [language, setLanguage] = useState<OnboardingLanguage>('en');
+  const [language, setLanguage] = useState<OnboardingLanguage>(
+    i18n.language === 'he' ? 'he' : 'en',
+  );
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const firstNameRef = useRef<TextInput>(null);

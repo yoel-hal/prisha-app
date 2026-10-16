@@ -1,9 +1,10 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Switch, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import type { Chumrot } from '../../calculations/types';
 import { textStartStyle } from '../../utils/rtl';
+import { AppSwitch } from '../common/AppSwitch';
 
 type ChumraKey = keyof Chumrot;
 
@@ -53,7 +54,7 @@ function ChumrotTogglesImpl({ chumrot, onChange }: Props) {
               {t(row.descriptionKey)}
             </Text>
           </View>
-          <Switch
+          <AppSwitch
             value={chumrot[row.field]}
             onValueChange={(value) => onChange({ ...chumrot, [row.field]: value })}
           />

@@ -2,7 +2,7 @@ import { Icon } from '@/components/common/Icon';
 import { useAppBanner } from '@/hooks/useAppBanner';
 import { useDesktopWeb } from '@/hooks/useDesktopWeb';
 import { log } from '@/utils/log';
-import { isAppRTL, textStartStyle } from '@/utils/rtl';
+import { textStartStyle } from '@/utils/rtl';
 import * as WebBrowser from 'expo-web-browser';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -47,7 +47,6 @@ export function BannerContent({
   const { t } = useTranslation();
   const isDesktopWeb = useDesktopWeb();
   const resolvedLayout = resolveLayout(layout, isDesktopWeb);
-  const rtl = isAppRTL();
   const showCta = Boolean(ctaText?.trim() && ctaUrl?.trim());
 
   const handleCtaPress = () => {
@@ -66,7 +65,7 @@ export function BannerContent({
 
   if (resolvedLayout === 'web') {
     return (
-      <View style={[styles.webBanner, rtl && styles.webBannerRtl]}>
+      <View style={styles.webBanner}>
         <View style={styles.webContent}>
           <View style={styles.webTextBlock}>
             <Text style={[styles.webTitle, textStartStyle()]}>{title}</Text>
@@ -257,9 +256,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,
-  },
-  webBannerRtl: {
-    flexDirection: 'row-reverse',
   },
   webContent: {
     flex: 1,

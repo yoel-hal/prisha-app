@@ -55,7 +55,7 @@ export function ProfileFormFields({
         <Text style={[styles.label, textStartStyle()]}>{t('onboarding.firstName')}</Text>
         <TextInput
           ref={firstNameRef}
-          style={styles.input}
+          style={[styles.input, { textAlign: textStart }]}
           value={firstName}
           onChangeText={setFirstName}
           autoCapitalize="words"
@@ -75,7 +75,7 @@ export function ProfileFormFields({
         <Text style={[styles.label, textStartStyle()]}>{t('onboarding.lastName')}</Text>
         <TextInput
           ref={lastNameRef}
-          style={styles.input}
+          style={[styles.input, { textAlign: textStart }]}
           value={lastName}
           onChangeText={setLastName}
           autoCapitalize="words"
@@ -112,7 +112,7 @@ export function ProfileFormFields({
         <Text style={[styles.label, textStartStyle()]}>{t('onboarding.phone')}</Text>
         <TextInput
           ref={phoneRef}
-          style={styles.input}
+          style={[styles.input, { textAlign: textStart }]}
           value={phone}
           onChangeText={setPhone}
           keyboardType="phone-pad"

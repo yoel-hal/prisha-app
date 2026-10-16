@@ -1,5 +1,7 @@
 import { Stack } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
+
+import { Icon } from '../../../src/components/common/Icon';
 
 import { WebSettingsDetailPanel } from '../../../src/components/web/WebSettingsDetailPanel';
 import { WebSettingsMenu } from '../../../src/components/web/WebSettingsMenu';
@@ -12,10 +14,7 @@ export default function SettingsLayout() {
   if (isDesktopWeb) {
     return (
       <View
-        style={[
-          styles.desktopShell,
-          isAppRTL() ? styles.desktopShellRtl : styles.desktopShellLtr,
-        ]}
+        style={styles.desktopShell}
       >
         <WebSettingsMenu />
         <WebSettingsDetailPanel>
@@ -39,6 +38,18 @@ export default function SettingsLayout() {
     <Stack
       screenOptions={{
         headerShown: true,
+        // React Navigation mirrors its back arrow from I18nManager, which the browser ignores.
+        ...(Platform.OS === 'web'
+          ? {
+              headerBackImage: ({ tintColor }: { tintColor: string }) => (
+                <Icon
+                  name={isAppRTL() ? 'arrow-right' : 'arrow-left'}
+                  size={24}
+                  color={tintColor}
+                />
+              ),
+            }
+          : null),
       }}
     >
       <Stack.Screen name="index" options={{ headerShown: false }} />
@@ -57,12 +68,7 @@ export default function SettingsLayout() {
 const styles = StyleSheet.create({
   desktopShell: {
     flex: 1,
-    minHeight: 0,
-  },
-  desktopShellLtr: {
     flexDirection: 'row',
-  },
-  desktopShellRtl: {
-    flexDirection: 'row-reverse',
+    minHeight: 0,
   },
 });

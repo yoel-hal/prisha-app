@@ -1,5 +1,5 @@
-import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { Redirect, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Pressable,
@@ -44,13 +44,6 @@ export default function OnboardingMinhagScreen() {
   const [selected, setSelected] = useState<Minhag>('ashkenaz');
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    const profile = { firstName, lastName, country, phone };
-    if (!hasProfileData(profile)) {
-      router.replace('/onboarding/profile');
-    }
-  }, [firstName, lastName, country, phone, router]);
-
   const goNext = useCallback(
     (minhag: Minhag) => {
       setSaving(true);
@@ -60,6 +53,11 @@ export default function OnboardingMinhagScreen() {
     },
     [setMinhag, router],
   );
+
+  // <Redirect> waits for the navigator; router.replace in an effect crashes after a page refresh.
+  if (!hasProfileData({ firstName, lastName, country, phone })) {
+    return <Redirect href="/onboarding/profile" />;
+  }
 
   return (
     <SafeAreaView style={[styles.safe, webScroll.safe]} edges={['top', 'bottom']}>

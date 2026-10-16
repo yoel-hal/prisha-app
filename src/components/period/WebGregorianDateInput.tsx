@@ -43,7 +43,7 @@ export function WebGregorianDateInput({
             onChange(next);
           }
         }}
-        style={styles.input}
+        style={[styles.input, textStartStyle()]}
         // Web-only: renders native <input type="date">
         {...({ type: 'date' } as object)}
       />

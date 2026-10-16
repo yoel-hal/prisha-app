@@ -23,12 +23,13 @@ import { DeleteAccountLoadingOverlay } from '../src/components/common/DeleteAcco
 import { DesktopWebShell } from '../src/components/common/DesktopWebShell';
 import { Toast } from '../src/components/common/Toast';
 import { hydrateAppLockFromStorage } from '../src/hooks/useAppLock';
-import '../src/i18n';
+import { restoreSavedLanguage } from '../src/i18n';
 import { getUserDocument } from '../src/firebase/firestore';
 import {
   bootstrapCoupleForAuthUser,
   bootstrapPartnerMode,
 } from '../src/hooks/useCouple';  
+import { WebDirectionRoot } from '../src/components/common/WebDirectionRoot';
 import { useAuthStore } from '../src/store/authStore';
 import { usePinStore } from '../src/store/pinStore';
 import { useSettingsStore } from '../src/store/settingsStore';
@@ -92,6 +93,7 @@ function RootLayout() {
 
   useEffect(() => {
     void (async () => {
+      await restoreSavedLanguage();
       const result = await bootstrapPartnerMode();
       if (result === 'active') {
         log('[RootLayout] partner session restored');
@@ -408,37 +410,39 @@ function RootLayout() {
 
   return (
     <GestureHandlerRootView style={styles.root}>
-      <DesktopWebShell>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="join" options={{ headerShown: false }} />
-          <Stack.Screen name="invite/[code]" options={{ headerShown: false }} />
-          <Stack.Screen name="onboarding" />
-          <Stack.Screen name="(auth)" />
-          <Stack.Screen name="(app)" />
-          <Stack.Screen name="(admin)" />
-        </Stack>
-        {isBootstrapping ? (
-          <View style={styles.loadingOverlay} pointerEvents="auto">
-            <ActivityIndicator size="large" />
-            <Text style={styles.loadingText}>{t('common.loading')}</Text>
-          </View>
-        ) : null}
-        {showPartnerRedirect ? <Redirect href="/calendar" /> : null}
-        {showLoggedOutRedirect ? (
-          <Redirect href="/(auth)/beta-gate" />
-        ) : null}
-        {showLoggedInIncompleteRedirect ? (
-          <Redirect href="/onboarding/welcome" />
-        ) : null}
-        {showLoggedInCompleteRedirect ? (
-          <Redirect href="/calendar" />
-        ) : null}
-        <Toast />
-        <DeleteAccountLoadingOverlay />
-        {showLockHydrationVeil ? <View style={styles.lockHydrationVeil} /> : null}
-        <AppLockGate visible={showAppLockOverlay} />
-      </DesktopWebShell>
+      <WebDirectionRoot>
+        <DesktopWebShell>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="join" options={{ headerShown: false }} />
+            <Stack.Screen name="invite/[code]" options={{ headerShown: false }} />
+            <Stack.Screen name="onboarding" />
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(app)" />
+            <Stack.Screen name="(admin)" />
+          </Stack>
+          {isBootstrapping ? (
+            <View style={styles.loadingOverlay} pointerEvents="auto">
+              <ActivityIndicator size="large" />
+              <Text style={styles.loadingText}>{t('common.loading')}</Text>
+            </View>
+          ) : null}
+          {showPartnerRedirect ? <Redirect href="/calendar" /> : null}
+          {showLoggedOutRedirect ? (
+            <Redirect href="/(auth)/beta-gate" />
+          ) : null}
+          {showLoggedInIncompleteRedirect ? (
+            <Redirect href="/onboarding/welcome" />
+          ) : null}
+          {showLoggedInCompleteRedirect ? (
+            <Redirect href="/calendar" />
+          ) : null}
+          <Toast />
+          <DeleteAccountLoadingOverlay />
+          {showLockHydrationVeil ? <View style={styles.lockHydrationVeil} /> : null}
+          <AppLockGate visible={showAppLockOverlay} />
+        </DesktopWebShell>
+      </WebDirectionRoot>
     </GestureHandlerRootView>
   );
 }

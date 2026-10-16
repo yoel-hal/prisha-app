@@ -30,7 +30,10 @@
       {
         "source": "/fonts/*.ttf",
         "headers": [
-          { "key": "Content-Type", "value": "font/ttf" }
+          {
+            "key": "Content-Type",
+            "value": "font/ttf"
+          }
         ]
       }
     ],
@@ -44,5 +47,16 @@
         "destination": "/index.html"
       }
     ]
+  },
+  "emulators": {
+    "auth": {
+      "port": 9099
+    },
+    "firestore": {
+      "port": 8080
+    },
+    "ui": {
+      "enabled": true
+    }
   }
 }

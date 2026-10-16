@@ -2,7 +2,7 @@ import { Calendar } from 'react-native-calendars';
 import type { DateData } from 'react-native-calendars';
 import type { MarkedDates } from 'react-native-calendars/src/types';
 import { useTranslation } from 'react-i18next';
-import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { formatGregorianLocal } from '../../calculations/onah';
 import { isAppRTL } from '../../utils/rtl';
@@ -46,7 +46,7 @@ export function CalendarView({
   onMonthChange,
   isDesktopWeb = false,
 }: CalendarViewProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const isWeb = Platform.OS === 'web';
   const rtl = isAppRTL();
 
@@ -67,7 +67,7 @@ export function CalendarView({
     <View>
       {isWeb ? (
         <View
-          style={[styles.navRow, rtl ? styles.navRowRtl : styles.navRowLtr]}
+          style={styles.navRow}
         >
           <Pressable
             onPress={() => goToMonth(addMonths(displayMonth, -1))}
@@ -77,6 +77,9 @@ export function CalendarView({
           >
             <Icon name={prevIcon} size={24} color="#1a1a1a" />
           </Pressable>
+          <Text style={[styles.navTitle, isDesktopWeb && styles.navTitleDesktop]}>
+            {displayMonth.toLocaleDateString(i18n.language, { month: 'long', year: 'numeric' })}
+          </Text>
           <Pressable
             onPress={() => goToMonth(addMonths(displayMonth, 1))}
             style={styles.navButton}
@@ -89,7 +92,8 @@ export function CalendarView({
       ) : null}
 
       <Calendar
-        key={isWeb ? monthAnchorKey(displayMonth) : undefined}
+        // Remount on language change so month and day names pick up the new locale.
+        key={isWeb ? `${i18n.language}-${monthAnchorKey(displayMonth)}` : i18n.language}
         current={monthAnchorKey(displayMonth)}
         markingType="multi-dot"
         markedDates={markedDates}
@@ -97,6 +101,8 @@ export function CalendarView({
         onMonthChange={handleMonthChange}
         enableSwipeMonths={!isWeb}
         hideArrows={isWeb}
+        // Web shows the month between its own arrows (above), so skip the built-in title.
+        renderHeader={isWeb ? () => null : undefined}
         style={isDesktopWeb ? styles.calendarDesktop : styles.calendar}
         theme={{
           todayTextColor: '#1a1a1a',
@@ -113,16 +119,21 @@ export function CalendarView({
 
 const styles = StyleSheet.create({
   navRow: {
+    flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 12,
-    paddingBottom: 8,
+    paddingBottom: 4,
   },
-  navRowLtr: {
-    flexDirection: 'row',
+  navTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
   },
-  navRowRtl: {
-    flexDirection: 'row-reverse',
+  navTitleDesktop: {
+    fontSize: 18,
   },
   navButton: {
     padding: 8,

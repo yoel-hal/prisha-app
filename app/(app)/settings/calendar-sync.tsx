@@ -6,7 +6,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TextInput,
   View,
@@ -23,6 +22,7 @@ import {
 } from '../../../src/store/settingsStore';
 import { alignStart, textStartStyle } from '../../../src/utils/rtl';
 import { webScreenScrollStyles } from '../../../src/utils/webScroll';
+import { AppSwitch } from '../../../src/components/common/AppSwitch';
 
 export default function CalendarSyncSettingsScreen() {
   const webScroll = webScreenScrollStyles();
@@ -117,7 +117,7 @@ export default function CalendarSyncSettingsScreen() {
             <Text style={[styles.rowLabel, textStartStyle()]}>
               {t('calendar.syncEnable')}
             </Text>
-            <Switch
+            <AppSwitch
               value={!isWeb && draft.syncEnabled}
               onValueChange={(value) => void handleSyncToggle(value)}
               disabled={isWeb}

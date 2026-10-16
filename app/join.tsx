@@ -66,7 +66,7 @@ export default function JoinPartnerScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <View style={styles.content}>
-        <Text style={styles.logo}>Prisha Tracker</Text>
+        <Text style={styles.logo}>{t('common.appName')}</Text>
         <Text style={[styles.title, textStartStyle()]}>{t('partner.joinTitle')}</Text>
         <Text style={[styles.description, textStartStyle()]}>
           {t('partner.joinDescription')}

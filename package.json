@@ -9,7 +9,9 @@
     "web": "expo start --web",
     "test": "jest",
     "postexport": "node scripts/copy-fonts.js",
-    "test:rules": "firebase emulators:exec --only firestore --project demo-prisha-rules 'jest -c jest.rules.config.cjs --runInBand'"
+    "test:rules": "firebase emulators:exec --only firestore --project demo-prisha-rules 'jest -c jest.rules.config.cjs --runInBand'",
+    "emulators": "firebase emulators:start --only auth,firestore --project prisha-tracker",
+    "web:local": "EXPO_PUBLIC_USE_FIREBASE_EMULATORS=1 expo start --web"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

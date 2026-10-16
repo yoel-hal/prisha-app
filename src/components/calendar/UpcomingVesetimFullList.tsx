@@ -427,8 +427,14 @@ const styles = StyleSheet.create({
     color: '#666',
     lineHeight: 22,
   },
+  // Each period is its own card: the period date on top, its vesatot below a divider.
   group: {
-    gap: 8,
+    gap: 10,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#e5e5e5',
+    backgroundColor: '#fff',
   },
   periodHeader: {
     flexDirection: 'row',
@@ -494,7 +500,9 @@ const styles = StyleSheet.create({
   },
   vesetimList: {
     gap: 6,
-    paddingStart: 4,
+    paddingTop: 8,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#eee',
   },
   vesetRow: {
     flexDirection: 'row',

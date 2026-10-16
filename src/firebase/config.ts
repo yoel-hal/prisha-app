@@ -103,4 +103,16 @@ export const auth: Auth = getOrInitializeAuth(app);
 export const db: Firestore = getFirestore(app);
 export const functions: Functions = getFunctions(app);
 
+// Local development against the Firebase emulators (`npm run emulators`); never in production builds.
+if (__DEV__ && process.env.EXPO_PUBLIC_USE_FIREBASE_EMULATORS === '1') {
+  const { connectAuthEmulator } = require('firebase/auth') as typeof import('firebase/auth');
+  const { connectFirestoreEmulator } =
+    require('firebase/firestore') as typeof import('firebase/firestore');
+  const { connectFunctionsEmulator } =
+    require('firebase/functions') as typeof import('firebase/functions');
+  connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+  connectFirestoreEmulator(db, '127.0.0.1', 8080);
+  connectFunctionsEmulator(functions, '127.0.0.1', 5001);
+}
+
 export { app };

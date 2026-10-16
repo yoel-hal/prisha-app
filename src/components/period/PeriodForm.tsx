@@ -106,7 +106,7 @@ export function PeriodForm({
       <View style={styles.field}>
         <Text style={[styles.label, textStartStyle()]}>{t('period.notes')}</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { textAlign: textStart }]}
           value={notes}
           onChangeText={setNotes}
           multiline

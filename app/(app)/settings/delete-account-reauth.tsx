@@ -83,7 +83,7 @@ export default function DeleteAccountReauthScreen() {
               </Text>
               <TextInput
                 ref={passwordRef}
-                style={authFormStyles.input}
+                style={[authFormStyles.input, textStartStyle()]}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry

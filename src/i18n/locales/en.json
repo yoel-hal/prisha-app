@@ -10,7 +10,8 @@
     "done": "Done",
     "cancel": "Cancel",
     "comingSoon": "Coming soon",
-    "edit": "Edit"
+    "edit": "Edit",
+    "appName": "Prisha Tracker"
   },
   "period": {
     "add": "Add Period",
@@ -83,7 +84,8 @@
     "haflaga": "Haflaga notifications",
     "yomHaChodesh": "Yom HaChodesh notifications",
     "saved": "Notification preferences saved",
-    "permissionDenied": "Notification permission was denied. Enable it in system settings to receive reminders."
+    "permissionDenied": "Notification permission was denied. Enable it in system settings to receive reminders.",
+    "webUnsupported": "Reminders are only available in the mobile app."
   },
   "reminder": {
     "set": "Set reminder",
@@ -112,7 +114,8 @@
     "cancel": "Cancel",
     "deleteAccountConfirmTitle": "Delete Account",
     "deleteAccountConfirmMessage": "This will permanently delete your account and all data. This cannot be undone.",
-    "deleteAccountComingSoon": "Account deletion will be available soon."
+    "deleteAccountComingSoon": "Account deletion will be available soon.",
+    "general": "General"
   },
   "veset": {
     "onahBeinonit": "Onah Beinonit",

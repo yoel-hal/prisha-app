@@ -37,22 +37,31 @@ function SettingsRow({
   label,
   onPress,
   isLast = false,
+  destructive = false,
 }: {
   label: string;
   onPress: () => void;
   isLast?: boolean;
+  /** Red label and no chevron: the row runs an action instead of opening a page. */
+  destructive?: boolean;
 }) {
   return (
     <Pressable
       style={[styles.row, isLast && styles.rowLast]}
       onPress={onPress}
     >
-      <Text style={[styles.rowLabel, textStartStyle()]}>{label}</Text>
-      <Icon
-        name={isAppRTL() ? 'chevron-left' : 'chevron-right'}
-        size={20}
-        color="#999"
-      />
+      <Text
+        style={[styles.rowLabel, destructive && styles.rowLabelDestructive, textStartStyle()]}
+      >
+        {label}
+      </Text>
+      {destructive ? null : (
+        <Icon
+          name={isAppRTL() ? 'chevron-left' : 'chevron-right'}
+          size={20}
+          color="#999"
+        />
+      )}
     </Pressable>
   );
 }
@@ -153,6 +162,7 @@ export default function SettingsScreen() {
         </View>
 
         <View style={[styles.group, styles.groupSpaced]}>
+          <SettingsGroupHeader label={t('settings.general')} />
           <SettingsRow
             label={t('settings.customization')}
             onPress={() => navigate('/settings/customization')}
@@ -188,6 +198,7 @@ export default function SettingsScreen() {
               <SettingsRow
                 label={t('settings.deleteAccount')}
                 onPress={() => showDeleteAccountAlert(t)}
+                destructive
                 isLast
               />
             </>
@@ -369,6 +380,9 @@ const styles = StyleSheet.create({
   rowLabel: {
     fontSize: 16,
     flex: 1,
+  },
+  rowLabelDestructive: {
+    color: '#C62828',
   },
   signOutButton: {
     marginTop: 32,

@@ -46,12 +46,15 @@ function MenuRow({
   onPress,
   showBadge,
   isLast = false,
+  destructive = false,
 }: {
   label: string;
   active: boolean;
   onPress: () => void;
   showBadge?: boolean;
   isLast?: boolean;
+  /** Red label and no chevron: the row runs an action instead of opening a page. */
+  destructive?: boolean;
 }) {
   return (
     <Pressable
@@ -64,17 +67,20 @@ function MenuRow({
             styles.rowLabel,
             textStartStyle(),
             active && styles.rowLabelActive,
+            destructive && styles.rowLabelDestructive,
           ]}
         >
           {label}
         </Text>
         {showBadge ? <View style={styles.menuBadge} /> : null}
       </View>
-      <Icon
-        name={isAppRTL() ? 'chevron-left' : 'chevron-right'}
-        size={18}
-        color={active ? '#1a1a1a' : '#bbb'}
-      />
+      {destructive ? null : (
+        <Icon
+          name={isAppRTL() ? 'chevron-left' : 'chevron-right'}
+          size={18}
+          color={active ? '#1a1a1a' : '#bbb'}
+        />
+      )}
     </Pressable>
   );
 }
@@ -145,6 +151,7 @@ export function WebSettingsMenu() {
         </View>
 
         <View style={styles.group}>
+          <GroupHeader label={t('settings.general')} />
           {MAIN_MENU_ITEMS.map((item) => (
             <MenuRow
               key={item.href}
@@ -166,6 +173,7 @@ export function WebSettingsMenu() {
                 label={t('settings.deleteAccount')}
                 active={false}
                 onPress={() => showDeleteAccountAlert(t)}
+                destructive
                 isLast
               />
             </>
@@ -313,6 +321,9 @@ const styles = StyleSheet.create({
   rowLabelActive: {
     color: '#1a1a1a',
     fontWeight: '600',
+  },
+  rowLabelDestructive: {
+    color: '#C62828',
   },
   menuBadge: {
     width: 8,

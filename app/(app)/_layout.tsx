@@ -88,6 +88,12 @@ export default function AppLayout() {
                       borderTopWidth: StyleSheet.hairlineWidth,
                       elevation: 8,
                     },
+                    // The default 49pt bar clips the labels in browsers, where text lines are taller.
+                    web: {
+                      borderTopColor: '#e5e5e5',
+                      borderTopWidth: StyleSheet.hairlineWidth,
+                      height: 60,
+                    },
                     default: {
                       borderTopColor: '#e5e5e5',
                       borderTopWidth: StyleSheet.hairlineWidth,

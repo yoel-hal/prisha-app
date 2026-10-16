@@ -33,7 +33,8 @@ export default function OnboardingDoneScreen() {
         language,
         minhag,
         chumrot,
-        country,
+        // The onboarding store is in memory; after a web reload fall back to the loaded profile.
+        country: country || useAuthStore.getState().country,
         firstName,
         lastName,
         phone,
