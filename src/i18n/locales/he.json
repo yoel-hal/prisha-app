@@ -264,7 +264,6 @@
     "signOut": "התנתקות",
     "partnerLogin": "כניסה כבן/בת זוג",
     "JoinAsPartner": "בן זוג?"
-
   },
   "deleteAccount": {
     "confirmTitle": "מחק חשבון",
@@ -317,7 +316,8 @@
     "enterInviteCode": "הזנת קוד הזמנה",
     "haveInvite": "יש לי הזמנה?",
     "partnerModeNote": "את צופה באפליקציה של {{name}}",
-    "restrictedFeature": "עריכת פרופיל זמינה רק לבעל/ת החשבון."
+    "restrictedFeature": "עריכת פרופיל זמינה רק לבעל/ת החשבון.",
+    "rejoinRequired": "יש להזין שוב את קוד ההזמנה וה-PIN כדי להתחבר מחדש."
   },
   "betaGate": {
     "title": "האפליקציה בבנייה",

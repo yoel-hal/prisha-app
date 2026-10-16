@@ -9,7 +9,8 @@ import { AppBanner } from '../../src/components/common/AppBanner';
 import { PartnerModeBanner } from '../../src/components/common/PartnerModeBanner';
 import { WebAppShell } from '../../src/components/web/WebAppShell';
 import { signOut } from '../../src/firebase/auth';
-import { checkPartnerAccessValid } from '../../src/firebase/firestore';
+import { auth } from '../../src/firebase/config';
+import { getPartnerAccessStatus } from '../../src/firebase/firestore';
 import { useCouple } from '../../src/hooks/useCouple';
 import { useDesktopWeb } from '../../src/hooks/useDesktopWeb';
 import { usePeriods } from '../../src/hooks/usePeriods';
@@ -37,11 +38,19 @@ export default function AppLayout() {
         const { isPartnerMode: partnerMode, ownerUserId: ownerId } =
           useAuthStore.getState();
         if (partnerMode && ownerId) {
-          const valid = await checkPartnerAccessValid(ownerId);
-          if (!valid) {
+          const status = await getPartnerAccessStatus(
+            ownerId,
+            auth.currentUser?.uid ?? null,
+          );
+          if (status !== 'linked') {
             await clearPartnerSession();
             useAuthStore.getState().setPartnerMode(false, null, null);
             useAuthStore.getState().setCoupleId(null);
+            if (status === 'needs_rejoin') {
+              // Keep the guest sign-in so re-entering the code links this device.
+              router.replace({ pathname: '/join', params: { rejoin: '1' } });
+              return;
+            }
             const { useOnboardingStore } = await import('../../src/store/onboardingStore');
             useOnboardingStore.getState().reset();
             await signOut();

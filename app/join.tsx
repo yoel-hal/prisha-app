@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -21,6 +21,7 @@ import { textStartStyle } from '../src/utils/rtl';
 export default function JoinPartnerScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { rejoin } = useLocalSearchParams<{ rejoin?: string }>();
   const [code, setCode] = useState('');
   const [pin, setPin] = useState('');
   const [loading, setLoading] = useState(false);
@@ -70,6 +71,9 @@ export default function JoinPartnerScreen() {
         <Text style={[styles.description, textStartStyle()]}>
           {t('partner.joinDescription')}
         </Text>
+        {rejoin === '1' ? (
+          <Text style={[styles.notice, textStartStyle()]}>{t('partner.rejoinRequired')}</Text>
+        ) : null}
 
         <Text style={[styles.label, textStartStyle()]}>{t('partner.enterCode')}</Text>
         <TextInput
@@ -139,6 +143,14 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 16,
     color: '#666',
+    marginBottom: 12,
+  },
+  notice: {
+    fontSize: 14,
+    color: '#8A5A00',
+    backgroundColor: '#FFF4E0',
+    borderRadius: 8,
+    padding: 12,
     marginBottom: 12,
   },
   label: {

@@ -8,7 +8,6 @@
 
 ## Partners
 - [ ] Tell existing `/join` partners to re-enter their code and PIN (they lost access with the new rules)
-- [ ] Detect that case in the app (partner session saved but not linked) and send them back to `/join` instead of showing an empty screen
 
 ## Admin panel / Cloud Functions
 - [ ] Add missing values to `functions/.env`: `SENDGRID_API_KEY`, `SUPPORT_FROM_EMAIL`, `ADMIN_PIN_HASH` (and remove the duplicate `ADMIN_UID` line)
@@ -46,3 +45,4 @@
 - [x] Couple invite codes fixed: lookup now uses `coupleInvites/{code}` instead of a blocked collection-group query; rules tested and deployed
 - [x] Data validation in the rules: periods, settings, couple membership changes and invite docs; batch creation uses `getAfter` (32 rule tests)
 - [x] Account deletion fixed: rule for legacy `couples/{id}/invites` so a sole member can delete their couple (deletion flow covered by rule tests)
+- [x] Partners whose saved session isn't linked are sent to `/join` with a reconnect message (at startup and when the app resumes)

@@ -1,9 +1,10 @@
 import { FirebaseError } from 'firebase/app';
 import { useCallback, useEffect, useState } from 'react';
 
+import { auth } from '../firebase/config';
 import {
-  checkPartnerAccessValid,
   ensureCoupleForUser,
+  getPartnerAccessStatus,
   getPartnerAccess,
   getUserDocument,
   revokePartnerAccess,
@@ -200,17 +201,24 @@ export async function bootstrapCoupleForAuthUser(
   }
 }
 
-export async function bootstrapPartnerMode(): Promise<boolean> {
+export type PartnerBootstrapResult = 'active' | 'none' | 'needs_rejoin';
+
+export async function bootstrapPartnerMode(): Promise<PartnerBootstrapResult> {
   const session = await loadPartnerSession();
   if (!session) {
-    return false;
+    return 'none';
   }
 
-  const valid = await checkPartnerAccessValid(session.ownerId);
-  if (!valid) {
+  await auth.authStateReady();
+  const status = await getPartnerAccessStatus(
+    session.ownerId,
+    auth.currentUser?.uid ?? null,
+  );
+  if (status !== 'linked') {
     const { clearPartnerSession } = await import('../utils/partnerSession');
     await clearPartnerSession();
-    return false;
+    log('[bootstrapPartnerMode] session not linked', { status });
+    return status === 'needs_rejoin' ? 'needs_rejoin' : 'none';
   }
 
   useAuthStore.getState().setPartnerMode(
@@ -223,5 +231,5 @@ export async function bootstrapPartnerMode(): Promise<boolean> {
   await useSettingsStore.getState().loadSettings(session.coupleId);
 
   log('[bootstrapPartnerMode] active', session);
-  return true;
+  return 'active';
 }

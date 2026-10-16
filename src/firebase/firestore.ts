@@ -1149,11 +1149,37 @@ export async function validatePartnerAccess(
   };
 }
 
-export async function checkPartnerAccessValid(ownerId: string): Promise<boolean> {
-  const snap = await getDoc(partnerAccessRef(ownerId));
-  if (!snap.exists()) return false;
-  const data = snap.data() as PartnerAccess;
-  return data.isActive === true;
+/**
+ * - `linked`: the owner's active invite is linked to `partnerUid`.
+ * - `needs_rejoin`: the invite is active but unclaimed (e.g. joined before uid linking
+ *   existed), so the partner must re-enter the code and PIN.
+ * - `revoked`: the invite is gone, inactive, or linked to someone else.
+ * Network errors count as `linked` so a partner isn't signed out while offline.
+ */
+export type PartnerAccessStatus = 'linked' | 'needs_rejoin' | 'revoked';
+
+export async function getPartnerAccessStatus(
+  ownerId: string,
+  partnerUid: string | null,
+): Promise<PartnerAccessStatus> {
+  if (!partnerUid) {
+    return 'needs_rejoin';
+  }
+
+  try {
+    const snap = await getDoc(partnerAccessRef(ownerId));
+    if (!snap.exists()) return 'revoked';
+    const data = snap.data() as PartnerAccess;
+    if (data.isActive !== true) return 'revoked';
+    if (data.partnerUid === partnerUid) return 'linked';
+    return data.partnerUid ? 'revoked' : 'needs_rejoin';
+  } catch (error) {
+    const code = (error as { code?: string } | null)?.code;
+    // Rules deny the read once the invite is linked to another uid.
+    if (code === 'permission-denied') return 'revoked';
+    logError('[getPartnerAccessStatus] check failed; keeping session', error);
+    return 'linked';
+  }
 }
 
 export async function revokePartnerAccess(userId: string): Promise<void> {

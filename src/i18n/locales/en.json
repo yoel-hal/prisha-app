@@ -170,7 +170,6 @@
     "skip": "Skip",
     "partnerLogin": "Join as partner",
     "JoinAsPartner": "Partner?"
-
   },
   "chumrot": {
     "kavuah": "Kavuah",
@@ -317,7 +316,8 @@
     "enterInviteCode": "Enter invite code",
     "haveInvite": "Have an invite?",
     "partnerModeNote": "You are viewing {{name}}'s app",
-    "restrictedFeature": "Profile editing is only available to the account owner."
+    "restrictedFeature": "Profile editing is only available to the account owner.",
+    "rejoinRequired": "Please enter your invite code and PIN again to reconnect."
   },
   "betaGate": {
     "title": "App Under Construction",

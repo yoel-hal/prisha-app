@@ -48,6 +48,7 @@ function RootLayout() {
   const webFontsReady = Platform.OS === 'web';
   const [user, setUser] = useState<User | null | undefined>(undefined);
   const [partnerSessionChecked, setPartnerSessionChecked] = useState(false);
+  const [partnerNeedsRejoin, setPartnerNeedsRejoin] = useState(false);
   const [userDocReady, setUserDocReady] = useState(false);
   const [coupleBootstrapped, setCoupleBootstrapped] = useState(false);
   const setAuthUser = useAuthStore((state) => state.setUser);
@@ -91,10 +92,11 @@ function RootLayout() {
 
   useEffect(() => {
     void (async () => {
-      const active = await bootstrapPartnerMode();
-      if (active) {
+      const result = await bootstrapPartnerMode();
+      if (result === 'active') {
         log('[RootLayout] partner session restored');
       }
+      setPartnerNeedsRejoin(result === 'needs_rejoin');
       setPartnerSessionChecked(true);
     })();
   }, []);
@@ -271,6 +273,12 @@ function RootLayout() {
       return;
     }
 
+    if (partnerNeedsRejoin) {
+      setPartnerNeedsRejoin(false);
+      router.replace({ pathname: '/join', params: { rejoin: '1' } });
+      return;
+    }
+
     if (isPartnerMode) {
       const inAppGroup = segments[0] === '(app)';
       const onJoin = segments[0] === 'join';
@@ -335,6 +343,7 @@ function RootLayout() {
     segments[0],
     isPartnerMode,
     partnerSessionChecked,
+    partnerNeedsRejoin,
     userDocReady,
     fontsLoaded,
   ]);
