@@ -32,8 +32,9 @@ export default function JoinPartnerScreen() {
     setLoading(true);
     setError(null);
     try {
-      await ensurePartnerGuestAuth();
+      const guest = await ensurePartnerGuestAuth();
       const result = await validatePartnerAccess(
+        guest.uid,
         code.trim().toUpperCase(),
         pin.trim(),
       );

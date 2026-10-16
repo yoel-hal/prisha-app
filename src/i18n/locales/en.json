@@ -281,6 +281,12 @@
     "successMessage": "Your account has been deleted.",
     "errorMessage": "Could not delete your account. Please try again."
   },
+  "app": {
+    "banner": {
+      "close": "Close",
+      "learnMore": "Learn more"
+    }
+  },
   "partner": {
     "viewingApp": "Viewing {{name}}'s app",
     "exit": "Exit",
@@ -336,5 +342,85 @@
     "confirmDisable": "Disable app lock?",
     "confirmDisablePin": "Enter your PIN to disable app lock",
     "locked": "App locked"
+  },
+  "admin": {
+    "enterPin": "Enter admin PIN",
+    "pinIncorrect": "PIN incorrect",
+    "verify": "Verify",
+    "inbox": {
+      "title": "Inbox",
+      "unread": "unread",
+      "status": {
+        "new": "New",
+        "open": "Open",
+        "resolved": "Resolved"
+      },
+      "reply": "Reply",
+      "send": "Send",
+      "sending": "Sending…",
+      "markResolved": "Mark Resolved",
+      "reopen": "Reopen",
+      "noThreads": "No support threads yet.",
+      "selectThread": "Select a thread to view messages.",
+      "filterAll": "All"
+    },
+    "stats": {
+      "title": "Admin Statistics",
+      "totalUsers": "Total Users",
+      "newThisWeek": "New This Week",
+      "activeLast30": "Active Last 30 Days",
+      "coupleAdoption": "Couple Adoption Rate",
+      "byMinhag": "Minhag Distribution",
+      "byCountry": "Country Breakdown",
+      "byPlatform": "Platform Split",
+      "lastUpdated": "Last updated",
+      "ios": "iOS",
+      "android": "Android",
+      "web": "Web"
+    },
+    "banner": {
+      "title": "In-App Banner",
+      "editor": "Banner Editor",
+      "preview": "Preview",
+      "activeFrom": "Active From",
+      "activeUntil": "Active Until",
+      "isActive": "Banner active",
+      "cta": "CTA button text",
+      "ctaUrl": "CTA URL",
+      "save": "Save banner",
+      "clear": "Clear banner"
+    },
+    "broadcast": {
+      "title": "Broadcast Messages",
+      "compose": "Compose Message",
+      "hebrew": "Hebrew",
+      "english": "English",
+      "channels": {
+        "push": "Push Notification",
+        "inApp": "In-App Banner",
+        "email": "Email"
+      },
+      "targetLabel": "Target Audience",
+      "target": {
+        "all": "All Users",
+        "byMinhag": "By Minhag",
+        "byCountry": "By Country"
+      },
+      "scheduleLabel": "Schedule",
+      "schedule": {
+        "now": "Send Now",
+        "later": "Schedule for Later"
+      },
+      "send": "Send Broadcast",
+      "preview": "Preview",
+      "history": "Broadcast History",
+      "status": {
+        "draft": "Draft",
+        "scheduled": "Scheduled",
+        "sent": "Sent",
+        "failed": "Failed"
+      },
+      "recipients": "recipients"
+    }
   }
 }

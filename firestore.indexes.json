@@ -7,6 +7,14 @@
         { "fieldPath": "inviteCode", "order": "ASCENDING" },
         { "fieldPath": "inviteExpiresAt", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "supportThreads",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userEmail", "order": "ASCENDING" },
+        { "fieldPath": "lastMessageAt", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

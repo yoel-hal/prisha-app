@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { AppState, Platform, StyleSheet, View } from 'react-native';
 
 import { NotificationScheduler } from '../../src/components/app/NotificationScheduler';
+import { AppBanner } from '../../src/components/common/AppBanner';
 import { PartnerModeBanner } from '../../src/components/common/PartnerModeBanner';
 import { WebAppShell } from '../../src/components/web/WebAppShell';
 import { signOut } from '../../src/firebase/auth';
@@ -135,6 +136,7 @@ export default function AppLayout() {
               }}
             />
           </Tabs>
+          <AppBanner />
         </View>
       </WebAppShell>
       {__DEV__ && <CoupleDebugOverlay />}
@@ -146,6 +148,7 @@ const styles = StyleSheet.create({
   tabsHost: {
     flex: 1,
     minWidth: 0,
+    position: 'relative',
   },
   tabBarHidden: {
     display: 'none',

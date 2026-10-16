@@ -281,6 +281,12 @@
     "successMessage": "החשבון שלך נמחק.",
     "errorMessage": "לא ניתן למחוק את החשבון. נסי שוב."
   },
+  "app": {
+    "banner": {
+      "close": "סגירה",
+      "learnMore": "למידע נוסף"
+    }
+  },
   "partner": {
     "viewingApp": "צפייה באפליקציה של {{name}}",
     "exit": "יציאה",
@@ -336,5 +342,85 @@
     "confirmDisable": "לבטל את נעילת האפליקציה?",
     "confirmDisablePin": "הזיני PIN כדי לבטל את נעילת האפליקציה",
     "locked": "האפליקציה נעולה"
+  },
+  "admin": {
+    "enterPin": "הזיני PIN מנהל",
+    "pinIncorrect": "PIN שגוי",
+    "verify": "אימות",
+    "inbox": {
+      "title": "תיבת דואר",
+      "unread": "לא נקראו",
+      "status": {
+        "new": "חדש",
+        "open": "פתוח",
+        "resolved": "טופל"
+      },
+      "reply": "תשובה",
+      "send": "שליחה",
+      "sending": "שולח…",
+      "markResolved": "סמן כטופל",
+      "reopen": "פתח מחדש",
+      "noThreads": "אין עדיין פניות תמיכה.",
+      "selectThread": "בחרי שרשור כדי לצפות בהודעות.",
+      "filterAll": "הכל"
+    },
+    "stats": {
+      "title": "סטטיסטיקות מנהל",
+      "totalUsers": "סה״כ משתמשים",
+      "newThisWeek": "חדשים השבוע",
+      "activeLast30": "פעילים ב-30 הימים האחרונים",
+      "coupleAdoption": "שיעור אימוץ זוגיות",
+      "byMinhag": "התפלגות מנהג",
+      "byCountry": "פילוח לפי מדינה",
+      "byPlatform": "פילוח לפי פלטפורמה",
+      "lastUpdated": "עודכן לאחרונה",
+      "ios": "iOS",
+      "android": "Android",
+      "web": "Web"
+    },
+    "banner": {
+      "title": "באנר באפליקציה",
+      "editor": "עורך באנר",
+      "preview": "תצוגה מקדימה",
+      "activeFrom": "פעיל מתאריך",
+      "activeUntil": "פעיל עד תאריך",
+      "isActive": "באנר פעיל",
+      "cta": "טקסט כפתור CTA",
+      "ctaUrl": "כתובת CTA",
+      "save": "שמירת באנר",
+      "clear": "ניקוי באנר"
+    },
+    "broadcast": {
+      "title": "הודעות שידור",
+      "compose": "כתיבת הודעה",
+      "hebrew": "עברית",
+      "english": "אנגלית",
+      "channels": {
+        "push": "התראת Push",
+        "inApp": "באנר באפליקציה",
+        "email": "אימייל"
+      },
+      "targetLabel": "קהל יעד",
+      "target": {
+        "all": "כל המשתמשים",
+        "byMinhag": "לפי מנהג",
+        "byCountry": "לפי מדינה"
+      },
+      "scheduleLabel": "תזמון",
+      "schedule": {
+        "now": "שלח עכשיו",
+        "later": "תזמן למועד מאוחר"
+      },
+      "send": "שלח שידור",
+      "preview": "תצוגה מקדימה",
+      "history": "היסטוריית שידורים",
+      "status": {
+        "draft": "טיוטה",
+        "scheduled": "מתוזמן",
+        "sent": "נשלח",
+        "failed": "נכשל"
+      },
+      "recipients": "נמענים"
+    }
   }
 }

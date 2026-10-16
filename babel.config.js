@@ -18,6 +18,7 @@ module.exports = function (api) {
             '@/utils': './src/utils',
             '@/components': './src/components',
             '@/i18n': './src/i18n',
+            '@/types': './src/types',
           },
           extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
         },

@@ -294,9 +294,14 @@ function RootLayout() {
 
     const inAuthGroup = segments[0] === '(auth)';
     const inAppGroup = segments[0] === '(app)';
+    const inAdminGroup = segments[0] === '(admin)';
     const inOnboarding = segments[0] === 'onboarding';
     const onJoin = segments[0] === 'join';
     const onInvite = segments[0] === 'invite';
+
+    if (inAdminGroup) {
+      return;
+    }
 
     if (!user) {
       if (inAuthGroup || inOnboarding || onJoin || onInvite) {
@@ -343,6 +348,7 @@ function RootLayout() {
     (!isPartnerMode && !!user && onboardingComplete && !coupleBootstrapped);
   const inAuthGroup = segments[0] === '(auth)';
   const inAppGroup = segments[0] === '(app)';
+  const inAdminGroup = segments[0] === '(admin)';
   const inOnboarding = segments[0] === 'onboarding';
   const onJoin = segments[0] === 'join';
   const onInvite = segments[0] === 'invite';
@@ -369,6 +375,7 @@ function RootLayout() {
     !!user &&
     onboardingComplete &&
     !inAppGroup &&
+    !inAdminGroup &&
     !onInvite;
 
   const hasProtectedSession =
@@ -400,6 +407,7 @@ function RootLayout() {
           <Stack.Screen name="onboarding" />
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(app)" />
+          <Stack.Screen name="(admin)" />
         </Stack>
         {isBootstrapping ? (
           <View style={styles.loadingOverlay} pointerEvents="auto">

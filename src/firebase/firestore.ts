@@ -1080,7 +1080,13 @@ export async function getPartnerInviteDetails(
   };
 }
 
+/**
+ * Validates a partner invite and links it to `partnerUid` (the guest's auth uid).
+ * Security rules only grant couple data to the linked uid, so an invite already
+ * linked to a different uid is rejected; the owner must create a new invite.
+ */
 export async function validatePartnerAccess(
+  partnerUid: string,
   token: string,
   pin: string,
 ): Promise<{ ownerId: string; ownerName: string; coupleId: string } | null> {
@@ -1101,10 +1107,14 @@ export async function validatePartnerAccess(
   if (data.token !== normalizedToken) return null;
   if (data.pinHash !== pinHash) return null;
   if (!data.coupleId) return null;
+  if (data.partnerUid && data.partnerUid !== partnerUid) return null;
 
+  const now = new Date().toISOString();
   await setDoc(
     partnerAccessRef(ownerId),
-    { partnerLastSeen: new Date().toISOString() },
+    data.partnerUid
+      ? { partnerLastSeen: now }
+      : { partnerUid, isActive: true, partnerConnectedAt: now, partnerLastSeen: now },
     { merge: true },
   );
 
