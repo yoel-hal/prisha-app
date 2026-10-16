@@ -20,7 +20,7 @@ import {
   DEFAULT_CALENDAR_SETTINGS,
   useSettingsStore,
 } from '../../../src/store/settingsStore';
-import { alignStart, textStartStyle } from '../../../src/utils/rtl';
+import { alignStart, inputStartStyle, textStartStyle } from '../../../src/utils/rtl';
 import { webScreenScrollStyles } from '../../../src/utils/webScroll';
 import { AppSwitch } from '../../../src/components/common/AppSwitch';
 
@@ -138,7 +138,7 @@ export default function CalendarSyncSettingsScreen() {
             {t('calendar.eventTitle')}
           </Text>
           <TextInput
-            style={[styles.input, textStartStyle()]}
+            style={[styles.input, inputStartStyle()]}
             value={draft.eventTitle}
             onChangeText={(eventTitle) =>
               setDraft((prev) => ({ ...prev, eventTitle }))

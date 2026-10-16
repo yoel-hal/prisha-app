@@ -1,6 +1,6 @@
 import { Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { textStartStyle } from '../../utils/rtl';
+import { inputStartStyle, textStartStyle } from '../../utils/rtl';
 
 interface WebGregorianDateInputProps {
   label: string;
@@ -43,7 +43,7 @@ export function WebGregorianDateInput({
             onChange(next);
           }
         }}
-        style={[styles.input, textStartStyle()]}
+        style={[styles.input, inputStartStyle()]}
         // Web-only: renders native <input type="date">
         {...({ type: 'date' } as object)}
       />

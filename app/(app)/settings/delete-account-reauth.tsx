@@ -20,7 +20,7 @@ import {
   consumeDeleteAccountConfirmed,
   submitDeleteAccountPassword,
 } from '../../../src/utils/deleteAccountAlert';
-import { textStartStyle } from '../../../src/utils/rtl';
+import { inputStartStyle, textStartStyle } from '../../../src/utils/rtl';
 import { webScreenScrollStyles } from '../../../src/utils/webScroll';
 
 export default function DeleteAccountReauthScreen() {
@@ -83,7 +83,7 @@ export default function DeleteAccountReauthScreen() {
               </Text>
               <TextInput
                 ref={passwordRef}
-                style={[authFormStyles.input, textStartStyle()]}
+                style={[authFormStyles.input, inputStartStyle()]}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry

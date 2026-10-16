@@ -139,6 +139,8 @@ export function SyncedDatePickers({
             value={gregorianDate}
             mode="date"
             display={showGregorianInline ? 'spinner' : 'default'}
+            // iOS only: month names in the app language rather than the device's.
+            locale={i18n.language === 'he' ? 'he-IL' : 'en-US'}
             onChange={handleGregorianChange}
           />
         )}

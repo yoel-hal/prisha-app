@@ -15,7 +15,9 @@
     },
     "ios": {
       "supportsTablet": true,
-      "associatedDomains": ["applinks:prishatracker.app"],
+      "associatedDomains": [
+        "applinks:prishatracker.app"
+      ],
       "bundleIdentifier": "com.yoel.halberstadt.prishatracker",
       "infoPlist": {
         "LSApplicationCategoryType": "public.app-category.healthcare-fitness"
@@ -40,7 +42,10 @@
               "pathPrefix": "/invite"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -62,7 +67,16 @@
           "calendarPermission": "Allow Prisha Tracker to add vestos to your calendar.",
           "remindersPermission": "Allow Prisha Tracker to access calendar reminders."
         }
+      ],
+      [
+        "expo-localization",
+        {
+          "supportsRTL": true
+        }
       ]
-    ]
+    ],
+    "extra": {
+      "supportsRTL": true
+    }
   }
 }

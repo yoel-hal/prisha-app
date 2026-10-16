@@ -33,7 +33,7 @@ import {
   saveOwnerInvitePin,
 } from '../../../src/utils/partnerInviteCache';
 import { savePartnerSession } from '../../../src/utils/partnerSession';
-import { textStartStyle } from '../../../src/utils/rtl';
+import { inputStartStyle, textStartStyle } from '../../../src/utils/rtl';
 import { webScreenScrollStyles } from '../../../src/utils/webScroll';
 
 const APP_DEEP_LINK_SCHEME = 'prisha-tracker';
@@ -397,7 +397,7 @@ export default function CouplePartnerSettingsScreen() {
                 </Text>
                 <TextInput
                   ref={pinInputRef}
-                  style={[styles.input, textStartStyle()]}
+                  style={[styles.input, inputStartStyle()]}
                   value={pinInput}
                   onChangeText={(value) =>
                     setPinInput(value.replace(/\D/g, '').slice(0, 4))
@@ -522,7 +522,7 @@ export default function CouplePartnerSettingsScreen() {
             </Text>
             <TextInput
               ref={partnerTokenInputRef}
-              style={[styles.input, textStartStyle()]}
+              style={[styles.input, inputStartStyle()]}
               value={partnerTokenInput}
               onChangeText={(value) =>
                 setPartnerTokenInput(
@@ -544,7 +544,7 @@ export default function CouplePartnerSettingsScreen() {
             </Text>
             <TextInput
               ref={partnerPinInputRef}
-              style={[styles.input, textStartStyle()]}
+              style={[styles.input, inputStartStyle()]}
               value={partnerPinInput}
               onChangeText={(value) =>
                 setPartnerPinInput(value.replace(/\D/g, '').slice(0, 4))

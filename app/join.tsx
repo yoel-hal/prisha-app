@@ -16,7 +16,7 @@ import { validatePartnerAccess } from '../src/firebase/firestore';
 import { useAuthStore } from '../src/store/authStore';
 import { useSettingsStore } from '../src/store/settingsStore';
 import { savePartnerSession } from '../src/utils/partnerSession';
-import { textStartStyle } from '../src/utils/rtl';
+import { inputStartStyle, textStartStyle } from '../src/utils/rtl';
 
 export default function JoinPartnerScreen() {
   const { t } = useTranslation();
@@ -77,7 +77,7 @@ export default function JoinPartnerScreen() {
 
         <Text style={[styles.label, textStartStyle()]}>{t('partner.enterCode')}</Text>
         <TextInput
-          style={[styles.input, textStartStyle()]}
+          style={[styles.input, inputStartStyle()]}
           value={code}
           onChangeText={(value) => setCode(value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
           maxLength={12}
@@ -89,7 +89,7 @@ export default function JoinPartnerScreen() {
 
         <Text style={[styles.label, textStartStyle()]}>{t('partner.enterPin')}</Text>
         <TextInput
-          style={[styles.input, textStartStyle()]}
+          style={[styles.input, inputStartStyle()]}
           value={pin}
           onChangeText={(value) => setPin(value.replace(/\D/g, '').slice(0, 4))}
           maxLength={4}

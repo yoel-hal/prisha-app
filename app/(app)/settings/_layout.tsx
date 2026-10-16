@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Platform, StyleSheet, View } from 'react-native';
 
 import { Icon } from '../../../src/components/common/Icon';
@@ -9,6 +10,7 @@ import { useDesktopWeb } from '../../../src/hooks/useDesktopWeb';
 import { isAppRTL } from '../../../src/utils/rtl';
 
 export default function SettingsLayout() {
+  const { t } = useTranslation();
   const isDesktopWeb = useDesktopWeb();
 
   if (isDesktopWeb) {
@@ -52,7 +54,8 @@ export default function SettingsLayout() {
           : null),
       }}
     >
-      <Stack.Screen name="index" options={{ headerShown: false }} />
+      {/* The title is what the back button on sub-pages shows (otherwise the route name, "index"). */}
+      <Stack.Screen name="index" options={{ headerShown: false, title: t('settings.title') }} />
       <Stack.Screen name="customization" />
       <Stack.Screen name="notifications" />
       <Stack.Screen name="calendar-sync" />

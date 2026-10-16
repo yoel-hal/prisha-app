@@ -31,6 +31,11 @@
 - [ ] Add tests beyond the calculations: hooks and the Firestore helpers
 - [ ] Move the last hard-coded strings into i18n (`join.tsx` logo, Buy Me a Coffee label)
 
+## App (native)
+- [ ] Check Android in an emulator (RTL, layout) — only iOS was checked
+- [ ] Language switching on phones restarts the app once to flip direction; Expo Go can't show this (it ignores runtime RTL), so verify it in a development build
+- [ ] Update Expo packages to the versions SDK 54 expects (`npx expo install --check`)
+
 ## Later
 - [ ] Firebase App Check — guards against bots and cost abuse, not data access (the rules do that). Web code is ready (`EXPO_PUBLIC_RECAPTCHA_ENTERPRISE_SITE_KEY`); can't be enforced until the phones move to the native Firebase SDK. Revisit if usage graphs show abuse
 
@@ -46,3 +51,4 @@
 - [x] Data validation in the rules: periods, settings, couple membership changes and invite docs; batch creation uses `getAfter` (32 rule tests)
 - [x] Account deletion fixed: rule for legacy `couples/{id}/invites` so a sole member can delete their couple (deletion flow covered by rule tests)
 - [x] Partners whose saved session isn't linked are sent to `/join` with a reconnect message (at startup and when the app resumes)
+- [x] RTL and layout pass on web (phone + desktop) and iPhone: proper web RTL, Hebrew calendar and date picker, sections/cards, consistent switches, language saved across restarts, onboarding reload bugs, Expo Go crash (worklets version)

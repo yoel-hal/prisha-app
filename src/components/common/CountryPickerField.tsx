@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { textStartStyle } from '../../utils/rtl';
+import { inputStartStyle } from '../../utils/rtl';
 
 const COUNTRIES: { code: string; en: string; he: string }[] = [
   { code: 'IL', en: 'Israel', he: 'ישראל' },
@@ -123,7 +123,7 @@ export const CountryPickerField = forwardRef<
         <View style={styles.modal}>
           <View style={styles.modalHeader}>
             <TextInput
-              style={[styles.search, textStartStyle()]}
+              style={[styles.search, inputStartStyle()]}
               value={search}
               onChangeText={setSearch}
               placeholder={isHebrew ? 'חיפוש...' : 'Search...'}
