@@ -113,7 +113,8 @@ function AddPeriodPreviewContent({ draft }: { draft: PeriodDraft }) {
       <View style={styles.footer}>
         <Pressable
           style={styles.editButton}
-          onPress={() => router.back()}
+          // Explicit route: back() between tabs jumps to the first tab (the calendar).
+          onPress={() => router.navigate('/(app)/add-period')}
           disabled={isSaving}
         >
           <Text style={styles.editButtonText}>{t('period.backToEdit')}</Text>
