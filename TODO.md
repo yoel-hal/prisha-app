@@ -1,5 +1,9 @@
 # Prisha Tracker — To Do
 
+## Now (owner testing locally)
+- [ ] Test the new Hebrew-month calendar and calendar date picker locally (web + iPhone)
+- [ ] When happy: push the local commits and deploy the web app (see `CLAUDE.md` → Commands)
+
 ## Security (do first)
 - [ ] Revoke the old GitHub personal access token (`ghp_edKn…`) in GitHub → Settings → Developer settings → Personal access tokens
 - [ ] Delete `users.json` (export of 43 real accounts with password hashes) or move it somewhere private
@@ -33,6 +37,7 @@
 
 ## App (native)
 - [ ] Check Android in an emulator (RTL, layout) — only iOS was checked
+- [ ] Check the new calendar and date picker on the iPhone simulator
 - [ ] Language switching on phones restarts the app once to flip direction; Expo Go can't show this (it ignores runtime RTL), so verify it in a development build
 - [ ] Update Expo packages to the versions SDK 54 expects (`npx expo install --check`)
 
@@ -52,3 +57,6 @@
 - [x] Account deletion fixed: rule for legacy `couples/{id}/invites` so a sole member can delete their couple (deletion flow covered by rule tests)
 - [x] Partners whose saved session isn't linked are sent to `/join` with a reconnect message (at startup and when the app resumes)
 - [x] RTL and layout pass on web (phone + desktop) and iPhone: proper web RTL, Hebrew calendar and date picker, sections/cards, consistent switches, language saved across restarts, onboarding reload bugs, Expo Go crash (worklets version)
+- [x] Hebrew dates in Hebrew letters everywhere (ה׳ חשון תשפ״ז); calendar pages by Hebrew month with both dates per day; add/edit period uses the same calendar as its date picker (deployed, `c4b3bf5`)
+- [x] Preview "Edit" returns to the add-period form instead of the calendar (`bd12df6`, local only)
+- [x] `CLAUDE.md` handoff notes for new chats
