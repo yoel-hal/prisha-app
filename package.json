@@ -11,7 +11,8 @@
     "postexport": "node scripts/copy-fonts.js",
     "test:rules": "firebase emulators:exec --only firestore --project demo-prisha-rules 'jest -c jest.rules.config.cjs --runInBand'",
     "emulators": "firebase emulators:start --only auth,firestore --project prisha-tracker",
-    "web:local": "EXPO_PUBLIC_USE_FIREBASE_EMULATORS=1 expo start --web"
+    "web:local": "EXPO_PUBLIC_USE_FIREBASE_EMULATORS=1 expo start --web",
+    "lint": "expo lint"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -57,6 +58,8 @@
     "@types/jest": "^29.5.14",
     "@types/react": "~19.1.0",
     "babel-plugin-module-resolver": "^5.0.3",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~10.0.0",
     "jest": "^29.7.0",
     "jest-expo": "~54.0.16",
     "typescript": "~5.9.2"

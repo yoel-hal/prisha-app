@@ -17,7 +17,7 @@ import { usePeriodDraftStore } from '../../store/periodDraftStore';
 import { showAlert } from '../../utils/alert';
 import { useAlignStart, textStartStyle } from '../../utils/rtl';
 import { OnahPicker } from './OnahPicker';
-import { SyncedDatePickers } from './SyncedDatePickers';
+import { PeriodDatePicker } from './PeriodDatePicker';
 
 export interface PeriodFormProps {
   existingPeriod?: Period;
@@ -44,7 +44,6 @@ export function PeriodForm({
     isSaving,
     isDeleting,
     setGregorian,
-    setHebrew,
     setOnah,
     setNotes,
     save,
@@ -94,11 +93,10 @@ export function PeriodForm({
 
   return (
     <View style={styles.form}>
-      <SyncedDatePickers
+      <PeriodDatePicker
         gregorianDate={gregorianDate}
         hebrewDate={hebrewDate}
         onGregorianChange={setGregorian}
-        onHebrewChange={setHebrew}
       />
 
       <OnahPicker value={onah} onChange={setOnah} />

@@ -23,18 +23,14 @@ import { textStartStyle } from '../../src/utils/rtl';
 export default function CalendarScreen() {
   const { t } = useTranslation();
   const isDesktopWeb = useDesktopWeb();
-  const [displayMonth, setDisplayMonth] = useState<Date>(() => {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), 1);
-  });
+  // Any date in the Hebrew month on screen; the calendar pages by Hebrew month.
+  const [displayMonth, setDisplayMonth] = useState<Date>(() => new Date());
   usePeriods();
   const { vesetim } = useVesetCalculations();
   const {
     isLoading,
     markedDates,
     selectedEvents,
-    headerHebrewMonth,
-    headerGregorianMonth,
     onMonthChange,
     onDayPress,
     closeSheet,
@@ -50,10 +46,6 @@ export default function CalendarScreen() {
         ]}
       >
         <Text style={[styles.title, textStartStyle()]}>{t('calendar.title')}</Text>
-        <Text style={[styles.hebrewMonth, textStartStyle()]}>{headerHebrewMonth}</Text>
-        <Text style={[styles.gregorianMonth, textStartStyle()]}>
-          {headerGregorianMonth}
-        </Text>
       </View>
 
       {isLoading ? (
@@ -135,15 +127,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '700',
-  },
-  hebrewMonth: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginTop: 4,
-  },
-  gregorianMonth: {
-    fontSize: 15,
-    color: '#666',
   },
   centered: {
     flex: 1,

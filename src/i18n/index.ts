@@ -4,7 +4,6 @@ import { I18nManager, Platform } from 'react-native';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-import { applyCalendarLocale } from './calendarLocale';
 import en from './locales/en.json';
 import he from './locales/he.json';
 
@@ -22,7 +21,6 @@ export type SupportedLanguage = keyof typeof resources;
  */
 export function applyLanguageDirection(language: SupportedLanguage): void {
   const shouldUseRTL = language === 'he';
-  applyCalendarLocale(language);
   I18nManager.allowRTL(shouldUseRTL);
   I18nManager.forceRTL(shouldUseRTL);
 
@@ -101,7 +99,6 @@ if (!i18n.isInitialized) {
 
   // Direction is applied by restoreSavedLanguage() once the saved choice is known;
   // forcing Hebrew here would undo an English user's RTL setting on every launch.
-  applyCalendarLocale(i18n.language);
 }
 
 export default i18n;
