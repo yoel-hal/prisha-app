@@ -5,7 +5,12 @@ import { Platform } from 'react-native';
 import type { VesetResult } from '../calculations/types';
 import { useAuthStore } from '../store/authStore';
 import { useSettingsStore } from '../store/settingsStore';
-import { vesetCalendarEventBounds } from '../utils/vesetSchedule';
+import { currentZmanimPlace } from '../store/zmanimLocationStore';
+import {
+  runCalendarEventBounds,
+  vesetCalendarEventBounds,
+  vesetRuns,
+} from '../utils/vesetSchedule';
 
 const CALENDAR_NAME = 'Prisha Tracker';
 
@@ -75,7 +80,10 @@ export function useCalendarSync() {
   const addVesetToCalendar = useCallback(
     async (veset: VesetResult, title: string): Promise<string> => {
       const calendarId = await resolveWritableCalendarId();
-      const { startDate, endDate, allDay } = vesetCalendarEventBounds(veset);
+      const { startDate, endDate, allDay } = vesetCalendarEventBounds(
+        veset,
+        currentZmanimPlace(),
+      );
 
       const eventId = await Calendar.createEventAsync(calendarId, {
         title,
@@ -115,7 +123,8 @@ export function useCalendarSync() {
 
   const syncAllVesetsToCalendar = useCallback(
     async (vesetim: VesetResult[], title: string): Promise<void> => {
-      for (const eventId of Object.values(calendarSettings.syncedEventIds)) {
+      // One event can stand for several onot, so delete each event id once.
+      for (const eventId of new Set(Object.values(calendarSettings.syncedEventIds))) {
         try {
           await Calendar.deleteEventAsync(eventId);
         } catch {
@@ -126,8 +135,10 @@ export function useCalendarSync() {
       const calendarId = await resolveWritableCalendarId();
       const nextIds: Record<string, string> = {};
 
-      for (const veset of vesetim) {
-        const { startDate, endDate, allDay } = vesetCalendarEventBounds(veset);
+      const place = currentZmanimPlace();
+      // Consecutive onot of one veset (e.g. with Ohr Zarua) become one event.
+      for (const run of vesetRuns(vesetim)) {
+        const { startDate, endDate, allDay } = runCalendarEventBounds(run, place);
         const eventId = await Calendar.createEventAsync(calendarId, {
           title,
           startDate,
@@ -135,7 +146,9 @@ export function useCalendarSync() {
           allDay,
           timeZone: undefined,
         });
-        nextIds[veset.id] = eventId;
+        for (const veset of run) {
+          nextIds[veset.id] = eventId;
+        }
       }
 
       await persistEventIds(nextIds);

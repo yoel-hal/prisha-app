@@ -85,6 +85,13 @@ export type UserSettings = {
   calendar: CalendarSettings;
 };
 
+/**
+ * Why an onah is forbidden: the main rule of that veset, or the chumra that added it.
+ * One onah can have more than one reason (e.g. Ohr Zarua and Kreisi uPleisi both
+ * forbid the night before a day onah).
+ */
+export type VesetReason = "main" | "ohrZarua" | "kreisiUpleisi" | "chavotDaat";
+
 export type VesetResult = {
   id: string;
   type: VesetType;
@@ -95,4 +102,5 @@ export type VesetResult = {
   sourcePeriodId: string;
   minhagLabel: string;
   isKavuah: boolean;
+  reasons: VesetReason[];
 };

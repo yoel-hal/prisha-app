@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { CalendarSettings } from '../../../src/calculations/types';
 import { useCalendarSync } from '../../../src/hooks/useCalendarSync';
+import { useSettingsSaved } from '../../../src/hooks/useSettingsSaved';
 import { useVesetCalculations } from '../../../src/hooks/useVesetCalculations';
 import { useAuthStore } from '../../../src/store/authStore';
 import {
@@ -40,7 +41,7 @@ export default function CalendarSyncSettingsScreen() {
 
   const [draft, setDraft] = useState<CalendarSettings>(stored);
   const [saving, setSaving] = useState(false);
-  const [savedMessage, setSavedMessage] = useState(false);
+  const settingsSaved = useSettingsSaved();
   const [permissionDenied, setPermissionDenied] = useState(false);
   const isWeb = Platform.OS === 'web';
 
@@ -93,9 +94,9 @@ export default function CalendarSyncSettingsScreen() {
     }
 
     setSaving(false);
-    setSavedMessage(true);
-    setTimeout(() => setSavedMessage(false), 2500);
+    settingsSaved({ goBack: true });
   }, [
+    settingsSaved,
     coupleId,
     draft,
     requestCalendarPermission,
@@ -163,11 +164,6 @@ export default function CalendarSyncSettingsScreen() {
         </ScrollView>
 
         <View style={styles.footer}>
-          {savedMessage ? (
-            <Text style={[styles.saved, textStartStyle()]}>
-              {t('calendar.syncSaved')}
-            </Text>
-          ) : null}
           <Pressable
             style={[styles.saveButton, saving && styles.saveDisabled]}
             onPress={() => void handleSave()}

@@ -1,5 +1,5 @@
 import { addDays, normalizePeriods, toAbs } from './hebrewCalendar';
-import { makeResult, uniqueOnot, withOhrZarua } from './results';
+import { makeResult, tag, uniqueOnot, withOhrZarua } from './results';
 import type { Chumrot, Minhag, Period, VesetResult } from './types';
 
 /**
@@ -41,7 +41,7 @@ function haflagaResults(
   isKavuah: boolean,
 ): VesetResult[] {
   const date = addDays(latest.dateHebrew, daysLater);
-  return uniqueOnot(withOhrZarua([{ date, onah: latest.onah }], chumrot.ohrZarua)).map(
+  return uniqueOnot(withOhrZarua(tag([{ date, onah: latest.onah }], 'main'), chumrot.ohrZarua)).map(
     (target) => makeResult('haflaga', latest, target, minhag, isKavuah),
   );
 }

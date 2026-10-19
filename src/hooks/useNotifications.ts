@@ -6,10 +6,12 @@ import { Platform } from 'react-native';
 import type { NotificationSettings, VesetResult, VesetType } from '../calculations/types';
 import type { SupportedLanguage } from '../i18n';
 import { useSettingsStore } from '../store/settingsStore';
+import { currentZmanimPlace } from '../store/zmanimLocationStore';
 import { formatOnahDate } from '../utils/onahDisplay';
 import {
   isVesetNotificationId,
   notificationTriggerDate,
+  vesetRuns,
 } from '../utils/vesetSchedule';
 
 Notifications.setNotificationHandler({
@@ -67,7 +69,7 @@ export function useNotifications() {
         return;
       }
 
-      const triggerDate = notificationTriggerDate(veset, leadHours);
+      const triggerDate = notificationTriggerDate(veset, leadHours, currentZmanimPlace());
       if (!triggerDate) {
         return;
       }
@@ -122,8 +124,9 @@ export function useNotifications() {
     ): Promise<void> => {
       await cancelAllVesetNotifications();
       const eligible = filterVesetim(vesetim, prefs);
+      // One reminder per run of consecutive onot, before the first of them.
       await Promise.all(
-        eligible.map((veset) => scheduleVesetNotification(veset, leadHours)),
+        vesetRuns(eligible).map((run) => scheduleVesetNotification(run[0]!, leadHours)),
       );
     },
     [

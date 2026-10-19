@@ -16,6 +16,8 @@ export interface CalendarViewProps {
   onDayPress: (day: DateData) => void;
   onMonthChange: (month: DateData) => void;
   isDesktopWeb?: boolean;
+  /** YYYY-MM-DD of the day whose details are shown. */
+  selectedDate?: string | null;
 }
 
 const LEGEND: { kind: CalendarMarkerKind; labelKey: string }[] = [
@@ -41,6 +43,7 @@ export function CalendarView({
   markedDates,
   onDayPress,
   onMonthChange,
+  selectedDate,
 }: CalendarViewProps) {
   const { t } = useTranslation();
 
@@ -57,6 +60,7 @@ export function CalendarView({
         onMonthChange={handleMonthChange}
         onDayPress={(day) => onDayPress(toDateData(day.date))}
         markedDates={markedDates}
+        selectedDate={selectedDate ?? undefined}
       />
       <View style={styles.legend}>
         {LEGEND.map((item) => (

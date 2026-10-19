@@ -48,6 +48,12 @@ export function CalendarDayPanel({ events, vesetim }: CalendarDayPanelProps) {
             <Text style={[styles.row, textStartStyle()]}>
               {formatOnah(event.dateHebrew, event.onah).civil}
             </Text>
+            {formatOnah(event.dateHebrew, event.onah).hours ? (
+              <Text style={[styles.row, textStartStyle()]}>
+                {formatOnah(event.dateHebrew, event.onah).hours}
+              </Text>
+            ) : null}
+            <ReasonLine reasons={vesetim.find((v) => v.id === event.vesetId)?.reasons} />
           </View>
 
           {event.vesetId ? (
@@ -56,6 +62,19 @@ export function CalendarDayPanel({ events, vesetim }: CalendarDayPanelProps) {
         </View>
       ))}
     </View>
+  );
+}
+
+/** Why this onah is forbidden, when it is a chumra (or more than the main rule). */
+function ReasonLine({ reasons }: { reasons?: VesetResult['reasons'] }) {
+  const { t } = useTranslation();
+  if (!reasons || (reasons.length === 1 && reasons[0] === 'main')) {
+    return null;
+  }
+  return (
+    <Text style={[styles.reasonLine, textStartStyle()]}>
+      {reasons.map((reason) => t(`veset.reason.${reason}`)).join(' · ')}
+    </Text>
   );
 }
 
@@ -204,6 +223,11 @@ function VesetActions({
 }
 
 const styles = StyleSheet.create({
+  reasonLine: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#3730a3',
+  },
   container: {
     gap: 12,
   },

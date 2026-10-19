@@ -40,6 +40,11 @@ export function useCalendar() {
     [markedDates],
   );
 
+  /** Shows a day's details directly (e.g. from the upcoming list). */
+  const selectDate = useCallback((dateString: string) => {
+    setSelectedDate(dateString);
+  }, []);
+
   const closeSheet = useCallback(() => {
     setSelectedDate(null);
   }, []);
@@ -51,6 +56,7 @@ export function useCalendar() {
     selectedEvents,
     onMonthChange,
     onDayPress,
+    selectDate,
     closeSheet,
     hasData: periods.length > 0 || vesetim.length > 0,
   };

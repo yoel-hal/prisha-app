@@ -2,7 +2,7 @@ import {
   daysInHebrewMonth,
   nextHebrewMonth,
 } from './hebrewCalendar';
-import { makeResult, uniqueOnot, withOhrZarua } from './results';
+import { makeResult, tag, uniqueOnot, withOhrZarua } from './results';
 import type { Chumrot, HebrewDate, Minhag, Period, ShortMonthRule, VesetResult } from './types';
 
 /**
@@ -41,7 +41,7 @@ export function calcYomHaChodesh(
   if (!date) {
     return [];
   }
-  return uniqueOnot(withOhrZarua([{ date, onah: period.onah }], chumrot.ohrZarua)).map(
+  return uniqueOnot(withOhrZarua(tag([{ date, onah: period.onah }], 'main'), chumrot.ohrZarua)).map(
     (target) => makeResult('yomHaChodesh', period, target, minhag),
   );
 }

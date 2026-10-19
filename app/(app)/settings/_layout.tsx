@@ -25,6 +25,7 @@ export default function SettingsLayout() {
             <Stack.Screen name="customization" />
             <Stack.Screen name="notifications" />
             <Stack.Screen name="calendar-sync" />
+            <Stack.Screen name="location" />
             <Stack.Screen name="privacy" />
             <Stack.Screen name="couple" />
             <Stack.Screen name="about" />
@@ -59,6 +60,7 @@ export default function SettingsLayout() {
       <Stack.Screen name="customization" />
       <Stack.Screen name="notifications" />
       <Stack.Screen name="calendar-sync" />
+      <Stack.Screen name="location" />
       <Stack.Screen name="privacy" />
       <Stack.Screen name="couple" />
       <Stack.Screen name="about" />

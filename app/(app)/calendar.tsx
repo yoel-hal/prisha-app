@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -18,6 +19,7 @@ import { useCalendar } from '../../src/hooks/useCalendar';
 import { useDesktopWeb } from '../../src/hooks/useDesktopWeb';
 import { usePeriods } from '../../src/hooks/usePeriods';
 import { useVesetCalculations } from '../../src/hooks/useVesetCalculations';
+import { parseGregorianLocal } from '../../src/calculations/onah';
 import { textStartStyle } from '../../src/utils/rtl';
 
 export default function CalendarScreen() {
@@ -33,9 +35,23 @@ export default function CalendarScreen() {
     selectedEvents,
     onMonthChange,
     onDayPress,
+    selectDate,
+    selectedDate,
     closeSheet,
     hasData,
   } = useCalendar();
+
+  // Opened from the upcoming list with ?date=YYYY-MM-DD: show that month and day.
+  const { date } = useLocalSearchParams<{ date?: string }>();
+  const router = useRouter();
+  useEffect(() => {
+    if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return;
+    }
+    setDisplayMonth(parseGregorianLocal(date));
+    selectDate(date);
+    router.setParams({ date: undefined });
+  }, [date, router, selectDate]);
 
   const calendarBody = (
     <>
@@ -62,6 +78,7 @@ export default function CalendarScreen() {
             onDayPress={onDayPress}
             onMonthChange={onMonthChange}
             isDesktopWeb={isDesktopWeb}
+            selectedDate={selectedDate}
           />
           {!hasData ? (
             <Text style={styles.empty}>{t('calendar.noData')}</Text>

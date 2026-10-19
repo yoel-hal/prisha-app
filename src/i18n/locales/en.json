@@ -119,12 +119,20 @@
     "deleteAccountConfirmTitle": "Delete Account",
     "deleteAccountConfirmMessage": "This will permanently delete your account and all data. This cannot be undone.",
     "deleteAccountComingSoon": "Account deletion will be available soon.",
-    "general": "General"
+    "general": "General",
+    "changesSaved": "Changes saved",
+    "location": "Location (sunset & sunrise)"
   },
   "veset": {
     "onahBeinonit": "Onah Beinonit",
     "haflaga": "Haflaga",
-    "yomHaChodesh": "Yom HaChodesh"
+    "yomHaChodesh": "Yom HaChodesh",
+    "reason": {
+      "main": "Main rule",
+      "ohrZarua": "Ohr Zarua",
+      "kreisiUpleisi": "Kreisi uPleisi",
+      "chavotDaat": "Chavot Daat"
+    }
   },
   "minhag": {
     "ashkenaz": "Ashkenaz",
@@ -464,6 +472,24 @@
     "weekday3": "Wednesday",
     "weekday4": "Thursday",
     "weekday5": "Friday",
-    "weekday6": "Shabbat"
+    "weekday6": "Shabbat",
+    "nightWord": "Night",
+    "dayWord": "Day",
+    "nightHours": "Sunset {{start}} to sunrise {{end}}",
+    "dayHours": "Sunrise {{start}} to sunset {{end}}"
+  },
+  "location": {
+    "title": "Location for sunset and sunrise",
+    "description": "Onah times (sunset to sunrise and sunrise to sunset) are calculated for this location. They are used in the display, reminders and calendar sync.",
+    "current": "Current location",
+    "currentDefault": "{{city}} (default for your time zone)",
+    "currentDevice": "Device location",
+    "todayTimes": "Today: sunrise {{sunrise}} · sunset {{sunset}}",
+    "useDevice": "Use my location",
+    "privacy": "Your location is saved on this device only, rounded to about 1 km, and never sent to the server.",
+    "permissionDenied": "Location permission was not given. You can choose a city instead.",
+    "failed": "Couldn't get your location. You can choose a city instead.",
+    "chooseCity": "Or choose a city",
+    "search": "Search city"
   }
 }

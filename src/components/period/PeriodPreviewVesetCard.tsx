@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { VesetResult, VesetType } from '../../calculations/types';
-import { useOnahDateFormat } from '../../hooks/useOnahDateFormat';
+import { VesetOnotRows } from '../veset/VesetOnotRows';
 import { textStartStyle } from '../../utils/rtl';
 import { vesetBadgeColors } from '../../utils/vesetBadgeColors';
 
@@ -22,7 +22,6 @@ export function PeriodPreviewVesetCard({
   notEnoughDataLabel,
 }: PeriodPreviewVesetCardProps) {
   const { t } = useTranslation();
-  const formatOnah = useOnahDateFormat();
   const badge = vesetBadgeColors(type);
 
   return (
@@ -40,15 +39,7 @@ export function PeriodPreviewVesetCard({
       ) : results.length === 0 ? (
         <Text style={[styles.empty, textStartStyle()]}>{t('period.vesetNone')}</Text>
       ) : (
-        results.map((veset) => {
-          const text = formatOnah(veset.dateHebrew, veset.onah);
-          return (
-            <View key={veset.id} style={styles.resultBlock}>
-              <Text style={[styles.hebrewDate, textStartStyle()]}>{text.hebrew}</Text>
-              <Text style={[styles.gregorianDate, textStartStyle()]}>{text.civil}</Text>
-            </View>
-          );
-        })
+        <VesetOnotRows results={results} />
       )}
     </View>
   );

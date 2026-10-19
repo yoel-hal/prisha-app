@@ -26,6 +26,7 @@ type SettingsHref =
   | '/settings/customization'
   | '/settings/notifications'
   | '/settings/calendar-sync'
+  | '/settings/location'
   | '/settings/privacy'
   | '/settings/couple'
   | '/settings/about'
@@ -35,6 +36,7 @@ const MAIN_MENU_ITEMS: { href: SettingsHref; labelKey: string }[] = [
   { href: '/settings/customization', labelKey: 'settings.customization' },
   { href: '/settings/notifications', labelKey: 'settings.notifications' },
   { href: '/settings/calendar-sync', labelKey: 'settings.calendarSync' },
+  { href: '/settings/location', labelKey: 'settings.location' },
   { href: '/settings/privacy', labelKey: 'settings.privacy' },
   { href: '/settings/couple', labelKey: 'settings.coupleSync' },
   { href: '/settings/about', labelKey: 'settings.about' },

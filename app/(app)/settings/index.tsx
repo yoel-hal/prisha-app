@@ -28,6 +28,7 @@ type SettingsRoute =
   | '/settings/customization'
   | '/settings/notifications'
   | '/settings/calendar-sync'
+  | '/settings/location'
   | '/settings/privacy'
   | '/settings/couple'
   | '/settings/about'
@@ -174,6 +175,10 @@ export default function SettingsScreen() {
           <SettingsRow
             label={t('settings.calendarSync')}
             onPress={() => navigate('/settings/calendar-sync')}
+          />
+          <SettingsRow
+            label={t('settings.location')}
+            onPress={() => navigate('/settings/location')}
           />
           <SettingsRow
             label={t('settings.privacy')}

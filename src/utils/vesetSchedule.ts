@@ -1,48 +1,72 @@
+import { onahKey } from '../calculations/hebrewCalendar';
 import type { Onah, VesetResult } from '../calculations/types';
+import { onahBounds, type ZmanimPlace } from './zmanim';
+
+type Place = Pick<ZmanimPlace, 'latitude' | 'longitude'>;
+
+/** When the onah starts: sunrise for a day onah, the evening's sunset for a night onah. */
+export function vesetOnahDate(veset: Pick<VesetResult, 'dateGregorian' | 'onah'>, place: Place): Date {
+  return onahBounds(veset, place).start;
+}
 
 /**
- * Approximate local time for the start of the onah. `dateGregorian` is the civil date of
- * the daytime; a night onah starts at sunset of the evening before.
+ * Splits vesatot into runs of consecutive onot of the same veset (type and source),
+ * e.g. Ohr Zarua's day + the night + Kreisi uPleisi's day. A run is one calendar
+ * event and one reminder.
  */
-export function vesetOnahDate(veset: VesetResult): Date {
-  const [year, month, day] = veset.dateGregorian.split('-').map(Number);
-  if (veset.onah === 'day') {
-    return new Date(year, month - 1, day, 7, 0, 0, 0);
+export function vesetRuns(vesetim: VesetResult[]): VesetResult[][] {
+  const sorted = [...vesetim].sort(
+    (a, b) =>
+      a.type.localeCompare(b.type) ||
+      a.sourcePeriodId.localeCompare(b.sourcePeriodId) ||
+      onahKey(a.dateHebrew, a.onah) - onahKey(b.dateHebrew, b.onah),
+  );
+  const runs: VesetResult[][] = [];
+  for (const veset of sorted) {
+    const run = runs[runs.length - 1];
+    const last = run?.[run.length - 1];
+    if (
+      run &&
+      last &&
+      last.type === veset.type &&
+      last.sourcePeriodId === veset.sourcePeriodId &&
+      onahKey(veset.dateHebrew, veset.onah) - onahKey(last.dateHebrew, last.onah) === 1
+    ) {
+      run.push(veset);
+    } else {
+      runs.push([veset]);
+    }
   }
-  return new Date(year, month - 1, day - 1, 18, 0, 0, 0);
+  return runs;
 }
 
 export type CalendarEventBounds = { startDate: Date; endDate: Date; allDay: boolean };
 
-/**
- * Device-calendar event for a veset. A day onah is an all-day event on its civil date; a
- * night onah is a timed event from the evening it starts (18:00 the day before) to 07:00,
- * so it shows on the evening, not a day late.
- */
-export function vesetCalendarEventBounds(
-  veset: Pick<VesetResult, 'dateGregorian' | 'onah'>,
-): CalendarEventBounds {
-  const [year, month, day] = veset.dateGregorian.split('-').map(Number);
-  if (veset.onah === 'day') {
-    return {
-      startDate: new Date(year, month - 1, day, 0, 0, 0, 0),
-      endDate: new Date(year, month - 1, day + 1, 0, 0, 0, 0),
-      allDay: true,
-    };
-  }
+/** One timed device-calendar event from the start of the first onah to the end of the last. */
+export function runCalendarEventBounds(run: VesetResult[], place: Place): CalendarEventBounds {
   return {
-    startDate: new Date(year, month - 1, day - 1, 18, 0, 0, 0),
-    endDate: new Date(year, month - 1, day, 7, 0, 0, 0),
+    startDate: onahBounds(run[0]!, place).start,
+    endDate: onahBounds(run[run.length - 1]!, place).end,
     allDay: false,
   };
+}
+
+/** Device-calendar event for a single onah: sunrise–sunset, or the evening's sunset–sunrise. */
+export function vesetCalendarEventBounds(
+  veset: Pick<VesetResult, 'dateGregorian' | 'onah'>,
+  place: Place,
+): CalendarEventBounds {
+  const { start, end } = onahBounds(veset, place);
+  return { startDate: start, endDate: end, allDay: false };
 }
 
 /** When to fire a lead-time reminder; null if that moment is already past. */
 export function notificationTriggerDate(
   veset: VesetResult,
   leadHours: number,
+  place: Place,
 ): Date | null {
-  const vesetTime = vesetOnahDate(veset);
+  const vesetTime = vesetOnahDate(veset, place);
   const trigger = new Date(vesetTime.getTime() - leadHours * 60 * 60 * 1000);
   if (trigger.getTime() <= Date.now()) {
     return null;

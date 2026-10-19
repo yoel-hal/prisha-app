@@ -1,14 +1,15 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { formatGregorianLocal } from '../../calculations/onah';
 import type { VesetResult, VesetType } from '../../calculations/types';
 import type { SupportedLanguage } from '../../i18n';
-import { useOnahDateFormat } from '../../hooks/useOnahDateFormat';
+import { useOpenCalendarDate } from '../../hooks/useOpenCalendarDate';
 import { formatHebrewDate } from '../../utils/hebrewDateFormat';
 import { textStartStyle } from '../../utils/rtl';
 import { vesetBadgeColors } from '../../utils/vesetBadgeColors';
+import { groupVesetimByType, VesetOnotRows } from '../veset/VesetOnotRows';
 
 function vesetTranslationKey(type: VesetType): string {
   return `veset.${type}`;
@@ -46,26 +47,24 @@ export interface UpcomingVesetimListProps {
   vesetim: VesetResult[];
 }
 
-interface VesetRowProps {
-  veset: VesetResult;
-  language: SupportedLanguage;
-  t: (key: string) => string;
-}
-
-function VesetRow({ veset, t }: VesetRowProps) {
-  const badge = vesetBadgeColors(veset.type);
-  const text = useOnahDateFormat()(veset.dateHebrew, veset.onah);
+/** One veset: its badge once, then all its onot. Tapping opens that day in the calendar. */
+function VesetBlock({ type, results, t }: { type: VesetType; results: VesetResult[]; t: (key: string) => string }) {
+  const badge = vesetBadgeColors(type);
+  const openCalendar = useOpenCalendarDate();
 
   return (
-    <View style={styles.vesetRow}>
-      <View style={[styles.badge, { backgroundColor: badge.background }]}>
+    <Pressable
+      style={styles.vesetBlock}
+      onPress={() => openCalendar(results[0]!.dateGregorian)}
+      accessibilityRole="button"
+    >
+      <View style={[styles.badge, styles.blockBadge, { backgroundColor: badge.background }]}>
         <Text style={[styles.badgeText, { color: badge.text }]}>
-          {t(vesetTranslationKey(veset.type))}
+          {t(vesetTranslationKey(type))}
         </Text>
       </View>
-      <Text style={[styles.vesetDate, textStartStyle()]}>{text.hebrew}</Text>
-      <Text style={[styles.vesetOnah, textStartStyle()]}>{text.civil}</Text>
-    </View>
+      <VesetOnotRows results={results} compact />
+    </Pressable>
   );
 }
 
@@ -113,8 +112,8 @@ export function UpcomingVesetimList({ vesetim }: UpcomingVesetimListProps) {
             {formatHebrewDate(nextGroup[0].dateHebrew, language)}
           </Text>
 
-          {nextGroup.map((veset) => (
-            <VesetRow key={veset.id} veset={veset} language={language} t={t} />
+          {groupVesetimByType(nextGroup).map(({ type, results }) => (
+            <VesetBlock key={type} type={type} results={results} t={t} />
           ))}
 
           {!hasHaflaga ? <HaflagaNoDataRow t={t} /> : null}
@@ -155,6 +154,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 4,
+  },
+  /** One veset: badge on top, its onot below at full width. */
+  vesetBlock: {
+    gap: 8,
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#eee',
+  },
+  blockBadge: {
+    alignSelf: 'flex-start',
   },
   vesetRow: {
     flexDirection: 'row',

@@ -1,7 +1,7 @@
 import { calcHaflaga, calcKavuahHaflaga } from './haflaga';
 import { daysInHebrewMonth, normalizePeriods, onahKey } from './hebrewCalendar';
 import { calcOnahBeinonit } from './onahBeinonit';
-import { makeResult, uniqueOnot, withOhrZarua } from './results';
+import { makeResult, tag, uniqueOnot, withOhrZarua } from './results';
 import type { Chumrot, Minhag, Period, VesetResult } from './types';
 import { calcYomHaChodesh, nextMonthSameDay } from './yomHaChodesh';
 
@@ -79,7 +79,7 @@ function calcKavuahChodesh(
   if (!date) {
     return [];
   }
-  return uniqueOnot(withOhrZarua([{ date, onah: latest.onah }], chumrot.ohrZarua)).map(
+  return uniqueOnot(withOhrZarua(tag([{ date, onah: latest.onah }], 'main'), chumrot.ohrZarua)).map(
     (target) => makeResult('yomHaChodesh', latest, target, minhag, true),
   );
 }

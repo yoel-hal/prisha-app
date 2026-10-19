@@ -17,6 +17,7 @@ import type {
   VesetType,
 } from '../../../src/calculations/types';
 import { useNotifications } from '../../../src/hooks/useNotifications';
+import { useSettingsSaved } from '../../../src/hooks/useSettingsSaved';
 import { useVesetCalculations } from '../../../src/hooks/useVesetCalculations';
 import { useAuthStore } from '../../../src/store/authStore';
 import { useSettingsStore } from '../../../src/store/settingsStore';
@@ -60,7 +61,7 @@ export default function NotificationsSettingsScreen() {
 
   const [draft, setDraft] = useState<NotificationSettings>(stored);
   const [saving, setSaving] = useState(false);
-  const [savedMessage, setSavedMessage] = useState(false);
+  const settingsSaved = useSettingsSaved();
   const [permissionDenied, setPermissionDenied] = useState(false);
 
   useEffect(() => {
@@ -114,9 +115,9 @@ export default function NotificationsSettingsScreen() {
     }
 
     setSaving(false);
-    setSavedMessage(true);
-    setTimeout(() => setSavedMessage(false), 2500);
+    settingsSaved({ goBack: true });
   }, [
+    settingsSaved,
     coupleId,
     draft,
     saveSettings,
@@ -193,11 +194,6 @@ export default function NotificationsSettingsScreen() {
         </ScrollView>
 
         <View style={styles.footer}>
-          {savedMessage ? (
-            <Text style={[styles.saved, textStartStyle()]}>
-              {t('notifications.saved')}
-            </Text>
-          ) : null}
           <Pressable
             style={[styles.saveButton, saving && styles.saveDisabled]}
             onPress={() => void handleSave()}

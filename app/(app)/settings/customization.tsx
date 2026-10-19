@@ -1,5 +1,5 @@
-import { Stack, useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { Stack } from 'expo-router';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Pressable,
@@ -14,6 +14,7 @@ import type { Chumrot, Minhag } from '../../../src/calculations/types';
 import { ChumrotSettings } from '../../../src/components/settings/ChumrotSettings';
 import { useDesktopWeb } from '../../../src/hooks/useDesktopWeb';
 import { useSettings } from '../../../src/hooks/useSettings';
+import { useSettingsSaved } from '../../../src/hooks/useSettingsSaved';
 import { textStartStyle } from '../../../src/utils/rtl';
 import { webScreenScrollStyles } from '../../../src/utils/webScroll';
 
@@ -35,29 +36,27 @@ export default function CustomizationScreen() {
   const webScroll = webScreenScrollStyles();
   const isDesktopWeb = useDesktopWeb();
   const { t } = useTranslation();
-  const router = useRouter();
   const { minhag, chumrot, selectMinhag, selectChumrot } = useSettings();
-  const [pending, setPending] = useState<Minhag>(minhag);
-  const [saving, setSaving] = useState(false);
+  const settingsSaved = useSettingsSaved();
 
-  useEffect(() => {
-    setPending(minhag);
-  }, [minhag]);
-
-  const handleConfirm = useCallback(async () => {
-    setSaving(true);
-    await selectMinhag(pending);
-    setSaving(false);
-    if (!isDesktopWeb) {
-      router.back();
-    }
-  }, [pending, selectMinhag, router, isDesktopWeb]);
+  // Choices save as soon as they change (no confirm button), like the other settings.
+  const changeMinhag = useCallback(
+    async (next: Minhag) => {
+      if (next === minhag) {
+        return;
+      }
+      await selectMinhag(next);
+      settingsSaved();
+    },
+    [minhag, selectMinhag, settingsSaved],
+  );
 
   const changeChumrot = useCallback(
-    (next: Chumrot) => {
-      void selectChumrot(next);
+    async (next: Chumrot) => {
+      await selectChumrot(next);
+      settingsSaved();
     },
-    [selectChumrot],
+    [selectChumrot, settingsSaved],
   );
 
   const body = (
@@ -72,8 +71,8 @@ export default function CustomizationScreen() {
               <MinhagCard
                 key={item}
                 value={item}
-                selected={pending === item}
-                onSelect={() => setPending(item)}
+                selected={minhag === item}
+                onSelect={() => void changeMinhag(item)}
               />
             ))}
           </View>
@@ -82,18 +81,9 @@ export default function CustomizationScreen() {
             {t('settings.chumrot')}
           </Text>
 
-          <ChumrotSettings chumrot={chumrot} onChange={changeChumrot} />
+          <ChumrotSettings chumrot={chumrot} onChange={(next) => void changeChumrot(next)} />
         </ScrollView>
 
-        <View style={styles.footer}>
-          <Pressable
-            style={[styles.confirmButton, saving && styles.confirmDisabled]}
-            onPress={() => void handleConfirm()}
-            disabled={saving}
-          >
-            <Text style={styles.confirmText}>{t('minhag.confirm')}</Text>
-          </Pressable>
-        </View>
     </>
   );
 
@@ -197,26 +187,5 @@ const styles = StyleSheet.create({
   },
   cardDescSelected: {
     color: '#e0e0e0',
-  },
-  footer: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    paddingTop: 8,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#eee',
-  },
-  confirmButton: {
-    backgroundColor: '#1a1a1a',
-    borderRadius: 10,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  confirmDisabled: {
-    opacity: 0.6,
-  },
-  confirmText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });

@@ -73,6 +73,12 @@
         {
           "supportsRTL": true
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Prisha Tracker uses your location once to calculate sunset and sunrise. It stays on this device."
+        }
       ]
     ],
     "extra": {

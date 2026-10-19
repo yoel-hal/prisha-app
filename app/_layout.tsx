@@ -24,6 +24,7 @@ import { DesktopWebShell } from '../src/components/common/DesktopWebShell';
 import { Toast } from '../src/components/common/Toast';
 import { hydrateAppLockFromStorage } from '../src/hooks/useAppLock';
 import { restoreSavedLanguage } from '../src/i18n';
+import { useZmanimLocationStore } from '../src/store/zmanimLocationStore';
 import { getUserDocument } from '../src/firebase/firestore';
 import {
   bootstrapCoupleForAuthUser,
@@ -94,6 +95,7 @@ function RootLayout() {
   useEffect(() => {
     void (async () => {
       await restoreSavedLanguage();
+      await useZmanimLocationStore.getState().load();
       const result = await bootstrapPartnerMode();
       if (result === 'active') {
         log('[RootLayout] partner session restored');

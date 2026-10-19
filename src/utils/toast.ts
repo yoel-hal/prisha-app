@@ -1,5 +1,5 @@
-import { useToastStore } from '../store/toastStore';
+import { useToastStore, type ToastVariant } from '../store/toastStore';
 
-export function showToast(message: string): void {
-  useToastStore.getState().showToast(message);
+export function showToast(message: string, variant?: ToastVariant): void {
+  useToastStore.getState().showToast(message, variant);
 }

@@ -6,6 +6,8 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { formatGregorianLocal } from '../../calculations/onah';
 import type { Period, VesetResult, VesetType } from '../../calculations/types';
 import { useOnahDateFormat } from '../../hooks/useOnahDateFormat';
+import { useOpenCalendarDate } from '../../hooks/useOpenCalendarDate';
+import { groupVesetimByType, VesetOnotRows } from '../veset/VesetOnotRows';
 import type { SupportedLanguage } from '../../i18n';
 import { formatHebrewDate } from '../../utils/hebrewDateFormat';
 import { textStartStyle } from '../../utils/rtl';
@@ -317,7 +319,6 @@ interface VesetimRowsProps {
 function VesetimRows({
   group,
   today,
-  language,
   periodsCount,
   t,
 }: VesetimRowsProps) {
@@ -333,62 +334,56 @@ function VesetimRows({
     );
   }
 
+  const byType = groupVesetimByType(group.vesetim);
+  const hasHaflaga = byType.some((g) => g.type === 'haflaga');
+
   return (
     <View style={styles.vesetimList}>
-      {VESET_TYPES.map((type) => {
-        const typeVesetim = group.vesetim
-          .filter((v) => v.type === type)
-          .sort((a, b) => a.dateGregorian.localeCompare(b.dateGregorian));
-
-        if (typeVesetim.length > 0) {
-          return typeVesetim.map((veset) => (
-            <VesetRow
-              key={veset.id}
-              veset={veset}
-              language={language}
-              muted={veset.dateGregorian < today}
-              t={t}
-            />
-          ));
-        }
-
-        if (type === 'haflaga' && periodsCount < 2) {
-          return (
-            <HaflagaNoDataRow key={`${period.id}-haflaga-missing`} t={t} />
-          );
-        }
-
-        return null;
-      })}
+      {byType.map(({ type, results }) => (
+        <VesetBlock
+          key={type}
+          type={type}
+          results={results}
+          today={today}
+          t={t}
+        />
+      ))}
+      {!hasHaflaga && periodsCount < 2 ? (
+        <HaflagaNoDataRow key={`${period.id}-haflaga-missing`} t={t} />
+      ) : null}
     </View>
   );
 }
 
-interface VesetRowProps {
-  veset: VesetResult;
-  language: SupportedLanguage;
-  muted: boolean;
+/** One veset: its badge once, then all its onot. Tapping opens the calendar on its date. */
+function VesetBlock({
+  type,
+  results,
+  today,
+  t,
+}: {
+  type: VesetType;
+  results: VesetResult[];
+  today: string;
   t: (key: string) => string;
-}
-
-function VesetRow({ veset, muted, t }: VesetRowProps) {
-  const badge = vesetBadgeColors(veset.type);
-  const text = useOnahDateFormat()(veset.dateHebrew, veset.onah);
+}) {
+  const badge = vesetBadgeColors(type);
+  const muted = results.every((r) => r.dateGregorian < today);
+  const openCalendar = useOpenCalendarDate();
 
   return (
-    <View style={[styles.vesetRow, muted && styles.vesetRowMuted]}>
-      <View style={[styles.badge, { backgroundColor: badge.background }]}>
+    <Pressable
+      style={[styles.vesetBlock, muted && styles.vesetRowMuted]}
+      onPress={() => openCalendar(results[0]!.dateGregorian)}
+      accessibilityRole="button"
+    >
+      <View style={[styles.badge, styles.blockBadge, { backgroundColor: badge.background }]}>
         <Text style={[styles.badgeText, { color: badge.text }]}>
-          {t(vesetTranslationKey(veset.type))}
+          {t(vesetTranslationKey(type))}
         </Text>
       </View>
-      <Text style={[styles.vesetDate, muted && styles.mutedText, textStartStyle()]}>
-        {text.hebrew}
-      </Text>
-      <Text style={[styles.vesetGregorian, muted && styles.mutedText, textStartStyle()]}>
-        {text.civil}
-      </Text>
-    </View>
+      <VesetOnotRows results={results} today={today} />
+    </Pressable>
   );
 }
 
@@ -494,6 +489,14 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: '#eee',
+  },
+  /** One veset: badge on top, its onot below at full width. */
+  vesetBlock: {
+    gap: 8,
+    paddingVertical: 8,
+  },
+  blockBadge: {
+    alignSelf: 'flex-start',
   },
   vesetRow: {
     flexDirection: 'row',

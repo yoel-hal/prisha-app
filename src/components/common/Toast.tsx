@@ -5,6 +5,7 @@ import { useToastStore } from '../../store/toastStore';
 
 export function Toast() {
   const message = useToastStore((state) => state.message);
+  const variant = useToastStore((state) => state.variant);
   const insets = useSafeAreaInsets();
 
   if (!message) {
@@ -16,7 +17,7 @@ export function Toast() {
       pointerEvents="none"
       style={[styles.container, { bottom: insets.bottom + 16 }]}
     >
-      <View style={styles.bubble}>
+      <View style={[styles.bubble, variant === 'success' && styles.success]}>
         <Text style={styles.text}>{message}</Text>
       </View>
     </View>
@@ -37,6 +38,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     maxWidth: 480,
+  },
+  success: {
+    backgroundColor: '#15803d',
   },
   text: {
     color: '#fff',

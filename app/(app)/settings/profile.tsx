@@ -1,4 +1,4 @@
-import { Stack, useRouter } from 'expo-router';
+import { Stack } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -21,6 +21,7 @@ import {
   updateUserCountryAndLanguage,
   type OnboardingLanguage,
 } from '../../../src/firebase/firestore';
+import { useSettingsSaved } from '../../../src/hooks/useSettingsSaved';
 import { setAppLanguage, type SupportedLanguage } from '../../../src/i18n';
 import { useAuthStore } from '../../../src/store/authStore';
 import { textStartStyle } from '../../../src/utils/rtl';
@@ -33,7 +34,7 @@ function isSupportedLanguage(value: string): value is SupportedLanguage {
 export default function ProfileSettingsScreen() {
   const { t, i18n } = useTranslation();
   const webScroll = webScreenScrollStyles();
-  const router = useRouter();
+  const settingsSaved = useSettingsSaved();
   const user = useAuthStore((state) => state.user);
   const isPartnerMode = useAuthStore((state) => state.isPartnerMode);
   const setUserProfile = useAuthStore((state) => state.setUserProfile);
@@ -100,7 +101,7 @@ export default function ProfileSettingsScreen() {
       );
       await setAppLanguage(language);
       setUserProfile({ firstName, lastName, country, phone });
-      router.back();
+      settingsSaved({ goBack: true });
     } finally {
       setSaving(false);
     }

@@ -1,6 +1,6 @@
-import { addDays, previousOnah, type HebrewOnah } from './hebrewCalendar';
+import { addDays, type HebrewOnah } from './hebrewCalendar';
 import { minhagRegistry } from './minhagim';
-import { makeResult, uniqueOnot } from './results';
+import { makeResult, ohrZaruaBefore, tag, uniqueOnot, type Target } from './results';
 import type { Chumrot, Minhag, Period, VesetResult } from './types';
 
 /**
@@ -29,20 +29,24 @@ export function calcOnahBeinonit(
     chumrot.kreisiUpleisi && !(conflict && chumrot.nightConflict === 'ohrZarua');
 
   const day30Base: HebrewOnah[] = baseOnot.map((onah) => ({ date: day30, onah }));
-  const targets: HebrewOnah[] = [...day30Base];
+  const targets: Target[] = tag(day30Base, 'main');
   if (kreisiUpleisi) {
-    targets.push({ date: day30, onah: 'night' }, { date: day30, onah: 'day' });
+    // The other onah of day 30; the base onot keep their own reason.
+    const added: HebrewOnah[] = (['night', 'day'] as const)
+      .filter((onah) => !baseOnot.includes(onah))
+      .map((onah) => ({ date: day30, onah }));
+    targets.push(...tag(added, 'kreisiUpleisi'));
   }
   if (ohrZarua) {
-    targets.push(...day30Base.map(previousOnah));
+    targets.push(...ohrZaruaBefore(day30Base));
   }
 
   if (chumrot.chavotDaat) {
     const day31 = addDays(latest.dateHebrew, 30);
     const day31Base: HebrewOnah[] = baseOnot.map((onah) => ({ date: day31, onah }));
-    targets.push(...day31Base);
+    targets.push(...tag(day31Base, 'chavotDaat'));
     if (chumrot.ohrZarua && chumrot.ohrZaruaOnDay31) {
-      targets.push(...day31Base.map(previousOnah));
+      targets.push(...ohrZaruaBefore(day31Base));
     }
   }
 

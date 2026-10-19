@@ -9,6 +9,7 @@ const DETAIL_SEGMENTS = new Set([
   'customization',
   'notifications',
   'calendar-sync',
+  'location',
   'privacy',
   'couple',
   'about',
