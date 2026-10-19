@@ -5,6 +5,7 @@ import { Platform } from 'react-native';
 import type { VesetResult } from '../calculations/types';
 import { useAuthStore } from '../store/authStore';
 import { useSettingsStore } from '../store/settingsStore';
+import { vesetCalendarEventBounds } from '../utils/vesetSchedule';
 
 const CALENDAR_NAME = 'Prisha Tracker';
 
@@ -41,16 +42,6 @@ async function resolveWritableCalendarId(): Promise<string> {
   });
 }
 
-function allDayBounds(dateGregorian: string): {
-  startDate: Date;
-  endDate: Date;
-} {
-  const [year, month, day] = dateGregorian.split('-').map(Number);
-  const startDate = new Date(year, month - 1, day, 0, 0, 0, 0);
-  const endDate = new Date(year, month - 1, day + 1, 0, 0, 0, 0);
-  return { startDate, endDate };
-}
-
 export function useCalendarSync() {
   const coupleId = useAuthStore((state) => state.coupleId);
   const calendarSettings = useSettingsStore((state) => state.calendar);
@@ -84,13 +75,13 @@ export function useCalendarSync() {
   const addVesetToCalendar = useCallback(
     async (veset: VesetResult, title: string): Promise<string> => {
       const calendarId = await resolveWritableCalendarId();
-      const { startDate, endDate } = allDayBounds(veset.dateGregorian);
+      const { startDate, endDate, allDay } = vesetCalendarEventBounds(veset);
 
       const eventId = await Calendar.createEventAsync(calendarId, {
         title,
         startDate,
         endDate,
-        allDay: true,
+        allDay,
         timeZone: undefined,
       });
 
@@ -136,12 +127,12 @@ export function useCalendarSync() {
       const nextIds: Record<string, string> = {};
 
       for (const veset of vesetim) {
-        const { startDate, endDate } = allDayBounds(veset.dateGregorian);
+        const { startDate, endDate, allDay } = vesetCalendarEventBounds(veset);
         const eventId = await Calendar.createEventAsync(calendarId, {
           title,
           startDate,
           endDate,
-          allDay: true,
+          allDay,
           timeZone: undefined,
         });
         nextIds[veset.id] = eventId;
