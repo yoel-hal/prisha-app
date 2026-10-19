@@ -8,6 +8,7 @@ import {
   RequiresReauthError,
   signOut,
 } from '../firebase/auth';
+import { DEFAULT_CHUMROT } from '../calculations/chumrot';
 import { auth } from '../firebase/config';
 import { deleteAllUserData } from '../firebase/firestore';
 import { showToast } from '../utils/toast';
@@ -19,13 +20,6 @@ import {
   useSettingsStore,
 } from './settingsStore';
 
-const DEFAULT_CHUMROT = {
-  kavuah: false,
-  veshetEinah: false,
-  onahBeinonitIfHaflaga: false,
-  bothOnotOnBeinonit: false,
-  bothOnotOnYomHaChodesh: false,
-} as const;
 
 export type DeleteAccountResult = 'success' | 'requires_reauth' | 'error';
 

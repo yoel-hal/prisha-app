@@ -20,18 +20,46 @@ export type VesetType = "onahBeinonit" | "haflaga" | "yomHaChodesh";
 
 export type Minhag = "ashkenaz" | "sfarad" | "chabad" | "teimani";
 
+/**
+ * Which chumra wins when Ohr Zarua and Kreisi uPleisi are both on and the
+ * forbidden onah of day 30 is a night (they then point at different days).
+ */
+export type NightConflictChoice = "both" | "ohrZarua" | "kreisiUpleisi";
+
+/**
+ * Yom hachodesh for a period on the 30th when the next Hebrew month has 29 days.
+ * - none: no yom hachodesh (default; onah beinonit falls on the 29th anyway)
+ * - firstOfFollowing: the 1st of the month after the next one
+ * - twentyNinth: the 29th of the next month
+ */
+export type ShortMonthRule = "none" | "firstOfFollowing" | "twentyNinth";
+
+/**
+ * A fixed veset the user declared in settings. With a kavuah there is no
+ * onah beinonit; only the fixed veset is kept.
+ * - haflaga: `days` counts both the period day and the veset day (haflaga of 30 = 29 days later)
+ * - chodesh: `dayOfMonth` in the Hebrew month (1–30)
+ */
+export type Kavuah =
+  | { type: "none" }
+  | { type: "haflaga"; days: number }
+  | { type: "chodesh"; dayOfMonth: number };
+
 export type Chumrot = {
-  kavuah: boolean;
-  veshetEinah: boolean;
-  onahBeinonitIfHaflaga: boolean;
-  // Keep both onot (day AND night) on the 30th day (onah beinonit).
-  // Source: Ohr Zarua. Any minhag can adopt this strictness.
-  // When false: only the same onah as the period is kept.
-  bothOnotOnBeinonit: boolean;
-  // Keep both onot (day AND night) on yom hachodesh.
-  // Source: Kreisi uPleisi. Any minhag can adopt this strictness.
-  // When false: only the same onah as the period is kept.
-  bothOnotOnYomHaChodesh: boolean;
+  /** Also the onah before each forbidden onah (all vesatot). */
+  ohrZarua: boolean;
+  /** The whole halachic day of day 30 (onah beinonit only, never day 31). */
+  kreisiUpleisi: boolean;
+  /** Used only when ohrZarua and kreisiUpleisi are both on and the onah is a night. */
+  nightConflict: NightConflictChoice;
+  /** Also day 31, same onah (always in addition to day 30). */
+  chavotDaat: boolean;
+  /** With chavotDaat + ohrZarua: does Ohr Zarua also apply to day 31? */
+  ohrZaruaOnDay31: boolean;
+  shortMonthRule: ShortMonthRule;
+  kavuah: Kavuah;
+  /** The user had the old on/off kavuah switch on and must set the kavuah again. */
+  kavuahNeedsReview: boolean;
 };
 
 export type NotificationLeadHours = 12 | 24 | 48;
@@ -60,42 +88,11 @@ export type UserSettings = {
 export type VesetResult = {
   id: string;
   type: VesetType;
+  /** Civil date of the daytime of `dateHebrew`; a night onah starts the evening before. */
   dateGregorian: string;
   dateHebrew: HebrewDate;
   onah: Onah;
   sourcePeriodId: string;
   minhagLabel: string;
   isKavuah: boolean;
-};
-
-/**
- * A MinhagStrategy encapsulates the base halachic calculation rules
- * for one minhag (community tradition). Chumrot (additional strictnesses)
- * are applied on top of the strategy result by the main calculators —
- * they are NOT the strategy's responsibility.
- */
-export type MinhagStrategy = {
-  /**
-   * Returns the base onah beinonit result(s) for this minhag.
-   * Day 30 from the period start (inclusive count), same onah as the period.
-   * Chabad adds the preceding onah when the period started at night —
-   * this is a base minhag rule, not a chumra, so it lives here.
-   * Source: Shulchan Aruch Yoreh De'ah 189:2
-   */
-  calcOnahBeinonit(period: Period): VesetResult[];
-
-  /**
-   * Returns the haflaga result for this minhag given the full period history.
-   * Interval between the last two periods, projected forward from the latest.
-   * Requires at least 2 periods; returns [] otherwise.
-   * Source: Shulchan Aruch Yoreh De'ah 189:4
-   */
-  calcHaflaga(periods: Period[]): VesetResult[];
-
-  /**
-   * Returns the yom hachodesh result(s) for this minhag.
-   * Same Hebrew day-of-month in the next Hebrew month, same onah.
-   * Source: Shulchan Aruch Yoreh De'ah 189:6
-   */
-  calcYomHaChodesh(period: Period): VesetResult[];
 };

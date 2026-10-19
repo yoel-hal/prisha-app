@@ -18,11 +18,17 @@ export const usePeriodsStore = create<PeriodsState>((set) => ({
   setPeriods: (periods) => set({ periods, isLoading: false }),
   setLoading: (loading) => set({ isLoading: loading }),
   addPeriod: (period) =>
-    set((state) => ({
-      periods: [...state.periods, period].sort((a, b) =>
-        a.dateGregorian.localeCompare(b.dateGregorian),
-      ),
-    })),
+    set((state) => {
+      // The Firestore listener may already have added it (it fires before addDoc resolves).
+      if (state.periods.some((existing) => existing.id === period.id)) {
+        return state;
+      }
+      return {
+        periods: [...state.periods, period].sort((a, b) =>
+          a.dateGregorian.localeCompare(b.dateGregorian),
+        ),
+      };
+    }),
   updatePeriod: (period) =>
     set((state) => ({
       periods: state.periods

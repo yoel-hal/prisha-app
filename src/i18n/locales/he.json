@@ -43,7 +43,10 @@
     "pastPeriods": "וסתות קודמות",
     "showPastPeriods": "הצג וסתות קודמות",
     "hidePastPeriods": "הסתר וסתות קודמות",
-    "haflagaNoData": "אין מספיק נתונים"
+    "haflagaNoData": "אין מספיק נתונים",
+    "sameDayTitle": "כבר יש ראייה בתאריך הזה",
+    "sameDayMessage": "אין שתי ראיות באותו יום: ראייה נוספת באותו יום היא אותה ראייה. אם התאריך שגוי, אפשר לערוך את הראייה הקיימת.",
+    "vesetNone": "אין"
   },
   "upcoming": {
     "edit": "עריכה",
@@ -173,16 +176,34 @@
     "skip": "דילוג"
   },
   "chumrot": {
-    "kavuah": "קביעות",
-    "kavuahDesc": "התחשבות בדפוסי מחזור קבועים (קביעות) בחישוב וסתות.",
-    "veshetEinah": "וסת שאינה",
-    "veshetEinahDesc": "החלת כללים לוסת שלא התקיימה במועד הצפוי.",
-    "onahBeinonitIfHaflaga": "עונה בינונית עם הפלגה",
-    "onahBeinonitIfHaflagaDesc": "החלת עונה בינונית גם כאשר וסת הפלגה חל באותו יום.",
-    "bothOnotOnBeinonit": "שמור שתי עונות ביום ל׳ (אור זרוע)",
-    "bothOnotOnBeinonitDesc": "שמור את עונת היום ועונת הלילה ביום ה-30. הפעל אם הרב שלך פוסק כאור זרוע.",
-    "bothOnotOnYomHaChodesh": "שמור שתי עונות ביום החודש (כרתי ופלתי)",
-    "bothOnotOnYomHaChodeshDesc": "שמור את שתי העונות ביום החודש העברי. הפעל אם הרב שלך פוסק ככרתי ופלתי."
+    "ohrZarua": "אור זרוע",
+    "ohrZaruaDesc": "גם העונה שלפני כל עונה אסורה: לפני לילה – היום שלפניו, לפני יום – הלילה שלפניו.",
+    "kreisiUpleisi": "כרתי ופלתי",
+    "kreisiUpleisiDesc": "בעונה בינונית, כל היום ההלכתי של יום 30: גם הלילה וגם היום.",
+    "nightConflict": "כשהעונה האסורה בלילה",
+    "nightConflictDesc": "אור זרוע מוסיף את היום שלפני הלילה, וכרתי ופלתי את היום שאחריו. מה לשמור?",
+    "nightConflictBoth": "את שניהם",
+    "nightConflictOhrZarua": "רק אור זרוע",
+    "nightConflictKreisi": "רק כרתי ופלתי",
+    "chavotDaat": "חוות דעת",
+    "chavotDaatDesc": "בעונה בינונית גם יום 31, באותה עונה, בנוסף ליום 30.",
+    "ohrZaruaOnDay31": "אור זרוע גם ביום 31",
+    "ohrZaruaOnDay31Desc": "האם אור זרוע חל גם על יום 31 של חוות דעת? שאלי את הרב שלך.",
+    "shortMonth": "ראייה ביום ל׳ כשבחודש הבא אין ל׳",
+    "shortMonthDesc": "לפי מה לחשב את וסת החודש. העונה הבינונית יוצאת בכל מקרה בכ״ט.",
+    "shortMonthNone": "אין וסת החודש",
+    "shortMonthFirst": "א׳ בחודש שאחריו",
+    "shortMonthTwentyNinth": "כ״ט בחודש הבא",
+    "kavuah": "וסת קבוע",
+    "kavuahDesc": "מי שיש לה קביעות שומרת רק את הווסת הקבוע, בלי עונה בינונית.",
+    "kavuahNone": "אין קביעות",
+    "kavuahHaflaga": "קבועה להפלגה",
+    "kavuahChodesh": "קבועה ליום בחודש",
+    "kavuahDays": "מספר ימי ההפלגה (כולל יום הראייה ויום הווסת)",
+    "kavuahDayOfMonth": "היום בחודש העברי (1–30)",
+    "kavuahInvalid": "יש להזין מספר בין {{min}} ל־{{max}}",
+    "kavuahNeedsReview": "הגדרת הקביעות השתנתה. אם יש לך וסת קבוע, בחרי אותו כאן מחדש.",
+    "kavuahBothNote": "קביעות גם להפלגה וגם לחודש: יש לשאול רב."
   },
   "couple": {
     "title": "סנכרון זוגי",
@@ -425,5 +446,23 @@
       },
       "recipients": "נמענים"
     }
+  },
+  "onahDate": {
+    "nightOf": "ליל {{date}}",
+    "dayOf": "יום {{date}}",
+    "evening": "בערב {{weekday}}, {{date}}",
+    "motzeiShabbat": "מוצאי שבת, {{date}}",
+    "leilShabbat": "ליל שבת, {{date}}",
+    "dayCivil": "{{weekday}}, {{date}}",
+    "line": "{{hebrew}} – {{civil}}",
+    "formLine": "{{hebrew}}: {{civil}}",
+    "formLineEvening": "{{hebrew}}: {{civil}} בערב",
+    "weekday0": "יום א׳",
+    "weekday1": "יום ב׳",
+    "weekday2": "יום ג׳",
+    "weekday3": "יום ד׳",
+    "weekday4": "יום ה׳",
+    "weekday5": "יום ו׳",
+    "weekday6": "שבת"
   }
 }

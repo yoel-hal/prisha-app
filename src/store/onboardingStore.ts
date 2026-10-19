@@ -1,16 +1,10 @@
 import { create } from 'zustand';
 
+import { DEFAULT_CHUMROT } from '../calculations/chumrot';
 import type { Chumrot, Minhag } from '../calculations/types';
 import type { OnboardingLanguage } from '../firebase/firestore';
 import i18n from '../i18n';
 
-const DEFAULT_CHUMROT: Chumrot = {
-  kavuah: false,
-  veshetEinah: false,
-  onahBeinonitIfHaflaga: false,
-  bothOnotOnBeinonit: false,
-  bothOnotOnYomHaChodesh: false,
-};
 
 // Default to the language the app is showing, so skipping the language step
 // (or reloading mid-onboarding on web) doesn't save English for a Hebrew user.

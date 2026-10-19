@@ -6,11 +6,10 @@ import { Platform } from 'react-native';
 import type { NotificationSettings, VesetResult, VesetType } from '../calculations/types';
 import type { SupportedLanguage } from '../i18n';
 import { useSettingsStore } from '../store/settingsStore';
-import { formatHebrewDate } from '../utils/hebrewDateFormat';
+import { formatOnahDate } from '../utils/onahDisplay';
 import {
   isVesetNotificationId,
   notificationTriggerDate,
-  onahLabelKey,
 } from '../utils/vesetSchedule';
 
 Notifications.setNotificationHandler({
@@ -74,9 +73,9 @@ export function useNotifications() {
       }
 
       const title = t(`veset.${veset.type}`);
-      const hebrewDate = formatHebrewDate(veset.dateHebrew, language);
-      const onah = t(onahLabelKey(veset.onah));
-      const body = `${hebrewDate} · ${onah}`;
+      const body = formatOnahDate(veset.dateHebrew, veset.onah, language, (key, options) =>
+        t(key, options),
+      ).line;
 
       await Notifications.scheduleNotificationAsync({
         identifier: veset.id,

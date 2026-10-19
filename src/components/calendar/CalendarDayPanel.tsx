@@ -7,10 +7,9 @@ import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { VesetResult, VesetType } from '../../calculations/types';
 import { useCalendarSync } from '../../hooks/useCalendarSync';
 import { useNotifications } from '../../hooks/useNotifications';
-import type { SupportedLanguage } from '../../i18n';
+import { useOnahDateFormat } from '../../hooks/useOnahDateFormat';
 import { useSettingsStore } from '../../store/settingsStore';
 import type { CalendarDayEvent } from '../../utils/calendarMarkers';
-import { formatHebrewDate } from '../../utils/hebrewDateFormat';
 import { textStartStyle } from '../../utils/rtl';
 
 export interface CalendarDayPanelProps {
@@ -23,8 +22,8 @@ function vesetTranslationKey(type: VesetType): string {
 }
 
 export function CalendarDayPanel({ events, vesetim }: CalendarDayPanelProps) {
-  const { t, i18n } = useTranslation();
-  const language = i18n.language as SupportedLanguage;
+  const { t } = useTranslation();
+  const formatOnah = useOnahDateFormat();
 
   if (events.length === 0) {
     return null;
@@ -44,10 +43,10 @@ export function CalendarDayPanel({ events, vesetim }: CalendarDayPanelProps) {
                 : t('period.saved')}
             </Text>
             <Text style={[styles.row, textStartStyle()]}>
-              {formatHebrewDate(event.dateHebrew, language)}
+              {formatOnah(event.dateHebrew, event.onah).hebrew}
             </Text>
             <Text style={[styles.row, textStartStyle()]}>
-              {t(event.onah === 'day' ? 'period.day' : 'period.night')}
+              {formatOnah(event.dateHebrew, event.onah).civil}
             </Text>
           </View>
 

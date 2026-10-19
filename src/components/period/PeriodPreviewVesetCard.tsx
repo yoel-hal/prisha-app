@@ -2,9 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { VesetResult, VesetType } from '../../calculations/types';
-import type { SupportedLanguage } from '../../i18n';
-import { formatGregorianDisplay } from '../../utils/formatGregorianDisplay';
-import { formatHebrewDate } from '../../utils/hebrewDateFormat';
+import { useOnahDateFormat } from '../../hooks/useOnahDateFormat';
 import { textStartStyle } from '../../utils/rtl';
 import { vesetBadgeColors } from '../../utils/vesetBadgeColors';
 
@@ -23,8 +21,8 @@ export function PeriodPreviewVesetCard({
   results,
   notEnoughDataLabel,
 }: PeriodPreviewVesetCardProps) {
-  const { t, i18n } = useTranslation();
-  const language = i18n.language as SupportedLanguage;
+  const { t } = useTranslation();
+  const formatOnah = useOnahDateFormat();
   const badge = vesetBadgeColors(type);
 
   return (
@@ -39,20 +37,18 @@ export function PeriodPreviewVesetCard({
         <Text style={[styles.empty, textStartStyle()]}>
           {notEnoughDataLabel}
         </Text>
+      ) : results.length === 0 ? (
+        <Text style={[styles.empty, textStartStyle()]}>{t('period.vesetNone')}</Text>
       ) : (
-        results.map((veset) => (
-          <View key={veset.id} style={styles.resultBlock}>
-            <Text style={[styles.hebrewDate, textStartStyle()]}>
-              {formatHebrewDate(veset.dateHebrew, language)}
-            </Text>
-            <Text style={[styles.gregorianDate, textStartStyle()]}>
-              {formatGregorianDisplay(veset.dateGregorian, language)}
-            </Text>
-            <Text style={[styles.onah, textStartStyle()]}>
-              {t(veset.onah === 'day' ? 'period.day' : 'period.night')}
-            </Text>
-          </View>
-        ))
+        results.map((veset) => {
+          const text = formatOnah(veset.dateHebrew, veset.onah);
+          return (
+            <View key={veset.id} style={styles.resultBlock}>
+              <Text style={[styles.hebrewDate, textStartStyle()]}>{text.hebrew}</Text>
+              <Text style={[styles.gregorianDate, textStartStyle()]}>{text.civil}</Text>
+            </View>
+          );
+        })
       )}
     </View>
   );
@@ -87,10 +83,6 @@ const styles = StyleSheet.create({
   gregorianDate: {
     fontSize: 14,
     color: '#555',
-  },
-  onah: {
-    fontSize: 14,
-    color: '#666',
   },
   empty: {
     fontSize: 15,

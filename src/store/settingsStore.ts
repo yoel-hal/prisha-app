@@ -6,16 +6,10 @@ import type {
   Minhag,
   NotificationSettings,
 } from '../calculations/types';
+import { DEFAULT_CHUMROT } from '../calculations/chumrot';
 import { getSettings, saveSettings as saveSettingsToFirestore } from '../firebase/firestore';
 import { log, logError } from '../utils/log';
 
-const DEFAULT_CHUMROT: Chumrot = {
-  kavuah: false,
-  veshetEinah: false,
-  onahBeinonitIfHaflaga: false,
-  bothOnotOnBeinonit: false,
-  bothOnotOnYomHaChodesh: false,
-};
 
 export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   enabled: false,

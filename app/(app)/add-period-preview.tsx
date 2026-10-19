@@ -16,13 +16,13 @@ import { PeriodPreviewVesetCard } from '../../src/components/period/PeriodPrevie
 import { WebMainContent } from '../../src/components/web/WebMainContent';
 import { DESKTOP_ADD_PERIOD_MAX_WIDTH } from '../../src/constants/layout';
 import { useDesktopWeb } from '../../src/hooks/useDesktopWeb';
+import { useOnahDateFormat } from '../../src/hooks/useOnahDateFormat';
 import { usePeriodPreviewVesetim } from '../../src/hooks/usePeriodPreviewVesetim';
 import { useSavePeriodDraft } from '../../src/hooks/useSavePeriodDraft';
 import {
   usePeriodDraftStore,
   type PeriodDraft,
 } from '../../src/store/periodDraftStore';
-import { formatGregorianDisplay } from '../../src/utils/formatGregorianDisplay';
 import { formatHebrewDate } from '../../src/utils/hebrewDateFormat';
 import { textStartStyle } from '../../src/utils/rtl';
 import { showToast } from '../../src/utils/toast';
@@ -52,6 +52,7 @@ function AddPeriodPreviewContent({ draft }: { draft: PeriodDraft }) {
   const webScroll = webScreenScrollStyles();
   const language = i18n.language as SupportedLanguage;
   const vesetim = usePeriodPreviewVesetim(draft);
+  const periodText = useOnahDateFormat()(draft.dateHebrew, draft.onah);
   const { save, isSaving } = useSavePeriodDraft();
 
   async function handleSave() {
@@ -76,7 +77,7 @@ function AddPeriodPreviewContent({ draft }: { draft: PeriodDraft }) {
             {formatHebrewDate(draft.dateHebrew, language)}
           </Text>
           <Text style={[styles.periodGregorian, textStartStyle()]}>
-            {formatGregorianDisplay(draft.dateGregorian, language)}
+            {periodText.line}
           </Text>
           <View style={styles.onahBadge}>
             <Text style={styles.onahBadgeText}>

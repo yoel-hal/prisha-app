@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 
+import { findPeriodOnHebrewDate } from '../calculations/hebrewCalendar';
 import type { Period } from '../calculations/types';
 import { addPeriod as addPeriodToFirestore } from '../firebase/firestore';
 import { useAuthStore } from '../store/authStore';
@@ -14,6 +15,10 @@ export function useSavePeriodDraft() {
   const save = useCallback(async (): Promise<boolean> => {
     const draft = usePeriodDraftStore.getState().draft;
     if (!draft || !coupleId || !user) {
+      return false;
+    }
+    // A second period on the same Hebrew date is the same sighting; PeriodForm explains this.
+    if (findPeriodOnHebrewDate(usePeriodsStore.getState().periods, draft.dateHebrew)) {
       return false;
     }
 
@@ -33,7 +38,7 @@ export function useSavePeriodDraft() {
       const newPeriod: Period = { id, ...periodData };
 
       usePeriodsStore.getState().addPeriod(newPeriod);
-      usePeriodDraftStore.getState().clearDraft();
+      usePeriodDraftStore.getState().resetAfterSave();
       return true;
     } finally {
       setIsSaving(false);

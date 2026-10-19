@@ -11,37 +11,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Chumrot, Minhag } from '../../../src/calculations/types';
+import { ChumrotSettings } from '../../../src/components/settings/ChumrotSettings';
 import { useDesktopWeb } from '../../../src/hooks/useDesktopWeb';
 import { useSettings } from '../../../src/hooks/useSettings';
 import { textStartStyle } from '../../../src/utils/rtl';
 import { webScreenScrollStyles } from '../../../src/utils/webScroll';
-import { AppSwitch } from '../../../src/components/common/AppSwitch';
-
-type ChumraKey = keyof Chumrot;
-
-const CHUMRA_ROWS: { key: ChumraKey; labelKey: string; descKey: string }[] = [
-  { key: 'kavuah', labelKey: 'chumrot.kavuah', descKey: 'chumrot.kavuahDesc' },
-  {
-    key: 'veshetEinah',
-    labelKey: 'chumrot.veshetEinah',
-    descKey: 'chumrot.veshetEinahDesc',
-  },
-  {
-    key: 'onahBeinonitIfHaflaga',
-    labelKey: 'chumrot.onahBeinonitIfHaflaga',
-    descKey: 'chumrot.onahBeinonitIfHaflagaDesc',
-  },
-  {
-    key: 'bothOnotOnBeinonit',
-    labelKey: 'chumrot.bothOnotOnBeinonit',
-    descKey: 'chumrot.bothOnotOnBeinonitDesc',
-  },
-  {
-    key: 'bothOnotOnYomHaChodesh',
-    labelKey: 'chumrot.bothOnotOnYomHaChodesh',
-    descKey: 'chumrot.bothOnotOnYomHaChodeshDesc',
-  },
-];
 
 const MINHAGIM: Minhag[] = [
   'ashkenaz',
@@ -79,11 +53,11 @@ export default function CustomizationScreen() {
     }
   }, [pending, selectMinhag, router, isDesktopWeb]);
 
-  const toggleChumra = useCallback(
-    (key: ChumraKey, value: boolean) => {
-      void selectChumrot({ ...chumrot, [key]: value });
+  const changeChumrot = useCallback(
+    (next: Chumrot) => {
+      void selectChumrot(next);
     },
-    [chumrot, selectChumrot],
+    [selectChumrot],
   );
 
   const body = (
@@ -108,17 +82,7 @@ export default function CustomizationScreen() {
             {t('settings.chumrot')}
           </Text>
 
-          <View style={styles.chumrotRows}>
-            {CHUMRA_ROWS.map((row) => (
-              <ChumraRow
-                key={row.key}
-                label={t(row.labelKey)}
-                description={t(row.descKey)}
-                value={chumrot[row.key]}
-                onValueChange={(value) => toggleChumra(row.key, value)}
-              />
-            ))}
-          </View>
+          <ChumrotSettings chumrot={chumrot} onChange={changeChumrot} />
         </ScrollView>
 
         <View style={styles.footer}>
@@ -144,28 +108,6 @@ export default function CustomizationScreen() {
         {body}
       </SafeAreaView>
     </>
-  );
-}
-
-function ChumraRow({
-  label,
-  description,
-  value,
-  onValueChange,
-}: {
-  label: string;
-  description: string;
-  value: boolean;
-  onValueChange: (next: boolean) => void;
-}) {
-  return (
-    <View style={styles.chumrotRow}>
-      <View style={styles.chumrotRowText}>
-        <Text style={[styles.chumrotRowLabel, textStartStyle()]}>{label}</Text>
-        <Text style={[styles.chumrotRowDesc, textStartStyle()]}>{description}</Text>
-      </View>
-      <AppSwitch value={value} onValueChange={onValueChange} />
-    </View>
   );
 }
 
@@ -226,30 +168,6 @@ const styles = StyleSheet.create({
   },
   sectionGap: {
     marginTop: 24,
-  },
-  chumrotRows: {
-    gap: 4,
-  },
-  chumrotRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#eee',
-  },
-  chumrotRowText: {
-    flex: 1,
-    gap: 4,
-  },
-  chumrotRowLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  chumrotRowDesc: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: '#666',
   },
   cardList: {
     gap: 12,

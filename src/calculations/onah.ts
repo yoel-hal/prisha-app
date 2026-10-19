@@ -66,18 +66,6 @@ export function addHebrewDays(date: HebrewDate, days: number): HebrewDate {
 }
 
 /**
- * Adds whole Hebrew months, preserving the Hebrew day-of-month where possible
- * (month length and leap years are resolved by the luach, as in yom ha'chodesh).
- * Source: Shulchan Aruch Yoreh De'ah 189:6 (yom ha'chodesh: same calendar day next Hebrew month).
- *
- * @param date - Anchor Hebrew date
- * @param months - Number of Hebrew months to add (may be negative)
- */
-export function addHebrewMonths(date: HebrewDate, months: number): HebrewDate {
-  return fromHDate(toHDate(date).add(months, 'month'));
-}
-
-/**
  * Returns true if both dates are the identical Hebrew calendar day
  * (same Hebrew year, month, and day-of-month).
  * Useful when comparing anchors for yom ha'chodesh and other same-day rules.

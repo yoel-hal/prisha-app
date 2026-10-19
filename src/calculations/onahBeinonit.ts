@@ -1,47 +1,53 @@
+import { addDays, previousOnah, type HebrewOnah } from './hebrewCalendar';
 import { minhagRegistry } from './minhagim';
+import { makeResult, uniqueOnot } from './results';
 import type { Chumrot, Minhag, Period, VesetResult } from './types';
 
 /**
- * Computes onah beinonit (thirtieth-day vest) for a single period.
- * Delegates base logic to the minhag strategy, then applies chumrot on top.
- * Source: Shulchan Aruch Yoreh De'ah 189:2
- *
- * @param period  - The anchor period (day 1 of the count)
- * @param minhag  - Community tradition; determines base one-or-two-onot rule
- * @param chumrot - Additional strictnesses applied on top of the minhag base
+ * Onah beinonit, counted from the latest period only (pass the latest period).
+ * Day 30 counts the period day as day 1 (29 days later); the base onot come from the minhag.
+ * Chumrot:
+ * - Ohr Zarua: also the onah before each base onah
+ * - Kreisi uPleisi: the whole halachic day of day 30 (never day 31)
+ * - both on and the period is at night: `nightConflict` picks both / only one
+ * - Chavot Daat: day 31 as well, same onot; Ohr Zarua there only with `ohrZaruaOnDay31`
+ * Source: Shulchan Aruch Yoreh De'ah 189:2; rules as set in docs/חישובי-עונות-v1.docx §2.
  */
 export function calcOnahBeinonit(
-  period: Period,
+  latest: Period,
   minhag: Minhag,
   chumrot: Chumrot,
 ): VesetResult[] {
-  // Get the base result(s) from the minhag strategy.
-  const base = minhagRegistry[minhag].calcOnahBeinonit(period);
+  const baseOnot = minhagRegistry[minhag].beinonitOnot(latest.onah);
+  const day30 = addDays(latest.dateHebrew, 29);
 
-  // Apply chumra: bothOnotOnBeinonit means keep BOTH day and night on day 30,
-  // regardless of what the base minhag returned.
-  // We only add extra results — we never remove what the minhag already returns.
-  if (chumrot.bothOnotOnBeinonit) {
-    const dateGregorian = base[0]!.dateGregorian;
-    const hasDay = base.some((r) => r.onah === 'day');
-    const hasNight = base.some((r) => r.onah === 'night');
-    const extra: VesetResult[] = [];
-    if (!hasDay) {
-      extra.push({
-        ...base[0]!,
-        id: `veset-onahBeinonit-${period.id}-${dateGregorian}-day`,
-        onah: 'day',
-      });
-    }
-    if (!hasNight) {
-      extra.push({
-        ...base[0]!,
-        id: `veset-onahBeinonit-${period.id}-${dateGregorian}-night`,
-        onah: 'night',
-      });
-    }
-    return [...base, ...extra];
+  const conflict =
+    chumrot.ohrZarua && chumrot.kreisiUpleisi && latest.onah === 'night';
+  const ohrZarua =
+    chumrot.ohrZarua && !(conflict && chumrot.nightConflict === 'kreisiUpleisi');
+  const kreisiUpleisi =
+    chumrot.kreisiUpleisi && !(conflict && chumrot.nightConflict === 'ohrZarua');
+
+  const day30Base: HebrewOnah[] = baseOnot.map((onah) => ({ date: day30, onah }));
+  const targets: HebrewOnah[] = [...day30Base];
+  if (kreisiUpleisi) {
+    targets.push({ date: day30, onah: 'night' }, { date: day30, onah: 'day' });
+  }
+  if (ohrZarua) {
+    targets.push(...day30Base.map(previousOnah));
   }
 
-  return base;
+  if (chumrot.chavotDaat) {
+    const day31 = addDays(latest.dateHebrew, 30);
+    const day31Base: HebrewOnah[] = baseOnot.map((onah) => ({ date: day31, onah }));
+    targets.push(...day31Base);
+    if (chumrot.ohrZarua && chumrot.ohrZaruaOnDay31) {
+      targets.push(...day31Base.map(previousOnah));
+    }
+  }
+
+  return uniqueOnot(targets).map((target) =>
+    makeResult('onahBeinonit', latest, target, minhag),
+  );
 }
+

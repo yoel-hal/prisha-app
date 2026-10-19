@@ -43,7 +43,10 @@
     "pastPeriods": "Past periods",
     "showPastPeriods": "Show past periods",
     "hidePastPeriods": "Hide past periods",
-    "haflagaNoData": "Not enough data"
+    "haflagaNoData": "Not enough data",
+    "sameDayTitle": "There is already a period on this date",
+    "sameDayMessage": "There are no two periods on the same day: another sighting that day is the same one. If the date is wrong, edit the existing period.",
+    "vesetNone": "None"
   },
   "upcoming": {
     "edit": "Edit",
@@ -175,16 +178,34 @@
     "JoinAsPartner": "Partner?"
   },
   "chumrot": {
-    "kavuah": "Kavuah",
-    "kavuahDesc": "Treat established cycle patterns (kavuah) when calculating vestos.",
-    "veshetEinah": "Veset she-einah",
-    "veshetEinahDesc": "Apply rules for a veset that did not occur on the expected date.",
-    "onahBeinonitIfHaflaga": "Onah beinonit with haflaga",
-    "onahBeinonitIfHaflagaDesc": "Also apply onah beinonit when a haflaga veset falls on the same day.",
-    "bothOnotOnBeinonit": "Keep both onot on day 30 (Ohr Zarua)",
-    "bothOnotOnBeinonitDesc": "Observe both day and night onah on the 30th day. Enable if your rav follows the Ohr Zarua.",
-    "bothOnotOnYomHaChodesh": "Keep both onot on yom hachodesh (Kreisi uPleisi)",
-    "bothOnotOnYomHaChodeshDesc": "Observe both day and night onah on the Hebrew calendar date. Enable if your rav follows the Kreisi uPleisi."
+    "ohrZarua": "Ohr Zarua",
+    "ohrZaruaDesc": "Also the onah before each forbidden onah: before a night, the day before it; before a day, the night before it.",
+    "kreisiUpleisi": "Kreisi uPleisi",
+    "kreisiUpleisiDesc": "For onah beinonit, the whole halachic day of day 30: both the night and the day.",
+    "nightConflict": "When the forbidden onah is a night",
+    "nightConflictDesc": "Ohr Zarua adds the day before the night, Kreisi uPleisi the day after. Which to keep?",
+    "nightConflictBoth": "Both",
+    "nightConflictOhrZarua": "Only Ohr Zarua",
+    "nightConflictKreisi": "Only Kreisi uPleisi",
+    "chavotDaat": "Chavot Daat",
+    "chavotDaatDesc": "For onah beinonit, day 31 as well, same onah, in addition to day 30.",
+    "ohrZaruaOnDay31": "Ohr Zarua on day 31 too",
+    "ohrZaruaOnDay31Desc": "Does Ohr Zarua also apply to the Chavot Daat day 31? Ask your rav.",
+    "shortMonth": "Period on the 30th when the next month has no 30th",
+    "shortMonthDesc": "How to set yom hachodesh. Onah beinonit falls on the 29th either way.",
+    "shortMonthNone": "No yom hachodesh",
+    "shortMonthFirst": "The 1st of the month after",
+    "shortMonthTwentyNinth": "The 29th of the next month",
+    "kavuah": "Veset kavuah",
+    "kavuahDesc": "With a fixed veset only that veset is kept, without onah beinonit.",
+    "kavuahNone": "No kavuah",
+    "kavuahHaflaga": "Fixed haflaga",
+    "kavuahChodesh": "Fixed day of the month",
+    "kavuahDays": "Haflaga in days (counting the period day and the veset day)",
+    "kavuahDayOfMonth": "Day of the Hebrew month (1–30)",
+    "kavuahInvalid": "Enter a number from {{min}} to {{max}}",
+    "kavuahNeedsReview": "The kavuah setting changed. If you have a veset kavuah, choose it here again.",
+    "kavuahBothNote": "Kavuah for both haflaga and day of the month: ask a rav."
   },
   "couple": {
     "title": "Couple Sync",
@@ -425,5 +446,23 @@
       },
       "recipients": "recipients"
     }
+  },
+  "onahDate": {
+    "nightOf": "Night of {{date}}",
+    "dayOf": "Day of {{date}}",
+    "evening": "{{weekday}} evening, {{date}}",
+    "motzeiShabbat": "Motzei Shabbat, {{date}}",
+    "leilShabbat": "Friday night, {{date}}",
+    "dayCivil": "{{weekday}}, {{date}}",
+    "line": "{{hebrew}} – {{civil}}",
+    "formLine": "{{hebrew}}: {{civil}}",
+    "formLineEvening": "{{hebrew}}: {{civil}} evening",
+    "weekday0": "Sunday",
+    "weekday1": "Monday",
+    "weekday2": "Tuesday",
+    "weekday3": "Wednesday",
+    "weekday4": "Thursday",
+    "weekday5": "Friday",
+    "weekday6": "Shabbat"
   }
 }

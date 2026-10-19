@@ -46,3 +46,6 @@ yarn-error.*
 users.json
 firestore-debug.log
 firebase-debug.log
+
+# Office lock files
+~$*

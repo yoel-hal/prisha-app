@@ -5,8 +5,8 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { formatGregorianLocal } from '../../calculations/onah';
 import type { Period, VesetResult, VesetType } from '../../calculations/types';
+import { useOnahDateFormat } from '../../hooks/useOnahDateFormat';
 import type { SupportedLanguage } from '../../i18n';
-import { formatGregorianDisplay } from '../../utils/formatGregorianDisplay';
 import { formatHebrewDate } from '../../utils/hebrewDateFormat';
 import { textStartStyle } from '../../utils/rtl';
 import { vesetBadgeColors } from '../../utils/vesetBadgeColors';
@@ -220,6 +220,7 @@ function NextUpcomingGroup({
   t,
 }: NextUpcomingGroupProps) {
   const { period } = group;
+  const periodText = useOnahDateFormat()(period.dateHebrew, period.onah);
 
   return (
     <View style={styles.group}>
@@ -229,7 +230,7 @@ function NextUpcomingGroup({
             {formatHebrewDate(period.dateHebrew, language)}
           </Text>
           <Text style={[styles.nextPeriodSubtitle, textStartStyle()]}>
-            {formatGregorianDisplay(period.dateGregorian, language)}
+            {periodText.line}
           </Text>
         </View>
         <Pressable style={styles.editButton} onPress={onEdit}>
@@ -270,6 +271,7 @@ function CollapsiblePeriodGroup({
   t,
 }: CollapsiblePeriodGroupProps) {
   const { period } = group;
+  const periodText = useOnahDateFormat()(period.dateHebrew, period.onah);
 
   return (
     <View style={styles.group}>
@@ -279,7 +281,7 @@ function CollapsiblePeriodGroup({
             {formatHebrewDate(period.dateHebrew, language)}
           </Text>
           <Text style={[styles.periodGregorian, textStartStyle()]}>
-            {formatGregorianDisplay(period.dateGregorian, language)}
+            {periodText.line}
           </Text>
         </View>
         <Text style={styles.expandIcon}>{expanded ? '▼' : '▶'}</Text>
@@ -360,8 +362,9 @@ interface VesetRowProps {
   t: (key: string) => string;
 }
 
-function VesetRow({ veset, language, muted, t }: VesetRowProps) {
+function VesetRow({ veset, muted, t }: VesetRowProps) {
   const badge = vesetBadgeColors(veset.type);
+  const text = useOnahDateFormat()(veset.dateHebrew, veset.onah);
 
   return (
     <View style={[styles.vesetRow, muted && styles.vesetRowMuted]}>
@@ -370,32 +373,11 @@ function VesetRow({ veset, language, muted, t }: VesetRowProps) {
           {t(vesetTranslationKey(veset.type))}
         </Text>
       </View>
-      <Text
-        style={[
-          styles.vesetDate,
-          muted && styles.mutedText,
-          textStartStyle(),
-        ]}
-      >
-        {formatHebrewDate(veset.dateHebrew, language)}
+      <Text style={[styles.vesetDate, muted && styles.mutedText, textStartStyle()]}>
+        {text.hebrew}
       </Text>
-      <Text
-        style={[
-          styles.vesetGregorian,
-          muted && styles.mutedText,
-          textStartStyle(),
-        ]}
-      >
-        {formatGregorianDisplay(veset.dateGregorian, language)}
-      </Text>
-      <Text
-        style={[
-          styles.vesetOnah,
-          muted && styles.mutedText,
-          textStartStyle(),
-        ]}
-      >
-        {t(veset.onah === 'day' ? 'period.day' : 'period.night')}
+      <Text style={[styles.vesetGregorian, muted && styles.mutedText, textStartStyle()]}>
+        {text.civil}
       </Text>
     </View>
   );

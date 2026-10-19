@@ -36,13 +36,14 @@ The owner is Yoel; the app has real users (around 43 accounts), so treat product
   - Hebrew dates are always written in Hebrew letters (ה׳ חשון תשפ״ז), in both languages: `src/utils/hebrewDateFormat.ts`.
   - `src/components/calendar/HebrewMonthCalendar.tsx` is the month grid: pages by Hebrew month, both dates per day, Shabbat shaded, today outlined. Used by the main calendar (`CalendarView`) and as the date picker when adding/editing a period (`PeriodDatePicker`).
   - Don't use `HDate.add(n, 'M')` for month paging: it lands on the wrong month around Tishrei. Step by days (see `shiftMonth`).
+- Vesatot calculations (`src/calculations`): the rules and the open questions are in `docs/חישובי-עונות-v1.docx` (the owner's spec); tests ב/ח/ה/ר/נ/ת in `__tests__` and `src/utils/__tests__` carry the same IDs. Calculations use the Hebrew date and onah only (`hebrewCalendar.ts`); the civil date is display-only. Show onot with `formatOnahDate` / `useOnahDateFormat` (a night starts the evening before). Old saved chumrot are migrated in `normalizeChumrot` (`chumrot.ts`).
 - Partner access: a partner (anonymous auth) is linked to the owner's invite by `partnerUid`; rules only grant couple data to that uid. `getPartnerAccessStatus()` sends unlinked sessions back to `/join`.
 - Couple invites: looked up via `coupleInvites/{code}` (direct get), not a collection-group query.
 - Switches: use `AppSwitch`, not `Switch`, so colors match everywhere.
 - `react-native-worklets` is pinned to 0.5.1 (SDK 54). A newer version crashes Expo Go.
 
 ## Where things stand (update this when you finish a chunk of work)
-- Last deployed web + pushed commit: `c4b3bf5` (Hebrew-month calendar, calendar date picker).
-- Committed locally, NOT pushed or deployed (the owner is testing locally first): `bd12df6` (preview Edit returns to the add-period form) and the commit that added this file.
+- Last deployed web + pushed: the v1 calculations commit (see `git log`): rules per `docs/חישובי-עונות-v1.docx`, new chumrot settings with migration, one period per Hebrew date, unambiguous night display, night notifications fixed.
+- Open: the questions in §10 of the v1 doc use interim behavior; calendar-sync events for a night onah are still all-day on the daytime's civil date (a day late for the evening).
 - Not yet checked: Android; the new calendar on the iPhone simulator.
 - Next steps: see `TODO.md`. The owner decides what to push and deploy; ask before pushing.

@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 
 import { calcAllVesetim } from '../calculations';
+import { findPeriodOnHebrewDate } from '../calculations/hebrewCalendar';
 import {
   formatGregorianLocal,
   gregorianToHebrewDate,
@@ -90,6 +91,11 @@ export function usePeriodForm(existingPeriod?: Period) {
 
   const save = useCallback(async (): Promise<boolean> => {
     if (!coupleId || !user) {
+      return false;
+    }
+    if (
+      findPeriodOnHebrewDate(usePeriodsStore.getState().periods, hebrewDate, existingPeriod?.id)
+    ) {
       return false;
     }
 

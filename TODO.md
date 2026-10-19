@@ -1,8 +1,9 @@
 # Prisha Tracker — To Do
 
-## Now (owner testing locally)
-- [ ] Test the new Hebrew-month calendar and calendar date picker locally (web + iPhone)
-- [ ] When happy: push the local commits and deploy the web app (see `CLAUDE.md` → Commands)
+## Now
+- [ ] Decide the open questions in `docs/חישובי-עונות-v1.docx` §10 (Chabad, close sightings, kavuah both, Ohr Zarua on day 31 / haflaga, kavuah detection) and whether the app says "ask your rav"
+- [ ] Calendar sync: a night onah is an all-day event on the daytime's civil date; it starts the evening before
+- [ ] Test the new calendar, settings and night display on the iPhone simulator
 
 ## Security (do first)
 - [ ] Revoke the old GitHub personal access token (`ghp_edKn…`) in GitHub → Settings → Developer settings → Personal access tokens
@@ -49,6 +50,8 @@
 - [ ] Archive the old `~/FamilyPurityApp/TaharatApp` project (superseded by this one)
 
 ## Done
+- [x] v1 calculations: onah beinonit from the latest period only, Ohr Zarua / Kreisi uPleisi / Chavot Daat settings, short-month rule, kavuah, Hebrew-only ordering, one period per Hebrew date, duplicate-in-list fix, night shown as the evening it starts, night notifications a day late fixed
+- [x] Add-period form resets after saving
 - [x] Firestore partner-access rules fixed, tested in the emulator (`npm run test:rules`) and deployed (Oct 16, 2026)
 - [x] Web app rebuilt and deployed to https://prisha-tracker.web.app
 - [x] Commit `fe256e3` pushed to GitHub

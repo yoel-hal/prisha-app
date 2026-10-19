@@ -5,6 +5,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { formatGregorianLocal } from '../../calculations/onah';
 import type { VesetResult, VesetType } from '../../calculations/types';
 import type { SupportedLanguage } from '../../i18n';
+import { useOnahDateFormat } from '../../hooks/useOnahDateFormat';
 import { formatHebrewDate } from '../../utils/hebrewDateFormat';
 import { textStartStyle } from '../../utils/rtl';
 import { vesetBadgeColors } from '../../utils/vesetBadgeColors';
@@ -51,8 +52,9 @@ interface VesetRowProps {
   t: (key: string) => string;
 }
 
-function VesetRow({ veset, language, t }: VesetRowProps) {
+function VesetRow({ veset, t }: VesetRowProps) {
   const badge = vesetBadgeColors(veset.type);
+  const text = useOnahDateFormat()(veset.dateHebrew, veset.onah);
 
   return (
     <View style={styles.vesetRow}>
@@ -61,12 +63,8 @@ function VesetRow({ veset, language, t }: VesetRowProps) {
           {t(vesetTranslationKey(veset.type))}
         </Text>
       </View>
-      <Text style={[styles.vesetDate, textStartStyle()]}>
-        {formatHebrewDate(veset.dateHebrew, language)}
-      </Text>
-      <Text style={[styles.vesetOnah, textStartStyle()]}>
-        {t(veset.onah === 'day' ? 'period.day' : 'period.night')}
-      </Text>
+      <Text style={[styles.vesetDate, textStartStyle()]}>{text.hebrew}</Text>
+      <Text style={[styles.vesetOnah, textStartStyle()]}>{text.civil}</Text>
     </View>
   );
 }

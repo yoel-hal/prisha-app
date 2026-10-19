@@ -9,10 +9,13 @@ import {
   View,
 } from 'react-native';
 
+import { findPeriodOnHebrewDate } from '../../calculations/hebrewCalendar';
 import { formatGregorianLocal } from '../../calculations/onah';
 import type { Period } from '../../calculations/types';
+import { useOnahDateFormat } from '../../hooks/useOnahDateFormat';
 import { usePeriodForm } from '../../hooks/usePeriodForm';
 import { useAuthStore } from '../../store/authStore';
+import { usePeriodsStore } from '../../store/periodsStore';
 import { usePeriodDraftStore } from '../../store/periodDraftStore';
 import { showAlert } from '../../utils/alert';
 import { useAlignStart, textStartStyle } from '../../utils/rtl';
@@ -49,8 +52,26 @@ export function PeriodForm({
     save,
     remove,
   } = usePeriodForm(existingPeriod);
+  const selectedOnahText = useOnahDateFormat()(hebrewDate, onah).formLine;
+
+  /** Only one period per Hebrew date: a second one is the same sighting. */
+  function hasPeriodOnSameDate(): boolean {
+    const existing = findPeriodOnHebrewDate(
+      usePeriodsStore.getState().periods,
+      hebrewDate,
+      existingPeriod?.id,
+    );
+    if (existing) {
+      showAlert(t('period.sameDayTitle'), t('period.sameDayMessage'));
+      return true;
+    }
+    return false;
+  }
 
   async function handleSave() {
+    if (hasPeriodOnSameDate()) {
+      return;
+    }
     const ok = await save();
     if (ok && isEdit) {
       onSaved?.();
@@ -58,7 +79,7 @@ export function PeriodForm({
   }
 
   function handlePreview() {
-    if (!coupleId || !user) {
+    if (!coupleId || !user || hasPeriodOnSameDate()) {
       return;
     }
 
@@ -99,7 +120,10 @@ export function PeriodForm({
         onGregorianChange={setGregorian}
       />
 
-      <OnahPicker value={onah} onChange={setOnah} />
+      <View style={styles.field}>
+        <OnahPicker value={onah} onChange={setOnah} />
+        <Text style={[styles.onahSummary, textStartStyle()]}>{selectedOnahText}</Text>
+      </View>
 
       <View style={styles.field}>
         <Text style={[styles.label, textStartStyle()]}>{t('period.notes')}</Text>
@@ -152,6 +176,11 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  onahSummary: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#333',
   },
   input: {
     borderWidth: StyleSheet.hairlineWidth,

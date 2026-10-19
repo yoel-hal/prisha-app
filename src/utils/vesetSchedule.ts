@@ -1,10 +1,15 @@
 import type { Onah, VesetResult } from '../calculations/types';
 
-/** Approximate local time for the start of a day or night onah on the veset date. */
+/**
+ * Approximate local time for the start of the onah. `dateGregorian` is the civil date of
+ * the daytime; a night onah starts at sunset of the evening before.
+ */
 export function vesetOnahDate(veset: VesetResult): Date {
   const [year, month, day] = veset.dateGregorian.split('-').map(Number);
-  const hour = veset.onah === 'day' ? 7 : 18;
-  return new Date(year, month - 1, day, hour, 0, 0, 0);
+  if (veset.onah === 'day') {
+    return new Date(year, month - 1, day, 7, 0, 0, 0);
+  }
+  return new Date(year, month - 1, day - 1, 18, 0, 0, 0);
 }
 
 /** When to fire a lead-time reminder; null if that moment is already past. */

@@ -1,17 +1,32 @@
-import type { Minhag, MinhagStrategy } from '../types';
-import { ashkenazMinhag } from './ashkenaz';
-import { chabadMinhag } from './chabad';
-import { sfaradMinhag } from './sfarad';
-import { teimaniMinhag } from './teimani';
+import type { Minhag, Onah } from '../types';
 
 /**
- * Registry mapping each minhag name to its strategy implementation.
- * To add a new minhag: create a new strategy file and add it here.
- * To modify a minhag's rules: edit its strategy file directly.
+ * The base rules that differ between minhagim. Everything else (counting days,
+ * chumrot, kavuah) is shared and lives in the calculators.
+ * To change a minhag's rule, edit its entry here.
  */
-export const minhagRegistry: Record<Minhag, MinhagStrategy> = {
-  ashkenaz: ashkenazMinhag,
-  sfarad: sfaradMinhag,
-  chabad: chabadMinhag,
-  teimani: teimaniMinhag,
+export type MinhagRules = {
+  /** The onot forbidden on day 30 (and day 31 with Chavot Daat), before chumrot. */
+  beinonitOnot(periodOnah: Onah): Onah[];
+};
+
+/** Ashkenaz, Sfarad, Teimani: only the onah of the period. */
+const sameOnah: MinhagRules = {
+  beinonitOnot: (periodOnah) => [periodOnah],
+};
+
+/**
+ * Chabad: a night period forbids both the night and the day of day 30; a day
+ * period only the day. Open question 1 in docs/חישובי-עונות-v1.docx; this is the
+ * interim rule until it is decided.
+ */
+const chabad: MinhagRules = {
+  beinonitOnot: (periodOnah) => (periodOnah === 'night' ? ['night', 'day'] : ['day']),
+};
+
+export const minhagRegistry: Record<Minhag, MinhagRules> = {
+  ashkenaz: sameOnah,
+  sfarad: sameOnah,
+  chabad,
+  teimani: sameOnah,
 };

@@ -1,24 +1,47 @@
-import { minhagRegistry } from './minhagim';
+import { addDays, normalizePeriods, toAbs } from './hebrewCalendar';
+import { makeResult, uniqueOnot, withOhrZarua } from './results';
 import type { Chumrot, Minhag, Period, VesetResult } from './types';
 
 /**
- * Computes haflaga (interval vest) from the last two periods.
- * Delegates to the minhag strategy. No chumrot currently affect haflaga.
- * Source: Shulchan Aruch Yoreh De'ah 189:4
- *
- * @param periods - All recorded periods (will be sorted internally)
- * @param minhag  - Community tradition
- * @param chumrot - Reserved for future chumrot that affect haflaga
- *                  (e.g. onahBeinonitIfHaflaga is handled at the UI level)
+ * Haflaga from the last two periods only (earlier periods don't count without a kavuah):
+ * the same number of days again from the latest, in the latest period's onah.
+ * Ohr Zarua applies here too (open question 5, interim).
+ * Source: Shulchan Aruch Yoreh De'ah 189:4; docs/חישובי-עונות-v1.docx §4.
  */
 export function calcHaflaga(
   periods: Period[],
   minhag: Minhag,
   chumrot: Chumrot,
 ): VesetResult[] {
-  // NOTE: chumrot.onahBeinonitIfHaflaga means "also keep onah beinonit when
-  // haflaga falls on a different day". This is a UI/display concern handled
-  // in calcAllVesetim, not here. This function returns only the haflaga vest.
-  void chumrot;
-  return minhagRegistry[minhag].calcHaflaga(periods);
+  const sorted = normalizePeriods(periods);
+  if (sorted.length < 2) {
+    return [];
+  }
+  const prev = sorted[sorted.length - 2]!;
+  const latest = sorted[sorted.length - 1]!;
+  const interval = toAbs(latest.dateHebrew) - toAbs(prev.dateHebrew);
+  return haflagaResults(latest, interval, minhag, chumrot, false);
+}
+
+/** Kavuah haflaga of `days` (counting both days) from the latest period. */
+export function calcKavuahHaflaga(
+  latest: Period,
+  days: number,
+  minhag: Minhag,
+  chumrot: Chumrot,
+): VesetResult[] {
+  return haflagaResults(latest, days - 1, minhag, chumrot, true);
+}
+
+function haflagaResults(
+  latest: Period,
+  daysLater: number,
+  minhag: Minhag,
+  chumrot: Chumrot,
+  isKavuah: boolean,
+): VesetResult[] {
+  const date = addDays(latest.dateHebrew, daysLater);
+  return uniqueOnot(withOhrZarua([{ date, onah: latest.onah }], chumrot.ohrZarua)).map(
+    (target) => makeResult('haflaga', latest, target, minhag, isKavuah),
+  );
 }

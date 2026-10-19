@@ -27,6 +27,7 @@ import {
   buildInviteLink,
 } from '../constants/coupleInvite';
 
+import { normalizeChumrot } from '../calculations/chumrot';
 import type {
   CalendarSettings,
   Chumrot,
@@ -96,14 +97,7 @@ function mapChumrot(data: unknown): Chumrot | undefined {
   if (!data || typeof data !== 'object') {
     return undefined;
   }
-  const record = data as Record<string, unknown>;
-  return {
-    kavuah: record.kavuah === true,
-    veshetEinah: record.veshetEinah === true,
-    onahBeinonitIfHaflaga: record.onahBeinonitIfHaflaga === true,
-    bothOnotOnBeinonit: record.bothOnotOnBeinonit === true,
-    bothOnotOnYomHaChodesh: record.bothOnotOnYomHaChodesh === true,
-  };
+  return normalizeChumrot(data);
 }
 
 function mapUserDocument(data: DocumentData): UserDocument {
@@ -600,38 +594,21 @@ function mapCalendar(data: DocumentData): CalendarSettings {
 }
 
 function mapSettings(data: DocumentData): UserSettings {
-  const chumrot = data.chumrot;
   const rawMinhag = data.minhag;
   if (typeof rawMinhag !== 'string') {
     throw new Error('Invalid settings document: missing minhag');
   }
 
-  const chumrotRecord =
-    chumrot && typeof chumrot === 'object'
-      ? (chumrot as Record<string, unknown>)
-      : {};
-
-  const chumrotMapped: Chumrot = {
-    kavuah: chumrotRecord.kavuah === true,
-    veshetEinah: chumrotRecord.veshetEinah === true,
-    onahBeinonitIfHaflaga: chumrotRecord.onahBeinonitIfHaflaga === true,
-    bothOnotOnBeinonit: chumrotRecord.bothOnotOnBeinonit === true,
-    bothOnotOnYomHaChodesh: chumrotRecord.bothOnotOnYomHaChodesh === true,
-  };
-
   let minhag: UserSettings['minhag'] = rawMinhag as UserSettings['minhag'];
-  // MIGRATION: "yireim" was removed as a minhag in refactor v2.
-  // Users who had minhag "yireim" are migrated to ashkenaz +
-  // bothOnotOnBeinonit + bothOnotOnYomHaChodesh = true.
+  // MIGRATION: "yireim" was removed as a minhag; it maps to ashkenaz, and
+  // normalizeChumrot turns it into Kreisi uPleisi.
   if (rawMinhag === 'yireim') {
     minhag = 'ashkenaz';
-    chumrotMapped.bothOnotOnBeinonit = true;
-    chumrotMapped.bothOnotOnYomHaChodesh = true;
   }
 
   return {
     minhag,
-    chumrot: chumrotMapped,
+    chumrot: normalizeChumrot(data.chumrot, rawMinhag),
     notifications: mapNotifications(data),
     calendar: mapCalendar(data),
   };

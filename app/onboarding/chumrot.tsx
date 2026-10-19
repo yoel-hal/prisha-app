@@ -10,46 +10,14 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { DEFAULT_CHUMROT } from '../../src/calculations/chumrot';
 import type { Chumrot } from '../../src/calculations/types';
+import { ChumrotSettings } from '../../src/components/settings/ChumrotSettings';
 import OnboardingSkipButton from '../../src/components/onboarding/OnboardingSkipButton';
 import { useOnboardingStore } from '../../src/store/onboardingStore';
 import { textStartStyle } from '../../src/utils/rtl';
 import { webScreenScrollStyles } from '../../src/utils/webScroll';
-import { AppSwitch } from '../../src/components/common/AppSwitch';
 
-const DEFAULT_CHUMROT: Chumrot = {
-  kavuah: false,
-  veshetEinah: false,
-  onahBeinonitIfHaflaga: false,
-  bothOnotOnBeinonit: false,
-  bothOnotOnYomHaChodesh: false,
-};
-
-type ChumraKey = keyof Chumrot;
-
-const CHUMRA_ROWS: { key: ChumraKey; labelKey: string; descKey: string }[] = [
-  { key: 'kavuah', labelKey: 'chumrot.kavuah', descKey: 'chumrot.kavuahDesc' },
-  {
-    key: 'veshetEinah',
-    labelKey: 'chumrot.veshetEinah',
-    descKey: 'chumrot.veshetEinahDesc',
-  },
-  {
-    key: 'onahBeinonitIfHaflaga',
-    labelKey: 'chumrot.onahBeinonitIfHaflaga',
-    descKey: 'chumrot.onahBeinonitIfHaflagaDesc',
-  },
-  {
-    key: 'bothOnotOnBeinonit',
-    labelKey: 'chumrot.bothOnotOnBeinonit',
-    descKey: 'chumrot.bothOnotOnBeinonitDesc',
-  },
-  {
-    key: 'bothOnotOnYomHaChodesh',
-    labelKey: 'chumrot.bothOnotOnYomHaChodesh',
-    descKey: 'chumrot.bothOnotOnYomHaChodeshDesc',
-  },
-];
 
 export default function OnboardingChumrotScreen() {
   const webScroll = webScreenScrollStyles();
@@ -73,10 +41,6 @@ export default function OnboardingChumrotScreen() {
     [setStoreChumrot, router],
   );
 
-  function toggle(key: ChumraKey, value: boolean) {
-    setChumrot((prev) => ({ ...prev, [key]: value }));
-  }
-
   return (
     <SafeAreaView style={[styles.safe, webScroll.safe]} edges={['top', 'bottom']}>
       <OnboardingSkipButton onSkip={() => void goNext(DEFAULT_CHUMROT)} />
@@ -88,15 +52,7 @@ export default function OnboardingChumrotScreen() {
         </Text>
 
         <View style={styles.rows}>
-          {CHUMRA_ROWS.map((row) => (
-            <ChumraRow
-              key={row.key}
-              label={t(row.labelKey)}
-              description={t(row.descKey)}
-              value={chumrot[row.key]}
-              onValueChange={(value) => toggle(row.key, value)}
-            />
-          ))}
+          <ChumrotSettings chumrot={chumrot} onChange={setChumrot} />
         </View>
       </ScrollView>
 
@@ -110,28 +66,6 @@ export default function OnboardingChumrotScreen() {
         </Pressable>
       </View>
     </SafeAreaView>
-  );
-}
-
-function ChumraRow({
-  label,
-  description,
-  value,
-  onValueChange,
-}: {
-  label: string;
-  description: string;
-  value: boolean;
-  onValueChange: (next: boolean) => void;
-}) {
-  return (
-    <View style={styles.row}>
-      <View style={styles.rowText}>
-        <Text style={[styles.rowLabel, textStartStyle()]}>{label}</Text>
-        <Text style={[styles.rowDesc, textStartStyle()]}>{description}</Text>
-      </View>
-      <AppSwitch value={value} onValueChange={onValueChange} />
-    </View>
   );
 }
 
@@ -159,27 +93,6 @@ const styles = StyleSheet.create({
   rows: {
     gap: 4,
     marginTop: 8,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#eee',
-  },
-  rowText: {
-    flex: 1,
-    gap: 4,
-  },
-  rowLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  rowDesc: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: '#666',
   },
   footer: {
     paddingHorizontal: 20,
