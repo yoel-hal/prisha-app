@@ -6,6 +6,7 @@ import { PeriodForm } from '../../src/components/period/PeriodForm';
 import { WebMainContent } from '../../src/components/web/WebMainContent';
 import { DESKTOP_ADD_PERIOD_MAX_WIDTH } from '../../src/constants/layout';
 import { useDesktopWeb } from '../../src/hooks/useDesktopWeb';
+import { usePeriodDraftStore } from '../../src/store/periodDraftStore';
 import { textStartStyle } from '../../src/utils/rtl';
 import { webScreenScrollStyles } from '../../src/utils/webScroll';
 
@@ -13,11 +14,13 @@ export default function AddPeriodScreen() {
   const { t } = useTranslation();
   const isDesktopWeb = useDesktopWeb();
   const webScroll = webScreenScrollStyles();
+  // The tab stays mounted, so a new key is what clears the form after a save.
+  const formKey = usePeriodDraftStore((state) => state.formKey);
 
   const form = (
     <>
       <Text style={[styles.title, textStartStyle()]}>{t('period.add')}</Text>
-      <PeriodForm />
+      <PeriodForm key={formKey} />
     </>
   );
 
