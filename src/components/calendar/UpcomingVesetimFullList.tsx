@@ -31,8 +31,6 @@ function buildGroupedPeriods(
   otherUpcomingGroups: GroupedPeriod[];
   pastGroups: GroupedPeriod[];
 } {
-  const periodMap = new Map(periods.map((p) => [p.id, p]));
-
   const byPeriodId = new Map<string, VesetResult[]>();
   for (const veset of vesetim) {
     const list = byPeriodId.get(veset.sourcePeriodId) ?? [];
@@ -40,30 +38,31 @@ function buildGroupedPeriods(
     byPeriodId.set(veset.sourcePeriodId, list);
   }
 
-  const groups: GroupedPeriod[] = [];
-  for (const [sourcePeriodId, periodVesetim] of byPeriodId) {
-    const period = periodMap.get(sourcePeriodId);
-    if (!period) continue;
-
-    const sortedVesetim = [...periodVesetim].sort((a, b) =>
+  // One group per period, even with no vesatot left (only the latest period has an
+  // onah beinonit, and passed yom hachodesh results are dropped), so every past period
+  // stays listed and can be edited or deleted.
+  const groups: GroupedPeriod[] = periods.map((period) => ({
+    period,
+    vesetim: [...(byPeriodId.get(period.id) ?? [])].sort((a, b) =>
       a.dateGregorian.localeCompare(b.dateGregorian),
-    );
-
-    groups.push({ period, vesetim: sortedVesetim });
-  }
+    ),
+  }));
 
   groups.sort((a, b) =>
     b.period.dateGregorian.localeCompare(a.period.dateGregorian),
   );
 
+  const isUpcoming = (g: GroupedPeriod) =>
+    g.vesetim.some((v) => v.dateGregorian >= today) || g.period.dateGregorian >= today;
+
   const upcomingGroups = groups
-    .filter((g) => g.vesetim.some((v) => v.dateGregorian >= today))
+    .filter(isUpcoming)
     .sort((a, b) =>
       a.period.dateGregorian.localeCompare(b.period.dateGregorian),
     );
 
   const pastGroups = groups
-    .filter((g) => g.vesetim.every((v) => v.dateGregorian < today))
+    .filter((g) => !isUpcoming(g))
     .sort((a, b) =>
       b.period.dateGregorian.localeCompare(a.period.dateGregorian),
     );
@@ -323,6 +322,16 @@ function VesetimRows({
   t,
 }: VesetimRowsProps) {
   const { period } = group;
+
+  if (group.vesetim.length === 0) {
+    return (
+      <View style={styles.vesetimList}>
+        <Text style={[styles.haflagaNoData, textStartStyle()]}>
+          {t('period.noVesetimFromPeriod')}
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.vesetimList}>

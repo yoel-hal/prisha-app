@@ -46,7 +46,8 @@
     "haflagaNoData": "Not enough data",
     "sameDayTitle": "There is already a period on this date",
     "sameDayMessage": "There are no two periods on the same day: another sighting that day is the same one. If the date is wrong, edit the existing period.",
-    "vesetNone": "None"
+    "vesetNone": "None",
+    "noVesetimFromPeriod": "No vesatot from this period (onah beinonit counts from the latest period)."
   },
   "upcoming": {
     "edit": "Edit",
