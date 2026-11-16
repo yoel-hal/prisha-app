@@ -126,21 +126,21 @@ export function UpcomingVesetimList({ vesetim }: UpcomingVesetimListProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
     borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#e5e5e5',
+    borderColor: '#EAE3DD',
     padding: 20,
     minHeight: 320,
   },
   heading: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '600',
     marginBottom: 16,
   },
   empty: {
     fontSize: 15,
-    color: '#666',
+    color: '#5F5459',
     lineHeight: 22,
   },
   list: {
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#EAE3DD',
   },
   blockBadge: {
     alignSelf: 'flex-start',
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#EAE3DD',
   },
   vesetRowMuted: {
     opacity: 0.55,
@@ -192,11 +192,10 @@ const styles = StyleSheet.create({
   },
   vesetOnah: {
     fontSize: 14,
-    color: '#666',
+    color: '#5F5459',
   },
   haflagaNoData: {
     fontSize: 14,
-    color: '#888',
-    fontStyle: 'italic',
+    color: '#857A7F',
   },
 });

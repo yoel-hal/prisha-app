@@ -136,4 +136,17 @@ describe('onah beinonit', () => {
     expect(beinonit([A], chumrot(), 'chabad')).toEqual(['ליל ד׳ טבת', 'יום ד׳ טבת']);
     expect(beinonit([A_DAY], chumrot(), 'chabad')).toEqual(['יום ד׳ טבת']);
   });
+
+  // Owner's example: a period on א׳ חשוון, then another on כ״ח חשוון before its onah beinonit.
+  const CH1 = hp('ch1', 'day', 1, months.CHESHVAN, 5787);
+  const CH28 = hp('ch28', 'day', 28, months.CHESHVAN, 5787);
+
+  it('ב22: a new period does not cancel the earlier onah beinonit that has not come yet', () => {
+    expect(beinonit([CH1, CH28])).toEqual(['יום ל׳ חשון', 'יום כ״ז כסלו']);
+  });
+
+  it('ב23: an earlier onah beinonit on or before the latest period has passed', () => {
+    // ל׳ חשון is before a period on כ״ח כסלו, so only the latest one's is left.
+    expect(beinonit([CH1, hp('k28', 'day', 28, months.KISLEV, 5787)])).toEqual(['יום כ״ז טבת']);
+  });
 });

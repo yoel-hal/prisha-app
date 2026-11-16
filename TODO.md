@@ -1,6 +1,12 @@
 # Prisha Tracker — To Do
 
 ## Now
+- [ ] Hefsek tahara / seven clean days: deploy rules BEFORE web (`npm run test:rules`, then `firebase deploy --only firestore:rules`). Until then the card stays hidden and nothing else breaks
+- [ ] Hefsek tahara: go over `docs/הפסק-טהרה-ושבעה-נקיים.md` (§9 questions) with the rav
+- [ ] Hefsek tahara: test the reminders and the night-sky mikveh card on a phone (not checked: reminders don't run on web, and the mikveh card only shows on day 7)
+- [ ] Generate the 4 images in `docs/higgsfield-prompts.md` once there are Higgsfield credits, and place them
+- [ ] Consider a chosen Hebrew font (Heebo or Rubik via `@expo-google-fonts`) instead of the system font
+- [ ] Update `docs/חישובי-עונות-v1.docx` §2: onah beinonit comes from every period (a new period doesn't cancel an earlier one's), not only the latest
 - [ ] Decide the open questions in `docs/חישובי-עונות-v1.docx` §10 (Chabad, close sightings, kavuah both, Ohr Zarua on day 31 / haflaga, kavuah detection) and whether the app says "ask your rav"
 - [ ] Calendar sync: a night onah is an all-day event on the daytime's civil date; it starts the evening before
 - [ ] Test the new calendar, settings and night display on the iPhone simulator
@@ -50,7 +56,7 @@
 - [ ] Archive the old `~/FamilyPurityApp/TaharatApp` project (superseded by this one)
 
 ## Done
-- [x] v1 calculations: onah beinonit from the latest period only, Ohr Zarua / Kreisi uPleisi / Chavot Daat settings, short-month rule, kavuah, Hebrew-only ordering, one period per Hebrew date, duplicate-in-list fix, night shown as the evening it starts, night notifications a day late fixed
+- [x] v1 calculations (since changed: every period keeps its own onah beinonit until it passes), Ohr Zarua / Kreisi uPleisi / Chavot Daat settings, short-month rule, kavuah, Hebrew-only ordering, one period per Hebrew date, duplicate-in-list fix, night shown as the evening it starts, night notifications a day late fixed
 - [x] Add-period form resets after saving
 - [x] Firestore partner-access rules fixed, tested in the emulator (`npm run test:rules`) and deployed (Oct 16, 2026)
 - [x] Web app rebuilt and deployed to https://prisha-tracker.web.app

@@ -105,7 +105,7 @@ export function AppLockGate({ visible }: AppLockGateProps) {
           ) : (
             <View style={styles.biometricSection}>
               {biometricLoading ? (
-                <ActivityIndicator size="large" color="#1a1a1a" />
+                <ActivityIndicator size="large" color="#2A2226" />
               ) : (
                 <>
                   <Text style={[styles.biometricText, textStartStyle()]}>
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
     zIndex: 10000,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
   },
   safe: {
     flex: 1,
@@ -159,10 +159,10 @@ const styles = StyleSheet.create({
   },
   lockedTitle: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: '600',
     textAlign: 'center',
     marginBottom: 24,
-    color: '#1a1a1a',
+    color: '#2A2226',
   },
   biometricSection: {
     alignItems: 'center',
@@ -170,14 +170,14 @@ const styles = StyleSheet.create({
   },
   biometricText: {
     fontSize: 16,
-    color: '#444',
+    color: '#5F5459',
     textAlign: 'center',
   },
   retryButton: {
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 10,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
   },
   retryButtonText: {
     color: '#fff',

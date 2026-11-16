@@ -11,7 +11,7 @@ export const DESKTOP_MAIN_CONTENT_MAX_WIDTH = 900;
 export const DESKTOP_ADD_PERIOD_MAX_WIDTH = 560;
 
 /** Background of the main content area on desktop web. */
-export const DESKTOP_MAIN_BACKGROUND = '#f8f8f8';
+export const DESKTOP_MAIN_BACKGROUND = '#FBF8F5';
 
 /** Sidebar border color on desktop web. */
-export const DESKTOP_SIDEBAR_BORDER = '#e5e5e5';
+export const DESKTOP_SIDEBAR_BORDER = '#EAE3DD';

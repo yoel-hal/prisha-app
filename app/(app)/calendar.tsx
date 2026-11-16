@@ -3,7 +3,9 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -14,6 +16,7 @@ import { CalendarDayPanel } from '../../src/components/calendar/CalendarDayPanel
 import { CalendarDaySheet } from '../../src/components/calendar/CalendarDaySheet';
 import { CalendarView } from '../../src/components/calendar/CalendarView';
 import { UpcomingVesetimList } from '../../src/components/calendar/UpcomingVesetimList';
+import { TaharaCard } from '../../src/components/tahara/TaharaCard';
 import { WebMainContent } from '../../src/components/web/WebMainContent';
 import { useCalendar } from '../../src/hooks/useCalendar';
 import { useDesktopWeb } from '../../src/hooks/useDesktopWeb';
@@ -71,6 +74,7 @@ export default function CalendarScreen() {
         </View>
       ) : (
         <>
+          <TaharaCard />
           <CalendarView
             displayMonth={displayMonth}
             onDisplayMonthChange={setDisplayMonth}
@@ -81,7 +85,18 @@ export default function CalendarScreen() {
             selectedDate={selectedDate}
           />
           {!hasData ? (
-            <Text style={styles.empty}>{t('calendar.noData')}</Text>
+            <View style={styles.emptyWrap}>
+              <View style={styles.emptyImageWrap}>
+                <Image
+                  source={require('../../assets/images/empty-calendar-moons.jpg')}
+                  style={styles.emptyImage}
+                  resizeMode="cover"
+                  accessible={false}
+                  accessibilityIgnoresInvertColors
+                />
+              </View>
+              <Text style={styles.empty}>{t('calendar.noData')}</Text>
+            </View>
           ) : null}
         </>
       )}
@@ -119,7 +134,7 @@ export default function CalendarScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      {calendarBody}
+      <ScrollView contentContainerStyle={styles.scroll}>{calendarBody}</ScrollView>
       <CalendarDaySheet
         visible={selectedEvents.length > 0}
         selectedEvent={selectedEvents[0] ?? null}
@@ -134,7 +149,10 @@ export default function CalendarScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
+  },
+  scroll: {
+    paddingBottom: 24,
   },
   header: {
     paddingHorizontal: 20,
@@ -143,7 +161,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   centered: {
     flex: 1,
@@ -152,11 +170,24 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   loadingText: {
-    color: '#666',
+    color: '#5F5459',
   },
+  emptyWrap: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    gap: 12,
+  },
+  // A month of moons over the empty calendar: the lunar month this app counts by.
+  emptyImageWrap: {
+    width: '100%',
+    aspectRatio: 1000 / 402,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  emptyImage: { width: '100%', height: '100%' },
   empty: {
     textAlign: 'center',
-    color: '#666',
+    color: '#5F5459',
     padding: 20,
   },
   desktopRow: {
@@ -183,12 +214,12 @@ const styles = StyleSheet.create({
   },
   sideTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '600',
     flex: 1,
   },
   clearLink: {
     fontSize: 14,
-    color: '#1a1a1a',
+    color: '#2A2226',
     fontWeight: '500',
   },
 });

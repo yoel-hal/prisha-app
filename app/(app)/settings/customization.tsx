@@ -142,7 +142,7 @@ function MinhagCard({
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
   },
   scroll: {
     padding: 20,
@@ -152,8 +152,7 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#888',
-    textTransform: 'uppercase',
+    color: '#857A7F',
     marginBottom: 4,
   },
   sectionGap: {
@@ -164,18 +163,18 @@ const styles = StyleSheet.create({
   },
   card: {
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ddd',
+    borderColor: '#EAE3DD',
     borderRadius: 12,
     padding: 16,
     gap: 8,
   },
   cardSelected: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
+    borderColor: '#A8485F',
   },
   cardTitle: {
     fontSize: 17,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   cardTitleSelected: {
     color: '#fff',
@@ -183,9 +182,9 @@ const styles = StyleSheet.create({
   cardDesc: {
     fontSize: 14,
     lineHeight: 20,
-    color: '#555',
+    color: '#5F5459',
   },
   cardDescSelected: {
-    color: '#e0e0e0',
+    color: '#C9BFB9',
   },
 });

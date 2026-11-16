@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 export const authFormStyles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
   },
   flex: {
     flex: 1,
@@ -17,11 +17,11 @@ export const authFormStyles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#5F5459',
     marginBottom: 8,
   },
   field: {
@@ -30,33 +30,33 @@ export const authFormStyles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#444',
+    color: '#5F5459',
   },
   input: {
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ccc',
+    borderColor: '#DDD3CC',
     borderRadius: 10,
     paddingVertical: 14,
     paddingHorizontal: 16,
     fontSize: 16,
-    backgroundColor: '#fafafa',
+    backgroundColor: '#FFFFFF',
   },
   error: {
     fontSize: 14,
-    color: '#C62828',
-    backgroundColor: '#FFEBEE',
+    color: '#B3261E',
+    backgroundColor: '#FBEAE8',
     padding: 12,
     borderRadius: 8,
   },
   success: {
     fontSize: 14,
-    color: '#2E7D32',
-    backgroundColor: '#E8F5E9',
+    color: '#2F7D55',
+    backgroundColor: '#E6F2EB',
     padding: 12,
     borderRadius: 8,
   },
   primaryButton: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
     borderRadius: 10,
     paddingVertical: 16,
     alignItems: 'center',
@@ -72,9 +72,9 @@ export const authFormStyles = StyleSheet.create({
     opacity: 0.6,
   },
   secondaryButton: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#F4EFEA',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ddd',
+    borderColor: '#EAE3DD',
     borderRadius: 10,
     paddingVertical: 16,
     alignItems: 'center',
@@ -82,7 +82,7 @@ export const authFormStyles = StyleSheet.create({
     minHeight: 52,
   },
   secondaryButtonText: {
-    color: '#1a1a1a',
+    color: '#2A2226',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -96,7 +96,7 @@ export const authFormStyles = StyleSheet.create({
   },
   linkText: {
     fontSize: 15,
-    color: '#666',
+    color: '#5F5459',
   },
   linkAction: {
     fontSize: 15,
@@ -117,6 +117,6 @@ export const authFormStyles = StyleSheet.create({
   },
   backText: {
     fontSize: 15,
-    color: '#666',
+    color: '#5F5459',
   },
 });

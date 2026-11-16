@@ -23,6 +23,7 @@ export default function SettingsLayout() {
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" />
             <Stack.Screen name="customization" />
+            <Stack.Screen name="tahara" />
             <Stack.Screen name="notifications" />
             <Stack.Screen name="calendar-sync" />
             <Stack.Screen name="location" />
@@ -58,6 +59,7 @@ export default function SettingsLayout() {
       {/* The title is what the back button on sub-pages shows (otherwise the route name, "index"). */}
       <Stack.Screen name="index" options={{ headerShown: false, title: t('settings.title') }} />
       <Stack.Screen name="customization" />
+      <Stack.Screen name="tahara" />
       <Stack.Screen name="notifications" />
       <Stack.Screen name="calendar-sync" />
       <Stack.Screen name="location" />

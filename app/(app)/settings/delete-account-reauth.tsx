@@ -126,7 +126,7 @@ export default function DeleteAccountReauthScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
   },
   flex: {
     flex: 1,
@@ -137,11 +137,11 @@ const styles = StyleSheet.create({
   },
   message: {
     fontSize: 16,
-    color: '#444',
+    color: '#5F5459',
     lineHeight: 22,
   },
   deleteButton: {
-    backgroundColor: '#C62828',
+    backgroundColor: '#B3261E',
     borderRadius: 10,
     paddingVertical: 16,
     alignItems: 'center',

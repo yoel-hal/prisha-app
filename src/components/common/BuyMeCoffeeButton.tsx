@@ -13,7 +13,7 @@ export function BuyMeCoffeeButton() {
       style={styles.button}
       onPress={() => void Linking.openURL(BUY_ME_COFFEE_URL)}
     >
-      <Icon name="coffee" size={18} color="#1a1a1a" />
+      <Icon name="coffee" size={18} color="#2A2226" />
       <Text style={styles.label}>Buy Me a Coffee</Text>
     </Pressable>
   );
@@ -26,15 +26,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#e5e5e5',
+    borderColor: '#EAE3DD',
     borderRadius: 10,
     paddingVertical: 12,
     paddingHorizontal: 14,
-    backgroundColor: '#fafafa',
+    backgroundColor: '#FFFFFF',
   },
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: '#2A2226',
   },
 });

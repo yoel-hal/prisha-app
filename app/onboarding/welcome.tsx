@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+
 export default function WelcomeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -15,19 +16,18 @@ export default function WelcomeScreen() {
           <Text style={styles.tagline}>{t('onboarding.tagline')}</Text>
         </View>
 
-        <Pressable
-          style={styles.primaryButton}
-          onPress={() => router.push('/onboarding/language')}
-        >
-          <Text style={styles.primaryButtonText}>{t('onboarding.getStarted')}</Text>
-        </Pressable>
+        <View style={styles.actions}>
+          <Pressable
+            style={styles.primaryButton}
+            onPress={() => router.push('/onboarding/language')}
+          >
+            <Text style={styles.primaryButtonText}>{t('onboarding.getStarted')}</Text>
+          </Pressable>
 
-        <Pressable
-          style={styles.secondaryButton}
-          onPress={() => router.push('/join')}
-        >
-          <Text style={styles.secondaryButtonText}>{t('partner.haveInvite')}</Text>
-        </Pressable>
+          <Pressable style={styles.secondaryButton} onPress={() => router.push('/join')}>
+            <Text style={styles.secondaryButtonText}>{t('partner.haveInvite')}</Text>
+          </Pressable>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -36,32 +36,36 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
   },
   content: {
     flex: 1,
     paddingHorizontal: 24,
     justifyContent: 'center',
-    gap: 48,
+    gap: 40,
   },
   hero: {
     alignItems: 'center',
     gap: 12,
   },
   title: {
+    color: '#2A2226',
     fontSize: 26,
-    fontWeight: '700',
+    fontWeight: '600',
     textAlign: 'center',
     lineHeight: 34,
   },
   tagline: {
     fontSize: 17,
-    color: '#666',
+    color: '#5F5459',
     textAlign: 'center',
     lineHeight: 24,
   },
+  actions: {
+    gap: 12,
+  },
   primaryButton: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
@@ -76,11 +80,11 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ccc',
+    borderColor: '#DDD3CC',
   },
   secondaryButtonText: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: '#2A2226',
   },
 });

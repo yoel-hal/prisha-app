@@ -92,7 +92,7 @@ export default function OnboardingRegisterScreen() {
               editable={!loading}
               textAlign={textStart}
               placeholder={t('onboarding.firstNamePlaceholder')}
-              placeholderTextColor="#999"
+              placeholderTextColor="#857A7F"
             />
           </View>
 
@@ -111,7 +111,7 @@ export default function OnboardingRegisterScreen() {
               editable={!loading}
               textAlign={textStart}
               placeholder={t('onboarding.lastNamePlaceholder')}
-              placeholderTextColor="#999"
+              placeholderTextColor="#857A7F"
             />
           </View>
 
@@ -142,7 +142,7 @@ export default function OnboardingRegisterScreen() {
               editable={!loading}
               textAlign={textStart}
               placeholder={t('onboarding.phonePlaceholder')}
-              placeholderTextColor="#999"
+              placeholderTextColor="#857A7F"
             />
           </View>
 
@@ -167,7 +167,7 @@ export default function OnboardingRegisterScreen() {
               editable={!loading}
               textAlign={textStart}
               placeholder={t('auth.emailPlaceholder')}
-              placeholderTextColor="#999"
+              placeholderTextColor="#857A7F"
               returnKeyType="next"
               blurOnSubmit={false}
               onSubmitEditing={() => passwordRef.current?.focus()}
@@ -189,7 +189,7 @@ export default function OnboardingRegisterScreen() {
               editable={!loading}
               textAlign={textStart}
               placeholder={t('auth.passwordPlaceholder')}
-              placeholderTextColor="#999"
+              placeholderTextColor="#857A7F"
               returnKeyType="next"
               blurOnSubmit={false}
               onSubmitEditing={() => confirmPasswordRef.current?.focus()}
@@ -213,7 +213,7 @@ export default function OnboardingRegisterScreen() {
               editable={!loading}
               textAlign={textStart}
               placeholder={t('auth.passwordPlaceholder')}
-              placeholderTextColor="#999"
+              placeholderTextColor="#857A7F"
               returnKeyType="done"
               onSubmitEditing={handleSubmit}
             />

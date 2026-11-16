@@ -64,7 +64,7 @@ export function ProfileFormFields({
           editable={!disabled}
           textAlign={textStart}
           placeholder={t('onboarding.firstNamePlaceholder')}
-          placeholderTextColor="#999"
+          placeholderTextColor="#857A7F"
           returnKeyType="next"
           blurOnSubmit={false}
           onSubmitEditing={() => lastNameRef.current?.focus()}
@@ -84,7 +84,7 @@ export function ProfileFormFields({
           editable={!disabled}
           textAlign={textStart}
           placeholder={t('onboarding.lastNamePlaceholder')}
-          placeholderTextColor="#999"
+          placeholderTextColor="#857A7F"
           returnKeyType="next"
           blurOnSubmit={false}
           onSubmitEditing={() => {
@@ -121,7 +121,7 @@ export function ProfileFormFields({
           editable={!disabled}
           textAlign={textStart}
           placeholder={t('onboarding.phonePlaceholder')}
-          placeholderTextColor="#999"
+          placeholderTextColor="#857A7F"
           returnKeyType="done"
           onSubmitEditing={onPhoneSubmitEditing}
         />
@@ -140,17 +140,17 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#444',
+    color: '#5F5459',
   },
   input: {
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ccc',
+    borderColor: '#DDD3CC',
     borderRadius: 10,
     paddingVertical: 14,
     paddingHorizontal: 16,
     fontSize: 16,
-    color: '#1a1a1a',
-    backgroundColor: '#fafafa',
+    color: '#2A2226',
+    backgroundColor: '#FFFFFF',
     minHeight: 48,
   },
 });

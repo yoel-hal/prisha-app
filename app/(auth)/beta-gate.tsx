@@ -81,7 +81,7 @@ export default function BetaGateScreen() {
           <Animated.View style={shakeStyle} className="gap-8">
             <View className="items-center gap-6">
               <View className="items-center gap-2">
-                <Text className="text-center text-2xl font-bold text-neutral-900">
+                <Text className="text-center text-2xl font-semibold text-neutral-900">
                   {t('betaGate.title', { lng: 'he' })}
                 </Text>
                 <Text className="text-center text-base text-neutral-500">
@@ -90,7 +90,7 @@ export default function BetaGateScreen() {
               </View>
 
               <View className="items-center gap-2">
-                <Text className="text-center text-2xl font-bold text-neutral-900">
+                <Text className="text-center text-2xl font-semibold text-neutral-900">
                   {t('betaGate.title', { lng: 'en' })}
                 </Text>
                 <Text className="text-center text-base text-neutral-500">
@@ -112,7 +112,7 @@ export default function BetaGateScreen() {
                   }
                 }}
                 placeholder={t('betaGate.codePlaceholder')}
-                placeholderTextColor="#999"
+                placeholderTextColor="#857A7F"
                 keyboardType="number-pad"
                 inputMode="numeric"
                 maxLength={6}

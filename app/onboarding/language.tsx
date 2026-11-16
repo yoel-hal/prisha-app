@@ -75,7 +75,7 @@ function LanguageCard({
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
   },
   content: {
     flex: 1,
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: '600',
     textAlign: 'center',
     lineHeight: 30,
   },
@@ -95,15 +95,15 @@ const styles = StyleSheet.create({
   },
   card: {
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ddd',
+    borderColor: '#EAE3DD',
     borderRadius: 14,
     paddingVertical: 28,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cardSelected: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
+    borderColor: '#A8485F',
   },
   cardLabel: {
     fontSize: 22,
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   primaryButton: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',

@@ -274,7 +274,7 @@ export default function PrivacySettingsScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
   },
   scrollContent: {
     padding: 20,
@@ -282,8 +282,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#1a1a1a',
+    fontWeight: '600',
+    color: '#2A2226',
   },
   row: {
     flexDirection: 'row',
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 12,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#e5e5e5',
+    borderColor: '#EAE3DD',
     borderRadius: 12,
     paddingHorizontal: 16,
   },
@@ -303,11 +303,11 @@ const styles = StyleSheet.create({
   rowLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: '#2A2226',
   },
   rowHint: {
     fontSize: 14,
-    color: '#666',
+    color: '#5F5459',
   },
   modalBackdrop: {
     flex: 1,
@@ -316,24 +316,24 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   modalCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
     borderRadius: 16,
     padding: 20,
     gap: 8,
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '600',
     marginBottom: 8,
   },
   typeOption: {
     paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#EAE3DD',
   },
   typeOptionText: {
     fontSize: 16,
-    color: '#1a1a1a',
+    color: '#2A2226',
   },
   cancelOption: {
     paddingVertical: 14,
@@ -341,11 +341,11 @@ const styles = StyleSheet.create({
   },
   cancelOptionText: {
     fontSize: 16,
-    color: '#666',
+    color: '#5F5459',
   },
   pinModalBackdrop: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
     justifyContent: 'center',
     padding: 24,
   },

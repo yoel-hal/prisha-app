@@ -7,6 +7,7 @@ import { DESKTOP_MAIN_BACKGROUND } from '../../constants/layout';
 
 const DETAIL_SEGMENTS = new Set([
   'customization',
+  'tahara',
   'notifications',
   'calendar-sync',
   'location',
@@ -54,18 +55,18 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   profileHeader: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
     borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#e5e5e5',
+    borderColor: '#EAE3DD',
     paddingHorizontal: 16,
   },
   detailPanel: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
     borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#e5e5e5',
+    borderColor: '#EAE3DD',
     overflow: 'hidden',
     minHeight: 320,
   },

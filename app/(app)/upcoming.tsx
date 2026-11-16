@@ -42,7 +42,7 @@ export default function UpcomingScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
   },
   content: {
     flex: 1,
@@ -51,16 +51,16 @@ const styles = StyleSheet.create({
   },
   desktopCard: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
     borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#e5e5e5',
+    borderColor: '#EAE3DD',
     padding: 24,
     gap: 16,
     minHeight: 400,
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '600',
   },
 });

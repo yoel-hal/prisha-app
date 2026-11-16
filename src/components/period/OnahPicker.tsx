@@ -62,14 +62,14 @@ const styles = StyleSheet.create({
   button: {
     flex: 1,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ccc',
+    borderColor: '#DDD3CC',
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: 'center',
   },
   buttonSelected: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
+    borderColor: '#A8485F',
   },
   buttonText: {
     fontSize: 16,

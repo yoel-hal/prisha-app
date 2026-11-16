@@ -1,15 +1,17 @@
-import * as Notifications from 'expo-notifications';
 import * as Calendar from 'expo-calendar';
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { VesetResult, VesetType } from '../../calculations/types';
 import { useCalendarSync } from '../../hooks/useCalendarSync';
 import { useNotifications } from '../../hooks/useNotifications';
 import { useOnahDateFormat } from '../../hooks/useOnahDateFormat';
 import { useSettingsStore } from '../../store/settingsStore';
+import { currentZmanimPlace } from '../../store/zmanimLocationStore';
 import type { CalendarDayEvent } from '../../utils/calendarMarkers';
+import { downloadIcs, googleCalendarUrl } from '../../utils/ics';
+import { runCalendarEventBounds, vesetRuns } from '../../utils/vesetSchedule';
 import { textStartStyle } from '../../utils/rtl';
 
 export interface CalendarDayPanelProps {
@@ -85,140 +87,139 @@ function VesetActions({
   vesetId: string;
   vesetim: VesetResult[];
 }) {
-  const { t } = useTranslation();
   const veset = vesetim.find((item) => item.id === vesetId);
+  if (!veset) {
+    return null;
+  }
+  // A browser can't write to the device calendar or keep reminders, so the web offers a
+  // calendar file and a Google Calendar link instead, and no reminder button.
+  return Platform.OS === 'web' ? (
+    <WebCalendarActions veset={veset} vesetim={vesetim} />
+  ) : (
+    <NativeVesetActions veset={veset} />
+  );
+}
+
+function WebCalendarActions({ veset, vesetim }: { veset: VesetResult; vesetim: VesetResult[] }) {
+  const { t } = useTranslation();
+  const calendarTitle = useSettingsStore((state) => state.calendar.eventTitle);
+  const formatOnah = useOnahDateFormat();
+
+  // The whole run of consecutive onot (e.g. with Ohr Zarua) is one event.
+  const run = vesetRuns(vesetim).find((r) => r.some((v) => v.id === veset.id)) ?? [veset];
+  const { startDate, endDate } = runCalendarEventBounds(run, currentZmanimPlace());
+  const event = {
+    uid: run[0]!.id,
+    title: calendarTitle,
+    description: `${t(vesetTranslationKey(veset.type))}: ${run
+      .map((v) => formatOnah(v.dateHebrew, v.onah).hebrew)
+      .join(', ')}`,
+    start: startDate,
+    end: endDate,
+  };
+
+  return (
+    <View style={styles.actions}>
+      <Pressable
+        style={styles.actionButton}
+        onPress={() => downloadIcs(event, `${run[0]!.dateGregorian}.ics`)}
+      >
+        <Text style={styles.actionText}>{t('calendar.downloadIcs')}</Text>
+      </Pressable>
+      <Pressable
+        style={styles.actionButton}
+        onPress={() => void Linking.openURL(googleCalendarUrl(event))}
+      >
+        <Text style={styles.actionText}>{t('calendar.addToGoogle')}</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+/**
+ * Phone: add to the device calendar or set a reminder. Tapping asks for permission
+ * when needed; a refusal is shown only right after the tap, not every visit.
+ */
+function NativeVesetActions({ veset }: { veset: VesetResult }) {
+  const { t } = useTranslation();
   const calendarTitle = useSettingsStore((state) => state.calendar.eventTitle);
   const leadHours = useSettingsStore((state) => state.notifications.leadHours);
   const { addVesetToCalendar } = useCalendarSync();
   const { scheduleVesetNotification, requestPermission } = useNotifications();
-  const [calendarGranted, setCalendarGranted] = useState<boolean | null>(null);
-  const [notificationsGranted, setNotificationsGranted] = useState<
-    boolean | null
-  >(null);
-  const [calendarFeedback, setCalendarFeedback] = useState<string | null>(null);
-  const [reminderFeedback, setReminderFeedback] = useState<string | null>(null);
+  const [calendarFeedback, setCalendarFeedback] = useState<Feedback | null>(null);
+  const [reminderFeedback, setReminderFeedback] = useState<Feedback | null>(null);
   const [busy, setBusy] = useState<'calendar' | 'reminder' | null>(null);
-
-  const refreshPermissions = useCallback(async () => {
-    if (Platform.OS === 'web') {
-      setCalendarGranted(false);
-      setNotificationsGranted(false);
-      return;
-    }
-
-    const calendarStatus = await Calendar.getCalendarPermissionsAsync();
-    setCalendarGranted(calendarStatus.status === 'granted');
-
-    const notificationStatus = await Notifications.getPermissionsAsync();
-    setNotificationsGranted(notificationStatus.status === 'granted');
-  }, []);
-
-  useEffect(() => {
-    if (veset) {
-      void refreshPermissions();
-    }
-  }, [veset, refreshPermissions]);
-
-  if (!veset) {
-    return null;
-  }
-
-  const vesetResult = veset;
 
   async function handleAddToCalendar() {
     setCalendarFeedback(null);
     setBusy('calendar');
-
-    let granted = calendarGranted;
-    if (!granted) {
-      const { status } = await Calendar.requestCalendarPermissionsAsync();
-      granted = status === 'granted';
-      setCalendarGranted(granted);
-    }
-
-    if (!granted) {
-      setCalendarFeedback(t('calendar.permissionDenied'));
-      setBusy(null);
-      return;
-    }
-
     try {
-      await addVesetToCalendar(vesetResult, calendarTitle);
-      setCalendarFeedback(t('calendar.addSuccess'));
+      const current = await Calendar.getCalendarPermissionsAsync();
+      const granted =
+        current.status === 'granted' ||
+        (await Calendar.requestCalendarPermissionsAsync()).status === 'granted';
+      if (!granted) {
+        setCalendarFeedback({ text: t('calendar.permissionDenied'), error: true });
+        return;
+      }
+      await addVesetToCalendar(veset, calendarTitle);
+      setCalendarFeedback({ text: t('calendar.addSuccess'), error: false });
     } catch {
-      setCalendarFeedback(t('calendar.addError'));
+      setCalendarFeedback({ text: t('calendar.addError'), error: true });
+    } finally {
+      setBusy(null);
     }
-
-    setBusy(null);
   }
 
   async function handleSetReminder() {
     setReminderFeedback(null);
     setBusy('reminder');
-
-    let granted = notificationsGranted;
-    if (!granted) {
-      granted = await requestPermission();
-      setNotificationsGranted(granted);
-    }
-
-    if (!granted) {
-      setReminderFeedback(t('notifications.permissionDenied'));
-      setBusy(null);
-      return;
-    }
-
     try {
-      await scheduleVesetNotification(vesetResult, leadHours);
-      setReminderFeedback(t('reminder.success'));
+      if (!(await requestPermission())) {
+        setReminderFeedback({ text: t('notifications.permissionDenied'), error: true });
+        return;
+      }
+      await scheduleVesetNotification(veset, leadHours);
+      setReminderFeedback({ text: t('reminder.success'), error: false });
     } catch {
-      setReminderFeedback(t('reminder.error'));
+      setReminderFeedback({ text: t('reminder.error'), error: true });
+    } finally {
+      setBusy(null);
     }
-
-    setBusy(null);
   }
 
   return (
     <View style={styles.actions}>
       <Pressable
-        style={[
-          styles.actionButton,
-          (calendarGranted !== true || busy === 'calendar') && styles.actionDisabled,
-        ]}
+        style={[styles.actionButton, busy === 'calendar' && styles.actionDisabled]}
         onPress={() => void handleAddToCalendar()}
-        disabled={calendarGranted !== true || busy === 'calendar'}
+        disabled={busy !== null}
       >
         <Text style={styles.actionText}>{t('calendar.addToCalendar')}</Text>
       </Pressable>
-      {calendarGranted === false ? (
-        <Text style={[styles.permissionHint, textStartStyle()]}>
-          {t('calendar.permissionDenied')}
-        </Text>
-      ) : null}
-      {calendarFeedback ? (
-        <Text style={[styles.feedback, textStartStyle()]}>{calendarFeedback}</Text>
-      ) : null}
+      {calendarFeedback ? <FeedbackText feedback={calendarFeedback} /> : null}
 
       <Pressable
-        style={[
-          styles.actionButton,
-          (notificationsGranted !== true || busy === 'reminder') &&
-            styles.actionDisabled,
-        ]}
+        style={[styles.actionButton, busy === 'reminder' && styles.actionDisabled]}
         onPress={() => void handleSetReminder()}
-        disabled={notificationsGranted !== true || busy === 'reminder'}
+        disabled={busy !== null}
       >
         <Text style={styles.actionText}>{t('reminder.set')}</Text>
       </Pressable>
-      {notificationsGranted === false ? (
-        <Text style={[styles.permissionHint, textStartStyle()]}>
-          {t('notifications.permissionDenied')}
-        </Text>
-      ) : null}
-      {reminderFeedback ? (
-        <Text style={[styles.feedback, textStartStyle()]}>{reminderFeedback}</Text>
-      ) : null}
+      {reminderFeedback ? <FeedbackText feedback={reminderFeedback} /> : null}
     </View>
+  );
+}
+
+type Feedback = { text: string; error: boolean };
+
+function FeedbackText({ feedback }: { feedback: Feedback }) {
+  return (
+    <Text
+      style={[feedback.error ? styles.permissionHint : styles.feedback, textStartStyle()]}
+    >
+      {feedback.text}
+    </Text>
   );
 }
 
@@ -226,17 +227,17 @@ const styles = StyleSheet.create({
   reasonLine: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#3730a3',
+    color: '#A8485F',
   },
   container: {
     gap: 12,
   },
   eventCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
     borderRadius: 12,
     padding: 16,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#e5e5e5',
+    borderColor: '#EAE3DD',
     gap: 12,
   },
   eventBlock: {
@@ -244,18 +245,18 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   row: {
     fontSize: 16,
-    color: '#444',
+    color: '#5F5459',
   },
   actions: {
     gap: 10,
   },
   actionButton: {
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ccc',
+    borderColor: '#DDD3CC',
     borderRadius: 10,
     paddingVertical: 12,
     alignItems: 'center',
@@ -269,10 +270,10 @@ const styles = StyleSheet.create({
   },
   permissionHint: {
     fontSize: 13,
-    color: '#c62828',
+    color: '#B3261E',
   },
   feedback: {
     fontSize: 13,
-    color: '#2e7d32',
+    color: '#2F7D55',
   },
 });

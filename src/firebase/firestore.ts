@@ -1220,6 +1220,8 @@ async function deleteCoupleWithSubcollections(coupleId: string): Promise<void> {
   await deleteAllDocsInCollection(
     collection(db, 'couples', coupleId, 'settings'),
   );
+  await deleteAllDocsInCollection(collection(db, 'couples', coupleId, 'taharaCycles'));
+  await deleteAllDocsInCollection(collection(db, 'couples', coupleId, 'taharaSettings'));
   await deleteDoc(couplePublicInviteRef(coupleId)).catch(() => undefined);
   await deleteDoc(coupleRef(coupleId));
 }

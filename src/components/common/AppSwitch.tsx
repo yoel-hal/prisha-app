@@ -1,7 +1,7 @@
 import { Platform, Switch, type SwitchProps } from 'react-native';
 
-const TRACK_OFF = '#d4d4d4';
-const TRACK_ON = '#1a1a1a';
+const TRACK_OFF = '#DDD3CC';
+const TRACK_ON = '#A8485F';
 
 // React Native Web colours the "on" thumb with its own prop, which the native types don't declare.
 const webOnlyProps = (Platform.OS === 'web' ? { activeThumbColor: '#fff' } : {}) as object;

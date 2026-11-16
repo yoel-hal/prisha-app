@@ -112,7 +112,7 @@ export function PinKeypad({ title, subtitle, error, onComplete }: PinKeypadProps
                 accessibilityRole="button"
                 accessibilityLabel="Backspace"
               >
-                <Icon name="delete" size={22} color="#1a1a1a" />
+                <Icon name="delete" size={22} color="#2A2226" />
               </Pressable>
             );
           }
@@ -144,13 +144,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#1a1a1a',
+    fontWeight: '600',
+    color: '#2A2226',
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 15,
-    color: '#666',
+    color: '#5F5459',
     textAlign: 'center',
   },
   dotsRow: {
@@ -163,16 +163,16 @@ const styles = StyleSheet.create({
     height: 14,
     borderRadius: 7,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#999',
+    borderColor: '#DDD3CC',
     backgroundColor: 'transparent',
   },
   dotFilled: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
+    borderColor: '#A8485F',
   },
   error: {
     fontSize: 14,
-    color: '#C62828',
+    color: '#B3261E',
     textAlign: 'center',
   },
   keypad: {
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: '#F4EFEA',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -198,6 +198,6 @@ const styles = StyleSheet.create({
   keyText: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: '#2A2226',
   },
 });

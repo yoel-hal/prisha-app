@@ -49,10 +49,10 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#e5e5e5',
+    borderColor: '#EAE3DD',
     padding: 16,
     gap: 12,
-    backgroundColor: '#fafafa',
+    backgroundColor: '#FFFFFF',
   },
   badge: {
     alignSelf: 'flex-start',
@@ -73,11 +73,10 @@ const styles = StyleSheet.create({
   },
   gregorianDate: {
     fontSize: 14,
-    color: '#555',
+    color: '#5F5459',
   },
   empty: {
     fontSize: 15,
-    color: '#888',
-    fontStyle: 'italic',
+    color: '#857A7F',
   },
 });

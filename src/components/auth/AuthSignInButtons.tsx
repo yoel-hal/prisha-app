@@ -90,7 +90,7 @@ function AuthSignInButtons({ emailRoute = '/register' }: AuthSignInButtonsProps)
         onPress={handleEmailSignIn}
         disabled={loading}
       >
-        <Icon name="at-sign" size={20} color="#1a1a1a" />
+        <Icon name="at-sign" size={20} color="#2A2226" />
         <Text style={[styles.buttonText, styles.emailButtonText]}>
           {t('auth.continueWithEmail')}
         </Text>
@@ -118,9 +118,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
   },
   emailButton: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#F4EFEA',
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#EAE3DD',
   },
   buttonText: {
     fontSize: 16,
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   emailButtonText: {
-    color: '#1a1a1a',
+    color: '#2A2226',
   },
 });
 

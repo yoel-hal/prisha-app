@@ -84,7 +84,7 @@ export default function JoinPartnerScreen() {
           autoCapitalize="characters"
           autoCorrect={false}
           placeholder="XXXXXXXXXXXX"
-          placeholderTextColor="#999"
+          placeholderTextColor="#857A7F"
         />
 
         <Text style={[styles.label, textStartStyle()]}>{t('partner.enterPin')}</Text>
@@ -96,7 +96,7 @@ export default function JoinPartnerScreen() {
           keyboardType="number-pad"
           secureTextEntry
           placeholder="••••"
-          placeholderTextColor="#999"
+          placeholderTextColor="#857A7F"
         />
 
         {error ? (
@@ -114,6 +114,15 @@ export default function JoinPartnerScreen() {
             <Text style={styles.buttonText}>{t('partner.connect')}</Text>
           )}
         </Pressable>
+
+        <Pressable
+          accessibilityRole="link"
+          style={styles.backLink}
+          hitSlop={8}
+          onPress={() => (router.canGoBack() ? router.back() : router.replace('/onboarding/login'))}
+        >
+          <Text style={styles.backLinkText}>{t('partner.backToSignIn')}</Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
@@ -122,7 +131,7 @@ export default function JoinPartnerScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
   },
   content: {
     flex: 1,
@@ -130,25 +139,35 @@ const styles = StyleSheet.create({
     paddingTop: 32,
     gap: 12,
   },
+  backLink: {
+    alignSelf: 'center',
+    paddingVertical: 8,
+    marginTop: 4,
+  },
+  backLinkText: {
+    fontSize: 15,
+    color: '#A8485F',
+    fontWeight: '500',
+  },
   logo: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: '600',
     textAlign: 'center',
     marginBottom: 8,
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   description: {
     fontSize: 16,
-    color: '#666',
+    color: '#5F5459',
     marginBottom: 12,
   },
   notice: {
     fontSize: 14,
-    color: '#8A5A00',
-    backgroundColor: '#FFF4E0',
+    color: '#7A5A14',
+    backgroundColor: '#F5EEE6',
     borderRadius: 8,
     padding: 12,
     marginBottom: 12,
@@ -156,12 +175,12 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#444',
+    color: '#5F5459',
     marginTop: 8,
   },
   input: {
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ccc',
+    borderColor: '#DDD3CC',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -169,12 +188,12 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
   error: {
-    color: '#C62828',
+    color: '#B3261E',
     fontSize: 14,
     marginTop: 4,
   },
   button: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',

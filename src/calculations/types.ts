@@ -104,3 +104,40 @@ export type VesetResult = {
   isKavuah: boolean;
   reasons: VesetReason[];
 };
+
+/** The two checks of each of the seven clean days. */
+export type CheckTime = "morning" | "evening";
+
+export type CheckResult = "clean" | "notClean";
+
+/** Key of one check in `TaharaCycle.checks`, e.g. "3-morning" (clean day 3). */
+export type CheckKey = `${number}-${CheckTime}`;
+
+/**
+ * One hefsek tahara and the seven clean days after it.
+ * - active: counting (or finished counting; the mikveh night follows day 7)
+ * - restarted: a check wasn't clean; a new hefsek starts a new cycle
+ */
+export type TaharaCycle = {
+  id: string;
+  /** The period this hefsek ends. */
+  periodId: string;
+  /** Civil date of the (daytime) hefsek; the clean days start the next day. */
+  hefsekDateGregorian: string;
+  hefsekDateHebrew: HebrewDate;
+  checks: Partial<Record<CheckKey, CheckResult>>;
+  status: "active" | "restarted";
+  createdAt: string;
+  createdBy: string;
+};
+
+export type HefsekMinDays = 4 | 5;
+
+export type TaharaSettings = {
+  /** Show the hefsek and seven clean days card. Optional; on by default. */
+  enabled: boolean;
+  /** null = by minhag (5 for Ashkenaz and Chabad, 4 for Sfarad and Teimani). */
+  minDaysOverride: HefsekMinDays | null;
+  /** Reminders for the hefsek and the daily checks. Optional; off by default. */
+  remindersEnabled: boolean;
+};

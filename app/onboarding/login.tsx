@@ -71,7 +71,7 @@ export default function OnboardingLoginScreen() {
               editable={!loading}
               textAlign={textStart}
               placeholder={t('auth.emailPlaceholder')}
-              placeholderTextColor="#999"
+              placeholderTextColor="#857A7F"
               returnKeyType="next"
               blurOnSubmit={false}
               onSubmitEditing={() => passwordRef.current?.focus()}
@@ -93,7 +93,7 @@ export default function OnboardingLoginScreen() {
               editable={!loading}
               textAlign={textStart}
               placeholder={t('auth.passwordPlaceholder')}
-              placeholderTextColor="#999"
+              placeholderTextColor="#857A7F"
               returnKeyType="done"
               onSubmitEditing={handleSubmit}
             />

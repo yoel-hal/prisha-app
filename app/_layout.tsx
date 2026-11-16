@@ -459,23 +459,23 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
     gap: 12,
     zIndex: 1,
   },
   loadingText: {
     fontSize: 16,
-    color: '#666',
+    color: '#5F5459',
   },
   lockHydrationVeil: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
     zIndex: 9999,
   },
 });

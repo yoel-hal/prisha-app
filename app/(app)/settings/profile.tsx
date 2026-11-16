@@ -225,7 +225,7 @@ function LanguageButton({
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
   },
   scroll: {
     flex: 1,
@@ -241,13 +241,13 @@ const styles = StyleSheet.create({
   },
   partnerNote: {
     fontSize: 15,
-    color: '#3a5a9a',
+    color: '#A8485F',
     lineHeight: 22,
   },
   sectionLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#444',
+    color: '#5F5459',
     marginBottom: -12,
   },
   languageRow: {
@@ -257,25 +257,25 @@ const styles = StyleSheet.create({
   languageButton: {
     flex: 1,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ddd',
+    borderColor: '#EAE3DD',
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: 'center',
   },
   languageButtonActive: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
+    borderColor: '#A8485F',
   },
   languageButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: '#2A2226',
   },
   languageButtonTextActive: {
     color: '#fff',
   },
   saveButton: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
     borderRadius: 10,
     paddingVertical: 16,
     alignItems: 'center',

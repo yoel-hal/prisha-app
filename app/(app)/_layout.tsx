@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { AppState, Platform, StyleSheet, View } from 'react-native';
 
 import { NotificationScheduler } from '../../src/components/app/NotificationScheduler';
+import { TaharaNotificationScheduler } from '../../src/components/app/TaharaNotificationScheduler';
 import { AppBanner } from '../../src/components/common/AppBanner';
 import { PartnerModeBanner } from '../../src/components/common/PartnerModeBanner';
 import { WebAppShell } from '../../src/components/web/WebAppShell';
@@ -14,6 +15,7 @@ import { getPartnerAccessStatus } from '../../src/firebase/firestore';
 import { useCouple } from '../../src/hooks/useCouple';
 import { useDesktopWeb } from '../../src/hooks/useDesktopWeb';
 import { usePeriods } from '../../src/hooks/usePeriods';
+import { useTaharaSync } from '../../src/hooks/useTahara';
 import { useAuthStore } from '../../src/store/authStore';
 import { clearPartnerSession } from '../../src/utils/partnerSession';
 
@@ -27,6 +29,7 @@ export default function AppLayout() {
   const isDesktopWeb = useDesktopWeb();
   usePeriods();
   useCouple();
+  useTaharaSync();
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextState) => {
@@ -66,6 +69,7 @@ export default function AppLayout() {
   return (
     <>
       <NotificationScheduler />
+      <TaharaNotificationScheduler />
       <WebAppShell>
         <View style={styles.tabsHost}>
           <PartnerModeBanner />
@@ -75,8 +79,8 @@ export default function AppLayout() {
               lazy: true,
               tabBarHideOnKeyboard: false,
               tabBarShowLabel: true,
-              tabBarActiveTintColor: '#1a1a1a',
-              tabBarInactiveTintColor: '#999999',
+              tabBarActiveTintColor: '#A8485F',
+              tabBarInactiveTintColor: '#857A7F',
               tabBarLabelStyle: {
                 fontSize: 12,
               },
@@ -84,18 +88,18 @@ export default function AppLayout() {
                 ? styles.tabBarHidden
                 : Platform.select({
                     android: {
-                      borderTopColor: '#e5e5e5',
+                      borderTopColor: '#EAE3DD',
                       borderTopWidth: StyleSheet.hairlineWidth,
                       elevation: 8,
                     },
                     // The default 49pt bar clips the labels in browsers, where text lines are taller.
                     web: {
-                      borderTopColor: '#e5e5e5',
+                      borderTopColor: '#EAE3DD',
                       borderTopWidth: StyleSheet.hairlineWidth,
                       height: 60,
                     },
                     default: {
-                      borderTopColor: '#e5e5e5',
+                      borderTopColor: '#EAE3DD',
                       borderTopWidth: StyleSheet.hairlineWidth,
                     },
                   }),

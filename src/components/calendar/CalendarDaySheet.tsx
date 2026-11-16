@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.45)',
   },
   sheet: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
     borderTopStartRadius: 16,
     borderTopEndRadius: 16,
     minHeight: SHEET_HEIGHT,
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#ddd',
+    backgroundColor: '#EAE3DD',
     marginTop: 10,
     marginBottom: 8,
   },

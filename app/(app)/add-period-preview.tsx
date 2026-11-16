@@ -159,23 +159,23 @@ function AddPeriodPreviewContent({ draft }: { draft: PeriodDraft }) {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
   },
   scroll: {
     padding: 20,
     paddingBottom: 40,
   },
   desktopCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
     borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#e5e5e5',
+    borderColor: '#EAE3DD',
     padding: 32,
     width: '100%',
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '600',
     marginBottom: 24,
   },
   section: {
@@ -185,29 +185,29 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#333',
+    color: '#2A2226',
   },
   periodCard: {
     borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#e5e5e5',
+    borderColor: '#EAE3DD',
     padding: 20,
     gap: 8,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
   },
   periodHebrew: {
     fontSize: 26,
-    fontWeight: '700',
+    fontWeight: '600',
     lineHeight: 34,
   },
   periodGregorian: {
     fontSize: 16,
-    color: '#555',
+    color: '#5F5459',
   },
   onahBadge: {
     alignSelf: 'flex-start',
     marginTop: 4,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
   notes: {
     marginTop: 8,
     fontSize: 15,
-    color: '#444',
+    color: '#5F5459',
     lineHeight: 22,
   },
   vesetCards: {
@@ -237,17 +237,17 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ccc',
-    backgroundColor: '#fff',
+    borderColor: '#DDD3CC',
+    backgroundColor: '#FBF8F5',
   },
   editButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: '#2A2226',
   },
   saveButton: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
     borderRadius: 10,
     paddingVertical: 16,
     alignItems: 'center',

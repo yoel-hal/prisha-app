@@ -72,7 +72,7 @@ export default function OnboardingChumrotScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
   },
   scroll: {
     paddingHorizontal: 20,
@@ -82,12 +82,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   subtitle: {
     fontSize: 15,
     lineHeight: 22,
-    color: '#666',
+    color: '#5F5459',
     marginBottom: 8,
   },
   rows: {
@@ -99,10 +99,10 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     paddingTop: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#eee',
+    borderTopColor: '#EAE3DD',
   },
   primaryButton: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
     borderRadius: 10,
     paddingVertical: 16,
     alignItems: 'center',

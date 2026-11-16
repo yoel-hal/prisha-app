@@ -21,8 +21,8 @@ function compareVesetResults(a: VesetResult, b: VesetResult): number {
  * All vesatot for the period history, by the rules in docs/חישובי-עונות-v1.docx:
  * - calculations use the Hebrew date and onah only; periods on the same Hebrew date count once
  * - kavuah haflaga or chodesh: only that fixed veset, no onah beinonit
- * - otherwise: onah beinonit from the latest period, haflaga from the last two, and
- *   yom hachodesh from every period until its date passes (open question 2, interim)
+ * - otherwise: haflaga from the last two periods; onah beinonit and yom hachodesh from
+ *   every period, each kept until its date passes (a new period doesn't cancel them)
  *
  * @param periods - All recorded periods (any order)
  * @param minhag  - Community tradition
@@ -47,12 +47,15 @@ export function calcAllVesetim(
   } else if (kavuah.type === 'chodesh') {
     out.push(...calcKavuahChodesh(latest, kavuah.dayOfMonth, minhag, chumrot));
   } else {
-    out.push(...calcOnahBeinonit(latest, minhag, chumrot));
     out.push(...calcHaflaga(sorted, minhag, chumrot));
     const latestKey = onahKey(latest.dateHebrew, latest.onah);
     for (const period of sorted) {
-      const results = calcYomHaChodesh(period, minhag, chumrot);
-      // An earlier period's yom hachodesh that falls on or before the latest period has passed.
+      // Every period has its own onah beinonit and yom hachodesh. A new period does not
+      // cancel an earlier one's; it only passes once its date is on or before the latest period.
+      const results = [
+        ...calcOnahBeinonit(period, minhag, chumrot),
+        ...calcYomHaChodesh(period, minhag, chumrot),
+      ];
       out.push(
         ...(period === latest
           ? results

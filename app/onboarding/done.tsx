@@ -1,9 +1,9 @@
-import { Icon } from '@/components/common/Icon';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 
 import { completeOnboarding, getPeriods } from '../../src/firebase/firestore';
 import { useAuthStore } from '../../src/store/authStore';
@@ -55,7 +55,15 @@ export default function OnboardingDoneScreen() {
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <View style={styles.content}>
         <View style={styles.hero}>
-          <Icon name="check-circle" size={72} color="#2E7D32" />
+          <View style={styles.heroImageWrap}>
+            <Image
+              source={require('../../assets/images/all-set-candle.jpg')}
+              style={styles.heroImage}
+              resizeMode="cover"
+              accessible={false}
+              accessibilityIgnoresInvertColors
+            />
+          </View>
           <Text style={styles.title}>{t('onboarding.allSet')}</Text>
           <Text style={styles.subtitle}>{t('onboarding.allSetDesc')}</Text>
         </View>
@@ -79,7 +87,7 @@ export default function OnboardingDoneScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
   },
   content: {
     flex: 1,
@@ -87,24 +95,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 48,
   },
+  // The candle image fades to near-white at its edges, so it sits on the page without a frame.
+  heroImageWrap: { width: 220, height: 220 },
+  heroImage: { width: '100%', height: '100%' },
   hero: {
     alignItems: 'center',
     gap: 16,
   },
   title: {
     fontSize: 26,
-    fontWeight: '700',
+    fontWeight: '600',
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#5F5459',
     textAlign: 'center',
     lineHeight: 24,
     paddingHorizontal: 8,
   },
   primaryButton: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',

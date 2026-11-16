@@ -180,7 +180,7 @@ export default function CalendarSyncSettingsScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
   },
   scroll: {
     padding: 20,
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#EAE3DD',
   },
   rowLabel: {
     flex: 1,
@@ -203,13 +203,13 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#888',
+    color: '#857A7F',
     marginTop: 16,
     marginBottom: 8,
   },
   input: {
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ccc',
+    borderColor: '#DDD3CC',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -217,43 +217,43 @@ const styles = StyleSheet.create({
   },
   previewCard: {
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ddd',
+    borderColor: '#EAE3DD',
     borderRadius: 12,
     padding: 16,
     gap: 6,
-    backgroundColor: '#fafafa',
+    backgroundColor: '#FFFFFF',
   },
   previewTitle: {
     fontSize: 17,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   previewMeta: {
     fontSize: 14,
-    color: '#666',
+    color: '#5F5459',
   },
   hint: {
     fontSize: 14,
-    color: '#666',
+    color: '#5F5459',
     marginTop: 4,
   },
   error: {
-    color: '#c62828',
+    color: '#B3261E',
   },
   footer: {
     paddingHorizontal: 20,
     paddingBottom: 20,
     paddingTop: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#eee',
+    borderTopColor: '#EAE3DD',
     gap: 8,
   },
   saved: {
     fontSize: 14,
-    color: '#2e7d32',
+    color: '#2F7D55',
     textAlign: 'center',
   },
   saveButton: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
     borderRadius: 10,
     paddingVertical: 16,
     alignItems: 'center',

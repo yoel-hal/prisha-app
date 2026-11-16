@@ -37,7 +37,7 @@ async function resolveWritableCalendarId(): Promise<string> {
 
   return Calendar.createCalendarAsync({
     title: CALENDAR_NAME,
-    color: '#1a1a1a',
+    color: '#2A2226',
     entityType: Calendar.EntityTypes.EVENT,
     sourceId: defaultSource?.id,
     source: defaultSource,

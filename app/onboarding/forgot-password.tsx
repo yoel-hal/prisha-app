@@ -61,7 +61,7 @@ export default function OnboardingForgotPasswordScreen() {
               editable={!loading}
               textAlign={textStart}
               placeholder={t('auth.emailPlaceholder')}
-              placeholderTextColor="#999"
+              placeholderTextColor="#857A7F"
               returnKeyType="done"
               onSubmitEditing={handleSubmit}
             />

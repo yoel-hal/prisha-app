@@ -156,7 +156,7 @@ export function PeriodForm({
           disabled={isSaving || isDeleting}
         >
           {isDeleting ? (
-            <ActivityIndicator color="#b91c1c" />
+            <ActivityIndicator color="#B3261E" />
           ) : (
             <Text style={styles.deleteButtonText}>{t('period.delete')}</Text>
           )}
@@ -180,18 +180,18 @@ const styles = StyleSheet.create({
   onahSummary: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#333',
+    color: '#2A2226',
   },
   input: {
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ccc',
+    borderColor: '#DDD3CC',
     borderRadius: 10,
     minHeight: 88,
     padding: 12,
     fontSize: 16,
   },
   saveButton: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
     borderRadius: 10,
     paddingVertical: 16,
     alignItems: 'center',
@@ -209,11 +209,11 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#fecaca',
-    backgroundColor: '#fef2f2',
+    borderColor: '#F2C9C4',
+    backgroundColor: '#FBEAE8',
   },
   deleteButtonText: {
-    color: '#b91c1c',
+    color: '#B3261E',
     fontSize: 16,
     fontWeight: '600',
   },

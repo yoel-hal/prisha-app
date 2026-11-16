@@ -195,7 +195,7 @@ export default function OnboardingProfileScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
   },
   flex: {
     flex: 1,
@@ -212,12 +212,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: '600',
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 15,
-    color: '#666',
+    color: '#5F5459',
     marginBottom: 8,
     lineHeight: 22,
   },
@@ -229,11 +229,11 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     paddingTop: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#eee',
-    backgroundColor: '#fff',
+    borderTopColor: '#EAE3DD',
+    backgroundColor: '#FBF8F5',
   },
   primaryButton: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',

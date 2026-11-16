@@ -48,7 +48,7 @@ export default function OnboardingAuthChooserScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
   },
   container: {
     flex: 1,
@@ -58,12 +58,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: '600',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#5F5459',
   },
   actions: {
     gap: 12,
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
     minHeight: 52,
   },
   primaryButton: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
   },
   primaryButtonText: {
     color: '#fff',
@@ -84,12 +84,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   secondaryButton: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#F4EFEA',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ddd',
+    borderColor: '#EAE3DD',
   },
   secondaryButtonText: {
-    color: '#1a1a1a',
+    color: '#2A2226',
     fontSize: 16,
     fontWeight: '600',
   },

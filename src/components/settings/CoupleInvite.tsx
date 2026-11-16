@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   button: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
     borderRadius: 10,
     paddingVertical: 16,
     alignItems: 'center',
@@ -104,14 +104,14 @@ const styles = StyleSheet.create({
   },
   linkPreview: {
     fontSize: 14,
-    color: '#555',
+    color: '#5F5459',
   },
   expires: {
     fontSize: 13,
-    color: '#888',
+    color: '#857A7F',
   },
   error: {
     fontSize: 14,
-    color: '#C62828',
+    color: '#B3261E',
   },
 });

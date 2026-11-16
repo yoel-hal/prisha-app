@@ -106,7 +106,7 @@ function LinkRow({
       <Icon
         name={isAppRTL() ? 'chevron-left' : 'chevron-right'}
         size={20}
-        color="#999"
+        color="#857A7F"
       />
     </Pressable>
   );
@@ -115,7 +115,7 @@ function LinkRow({
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
   },
   scroll: {
     flex: 1,
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   },
   group: {
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#e5e5e5',
+    borderColor: '#EAE3DD',
     borderRadius: 12,
     overflow: 'hidden',
   },
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#EAE3DD',
   },
   rowLast: {
     borderBottomWidth: 0,
@@ -149,12 +149,12 @@ const styles = StyleSheet.create({
   },
   rowValue: {
     fontSize: 16,
-    color: '#6b7280',
+    color: '#5F5459',
   },
   privacyHeading: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#1a1a1a',
+    fontWeight: '600',
+    color: '#2A2226',
     marginTop: 4,
   },
   policySection: {
@@ -163,15 +163,15 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: '#2A2226',
   },
   sectionBody: {
     fontSize: 15,
     lineHeight: 22,
-    color: '#4b5563',
+    color: '#5F5459',
   },
   link: {
-    color: '#4A90D9',
+    color: '#A8485F',
     textDecorationLine: 'underline',
   },
 });

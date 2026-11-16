@@ -24,10 +24,10 @@ const styles = StyleSheet.create({
   line: {
     flex: 1,
     height: StyleSheet.hairlineWidth,
-    backgroundColor: '#ddd',
+    backgroundColor: '#EAE3DD',
   },
   label: {
     fontSize: 14,
-    color: '#888',
+    color: '#857A7F',
   },
 });

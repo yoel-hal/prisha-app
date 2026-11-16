@@ -41,11 +41,14 @@ The owner is Yoel; the app has real users (around 43 accounts), so treat product
 - Settings confirm saves one way: `useSettingsSaved()` (green toast; Save-button screens go back on the phone).
 - Partner access: a partner (anonymous auth) is linked to the owner's invite by `partnerUid`; rules only grant couple data to that uid. `getPartnerAccessStatus()` sends unlinked sessions back to `/join`.
 - Couple invites: looked up via `coupleInvites/{code}` (direct get), not a collection-group query.
+- Colors: use `colors` from `src/constants/theme.ts` in new code (many older screens still have the same values as literals). `MoonPhase` needs an opaque `dark` color.
+- Hefsek tahara: the partner sees and can edit it (same rules as periods). The card hides if nothing is recorded 14 days after the earliest hefsek day, so existing users aren't asked about an old period.
 - Switches: use `AppSwitch`, not `Switch`, so colors match everywhere.
 - `react-native-worklets` is pinned to 0.5.1 (SDK 54). A newer version crashes Expo Go.
 
 ## Where things stand (update this when you finish a chunk of work)
 - Last deployed web + pushed: the v1 calculations commit (see `git log`): rules per `docs/חישובי-עונות-v1.docx`, new chumrot settings with migration, one period per Hebrew date, unambiguous night display, night notifications fixed.
 - Open: the questions in §10 of the v1 doc use interim behavior; calendar-sync events for a night onah are still all-day on the daytime's civil date (a day late for the evening).
+- Not committed yet (2026-11-16): the optional hefsek tahara / seven clean days feature (`src/calculations/tahara.ts`, `src/components/tahara/TaharaCard.tsx`, `couples/{id}/taharaCycles` + `taharaSettings/main`, new rules, optional reminders in `TaharaNotificationScheduler`) and the redesign (colors in `src/constants/theme.ts`: linen neutrals, dusty-rose accent, gold/indigo for day/night onot; weights capped at 600; `MoonPhase` signature; images in `assets/images` on the ready screen, empty calendar and the mikveh-night card (the welcome screen has none, by choice)). Rules must be deployed before the web build.
 - Not yet checked: Android; the new calendar on the iPhone simulator.
 - Next steps: see `TODO.md`. The owner decides what to push and deploy; ask before pushing.

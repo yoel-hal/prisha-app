@@ -9,10 +9,10 @@ export type CalendarMarkerKind =
   | 'yomHaChodesh';
 
 export const MARKER_COLORS: Record<CalendarMarkerKind, string> = {
-  period: '#E53935',
-  onahBeinonit: '#1E88E5',
-  haflaga: '#8E24AA',
-  yomHaChodesh: '#43A047',
+  period: '#A8485F',
+  onahBeinonit: '#B0697A',
+  haflaga: '#6E5B94',
+  yomHaChodesh: '#4F8361',
 };
 
 export type CalendarDayEvent = {

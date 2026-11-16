@@ -27,6 +27,7 @@ import { useCouple } from '../../../src/hooks/useCouple';
 import { useAuthStore } from '../../../src/store/authStore';
 import { useSettingsStore } from '../../../src/store/settingsStore';
 import { showAlert } from '../../../src/utils/alert';
+import { showToast } from '../../../src/utils/toast';
 import {
   clearOwnerInvitePin,
   loadOwnerInvitePin,
@@ -164,6 +165,23 @@ export default function CouplePartnerSettingsScreen() {
     const code = generatedToken ?? partnerAccess?.token;
     const pin = generatedPin ?? cachedPin;
     if (!code || !pin) {
+      return;
+    }
+
+    if (Platform.OS === 'web') {
+      // Browsers reject a custom-scheme URL in navigator.share, and some have no share
+      // sheet at all: share the web invite page, or copy the text when sharing isn't there.
+      const webLink = `${window.location.origin}/invite/${code}`;
+      const webMessage = `${t('partner.shareMessage', { code, pin })}\n\n${webLink}`;
+      try {
+        await Share.share({ message: webMessage, url: webLink });
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          return;
+        }
+        await navigator.clipboard?.writeText(webMessage);
+        showToast(t('partner.inviteCopied'), 'success');
+      }
       return;
     }
 
@@ -331,7 +349,7 @@ export default function CouplePartnerSettingsScreen() {
                 disabled={loading}
               >
                 {loading ? (
-                  <ActivityIndicator color="#C62828" />
+                  <ActivityIndicator color="#B3261E" />
                 ) : (
                   <Text style={styles.dangerButtonText}>
                     {t('partner.disconnectPartner')}
@@ -406,7 +424,7 @@ export default function CouplePartnerSettingsScreen() {
                   keyboardType="number-pad"
                   secureTextEntry
                   placeholder="••••"
-                  placeholderTextColor="#999"
+                  placeholderTextColor="#857A7F"
                   returnKeyType="done"
                   onSubmitEditing={() => {
                     if (pinInput.length === 4) {
@@ -533,7 +551,7 @@ export default function CouplePartnerSettingsScreen() {
               autoCapitalize="characters"
               autoCorrect={false}
               placeholder="XXXXXXXXXXXX"
-              placeholderTextColor="#999"
+              placeholderTextColor="#857A7F"
               returnKeyType="next"
               blurOnSubmit={false}
               onSubmitEditing={() => partnerPinInputRef.current?.focus()}
@@ -553,7 +571,7 @@ export default function CouplePartnerSettingsScreen() {
               keyboardType="number-pad"
               secureTextEntry
               placeholder="••••"
-              placeholderTextColor="#999"
+              placeholderTextColor="#857A7F"
               returnKeyType="done"
               onSubmitEditing={() => void handlePartnerConnect()}
             />
@@ -595,7 +613,7 @@ export default function CouplePartnerSettingsScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
   },
   scroll: {
     padding: 20,
@@ -603,11 +621,11 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   description: {
     fontSize: 15,
-    color: '#666',
+    color: '#5F5459',
     lineHeight: 22,
   },
   accessLoader: {
@@ -615,30 +633,30 @@ const styles = StyleSheet.create({
   },
   connectedCard: {
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#c7d4f0',
+    borderColor: '#E8CDD4',
     borderRadius: 12,
     padding: 16,
     gap: 12,
-    backgroundColor: '#f0f4ff',
+    backgroundColor: '#F6E9EC',
   },
   connectedTitle: {
     fontSize: 17,
-    fontWeight: '700',
-    color: '#3a5a9a',
+    fontWeight: '600',
+    color: '#A8485F',
   },
   lastSeen: {
     fontSize: 14,
-    color: '#555',
+    color: '#5F5459',
   },
   partnerEntrySection: {
     gap: 12,
     paddingTop: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#eee',
+    borderTopColor: '#EAE3DD',
   },
   haveCodeLabel: {
     fontSize: 15,
-    color: '#666',
+    color: '#5F5459',
   },
   partnerReadOnly: {
     flex: 1,
@@ -647,11 +665,11 @@ const styles = StyleSheet.create({
   },
   partnerNote: {
     fontSize: 17,
-    color: '#3a5a9a',
+    color: '#A8485F',
     textAlign: 'center',
   },
   primaryButton: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
     borderRadius: 10,
     paddingVertical: 16,
     alignItems: 'center',
@@ -667,10 +685,10 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: 'center',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#3a5a9a',
+    borderColor: '#A8485F',
   },
   secondaryButtonText: {
-    color: '#3a5a9a',
+    color: '#A8485F',
     fontSize: 15,
     fontWeight: '600',
   },
@@ -679,11 +697,11 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#FFCDD2',
-    backgroundColor: '#FFEBEE',
+    borderColor: '#F2C9C4',
+    backgroundColor: '#FBEAE8',
   },
   dangerButtonText: {
-    color: '#C62828',
+    color: '#B3261E',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -692,8 +710,8 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 14,
-    color: '#C62828',
-    backgroundColor: '#FFEBEE',
+    color: '#B3261E',
+    backgroundColor: '#FBEAE8',
     padding: 12,
     borderRadius: 8,
   },
@@ -704,7 +722,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   modalCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
     borderRadius: 14,
     padding: 20,
     gap: 12,
@@ -712,16 +730,16 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   fieldLabel: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#666',
+    color: '#5F5459',
   },
   input: {
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ccc',
+    borderColor: '#DDD3CC',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -730,15 +748,14 @@ const styles = StyleSheet.create({
   codeLabel: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#888',
-    textTransform: 'uppercase',
+    color: '#857A7F',
   },
   codeValue: {
     fontSize: 28,
-    fontWeight: '800',
+    fontWeight: '600',
     letterSpacing: 3,
     textAlign: 'center',
-    color: '#1a1a1a',
+    color: '#2A2226',
   },
   modalClose: {
     alignItems: 'center',
@@ -746,6 +763,6 @@ const styles = StyleSheet.create({
   },
   modalCloseText: {
     fontSize: 15,
-    color: '#666',
+    color: '#5F5459',
   },
 });

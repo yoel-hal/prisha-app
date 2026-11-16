@@ -4,11 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { MarkedDates } from 'react-native-calendars/src/types';
 
-import { formatGregorianLocal } from '../../calculations/onah';
+import { formatGregorianLocal, gregorianToHebrewDate } from '../../calculations/onah';
 import type { HebrewDate } from '../../calculations/types';
 import { hebrewDayLetters, hebrewMonthName, hebrewYearLetters } from '../../utils/hebrewDateFormat';
 import { isAppRTL } from '../../utils/rtl';
 import { Icon } from '../common/Icon';
+import { MoonPhase } from '../common/MoonPhase';
 
 export type HebrewMonth = { year: number; month: number };
 
@@ -73,6 +74,10 @@ export function HebrewMonthCalendar({
   const isHebrew = i18n.language === 'he';
   const rtl = isAppRTL();
   const todayKey = formatGregorianLocal(new Date());
+  const todayHebrew = gregorianToHebrewDate(new Date());
+  // Signature: tonight's moon beside the month name, only on the current month.
+  const todayInMonth =
+    todayHebrew.month === month.month && todayHebrew.year === month.year ? todayHebrew.day : null;
 
   const { title, subtitle, weeks } = useMemo(() => {
     const first = new HDate(1, month.month, month.year);
@@ -114,10 +119,13 @@ export function HebrewMonthCalendar({
           accessibilityRole="button"
           accessibilityLabel={t('calendar.previousMonth')}
         >
-          <Icon name={rtl ? 'chevron-right' : 'chevron-left'} size={22} color="#1a1a1a" />
+          <Icon name={rtl ? 'chevron-right' : 'chevron-left'} size={22} color="#2A2226" />
         </Pressable>
         <View style={styles.titleWrap}>
-          <Text style={[styles.title, compact && styles.titleCompact]}>{title}</Text>
+          <View style={styles.titleRow}>
+            {todayInMonth ? <MoonPhase day={todayInMonth} size={12} /> : null}
+            <Text style={[styles.title, compact && styles.titleCompact]}>{title}</Text>
+          </View>
           <Text style={styles.subtitle}>{subtitle}</Text>
         </View>
         <Pressable
@@ -126,7 +134,7 @@ export function HebrewMonthCalendar({
           accessibilityRole="button"
           accessibilityLabel={t('calendar.nextMonth')}
         >
-          <Icon name={rtl ? 'chevron-left' : 'chevron-right'} size={22} color="#1a1a1a" />
+          <Icon name={rtl ? 'chevron-left' : 'chevron-right'} size={22} color="#2A2226" />
         </Pressable>
       </View>
 
@@ -207,9 +215,14 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 10,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ddd',
+    borderColor: '#EAE3DD',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   titleWrap: {
     flex: 1,
@@ -218,8 +231,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#1a1a1a',
+    fontWeight: '600',
+    color: '#2A2226',
     textAlign: 'center',
   },
   titleCompact: {
@@ -227,7 +240,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 12,
-    color: '#888',
+    color: '#857A7F',
     textAlign: 'center',
   },
   row: {
@@ -238,7 +251,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
     fontSize: 12,
-    color: '#999',
+    color: '#857A7F',
     paddingVertical: 4,
   },
   cell: {
@@ -253,33 +266,33 @@ const styles = StyleSheet.create({
     minHeight: 48,
   },
   cellShabbat: {
-    backgroundColor: '#FDF1E3',
+    backgroundColor: '#F5EEE6',
   },
   cellToday: {
     borderWidth: 1.5,
-    borderColor: '#1a1a1a',
+    borderColor: '#A8485F',
   },
   cellSelected: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
   },
   primary: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: '#2A2226',
   },
   secondary: {
     fontSize: 10,
-    color: '#888',
+    color: '#857A7F',
     marginTop: 1,
   },
   textShabbat: {
-    color: '#B45309',
+    color: '#8A5A2B',
   },
   textSelected: {
     color: '#fff',
   },
   textSelectedMuted: {
-    color: '#ddd',
+    color: '#C9BFB9',
   },
   dots: {
     flexDirection: 'row',

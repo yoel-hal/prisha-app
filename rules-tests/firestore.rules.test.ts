@@ -434,6 +434,58 @@ describe('data validation', () => {
   });
 });
 
+describe('hefsek tahara and clean days', () => {
+  const validCycle = () => ({
+    periodId: 'p1',
+    hefsekDateGregorian: '2026-10-05',
+    hefsekDateHebrew: { year: 5787, month: 7, day: 23 },
+    checks: {},
+    status: 'active',
+    createdAt: '2026-10-05T14:00:00.000Z',
+    createdBy: OWNER,
+  });
+  const cycleRef = (uid: string | null) => doc(db(uid), 'couples', COUPLE, 'taharaCycles', 'c1');
+  const taharaSettingsRef = (uid: string | null, id = 'main') =>
+    doc(db(uid), 'couples', COUPLE, 'taharaSettings', id);
+
+  test('the owner and the linked partner can record a hefsek and checks', async () => {
+    await seed({ partnerUid: PARTNER });
+    await assertSucceeds(setDoc(cycleRef(OWNER), validCycle()));
+    await assertSucceeds(updateDoc(cycleRef(PARTNER), { checks: { '1-morning': 'clean' } }));
+    await assertSucceeds(getDocs(collection(db(PARTNER), 'couples', COUPLE, 'taharaCycles')));
+    await assertSucceeds(updateDoc(cycleRef(OWNER), { status: 'restarted' }));
+    await assertSucceeds(deleteDoc(cycleRef(OWNER)));
+  });
+
+  test('strangers and signed-out users get nothing', async () => {
+    await seed({ partnerUid: PARTNER });
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'couples', COUPLE, 'taharaCycles', 'c1'), validCycle());
+    });
+    await assertFails(getDoc(cycleRef(STRANGER)));
+    await assertFails(getDoc(cycleRef(null)));
+    await assertFails(setDoc(doc(db(STRANGER), 'couples', COUPLE, 'taharaCycles', 'c2'), validCycle()));
+    await assertFails(getDoc(taharaSettingsRef(STRANGER)));
+  });
+
+  test('invalid cycles are rejected', async () => {
+    await seed({});
+    await assertFails(setDoc(cycleRef(OWNER), { ...validCycle(), status: 'done' }));
+    await assertFails(setDoc(cycleRef(OWNER), { ...validCycle(), extra: true }));
+    await assertFails(setDoc(cycleRef(OWNER), { ...validCycle(), hefsekDateHebrew: 'x' }));
+  });
+
+  test('tahara settings accept known fields only, in the main doc', async () => {
+    await seed({});
+    const valid = { enabled: true, minDaysOverride: null, remindersEnabled: false };
+    await assertSucceeds(setDoc(taharaSettingsRef(OWNER), valid));
+    await assertSucceeds(setDoc(taharaSettingsRef(OWNER), { ...valid, minDaysOverride: 4 }));
+    await assertFails(setDoc(taharaSettingsRef(OWNER), { ...valid, minDaysOverride: 7 }));
+    await assertFails(setDoc(taharaSettingsRef(OWNER), { ...valid, other: 1 }));
+    await assertFails(setDoc(taharaSettingsRef(OWNER, 'second'), valid));
+  });
+});
+
 describe('account deletion', () => {
   async function deleteAll(ownerDb: ReturnType<typeof db>, path: string[]) {
     const snap = await getDocs(collection(ownerDb, path.join('/')));
@@ -455,6 +507,8 @@ describe('account deletion', () => {
     await assertSucceeds(deleteAll(ownerDb, ['couples', COUPLE, 'periods']));
     await assertSucceeds(deleteAll(ownerDb, ['couples', COUPLE, 'invites']));
     await assertSucceeds(deleteAll(ownerDb, ['couples', COUPLE, 'settings']));
+    await assertSucceeds(deleteAll(ownerDb, ['couples', COUPLE, 'taharaCycles']));
+    await assertSucceeds(deleteAll(ownerDb, ['couples', COUPLE, 'taharaSettings']));
     await assertSucceeds(deleteDoc(doc(ownerDb, 'couples', COUPLE, 'public', 'invite')));
     await assertSucceeds(deleteDoc(doc(ownerDb, 'couples', COUPLE)));
     await assertSucceeds(

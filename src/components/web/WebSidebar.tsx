@@ -93,7 +93,7 @@ export function WebSidebar() {
 const styles = StyleSheet.create({
   sidebar: {
     width: DESKTOP_SIDEBAR_WIDTH,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#FBF8F5',
     paddingTop: 24,
     paddingHorizontal: 16,
     paddingBottom: 20,
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   },
   brand: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: '600',
     marginBottom: 28,
     paddingHorizontal: 4,
   },
@@ -120,15 +120,15 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   navItemActive: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#F4EFEA',
   },
   navLabel: {
     fontSize: 15,
-    color: '#666',
+    color: '#5F5459',
     fontWeight: '500',
   },
   navLabelActive: {
-    color: '#1a1a1a',
+    color: '#2A2226',
     fontWeight: '600',
   },
   footer: {

@@ -4,7 +4,7 @@ import { makeResult, ohrZaruaBefore, tag, uniqueOnot, type Target } from './resu
 import type { Chumrot, Minhag, Period, VesetResult } from './types';
 
 /**
- * Onah beinonit, counted from the latest period only (pass the latest period).
+ * Onah beinonit of one period (calcAllVesetim keeps an earlier period's until it passes).
  * Day 30 counts the period day as day 1 (29 days later); the base onot come from the minhag.
  * Chumrot:
  * - Ohr Zarua: also the onah before each base onah
@@ -14,15 +14,15 @@ import type { Chumrot, Minhag, Period, VesetResult } from './types';
  * Source: Shulchan Aruch Yoreh De'ah 189:2; rules as set in docs/חישובי-עונות-v1.docx §2.
  */
 export function calcOnahBeinonit(
-  latest: Period,
+  period: Period,
   minhag: Minhag,
   chumrot: Chumrot,
 ): VesetResult[] {
-  const baseOnot = minhagRegistry[minhag].beinonitOnot(latest.onah);
-  const day30 = addDays(latest.dateHebrew, 29);
+  const baseOnot = minhagRegistry[minhag].beinonitOnot(period.onah);
+  const day30 = addDays(period.dateHebrew, 29);
 
   const conflict =
-    chumrot.ohrZarua && chumrot.kreisiUpleisi && latest.onah === 'night';
+    chumrot.ohrZarua && chumrot.kreisiUpleisi && period.onah === 'night';
   const ohrZarua =
     chumrot.ohrZarua && !(conflict && chumrot.nightConflict === 'kreisiUpleisi');
   const kreisiUpleisi =
@@ -42,7 +42,7 @@ export function calcOnahBeinonit(
   }
 
   if (chumrot.chavotDaat) {
-    const day31 = addDays(latest.dateHebrew, 30);
+    const day31 = addDays(period.dateHebrew, 30);
     const day31Base: HebrewOnah[] = baseOnot.map((onah) => ({ date: day31, onah }));
     targets.push(...tag(day31Base, 'chavotDaat'));
     if (chumrot.ohrZarua && chumrot.ohrZaruaOnDay31) {
@@ -51,7 +51,7 @@ export function calcOnahBeinonit(
   }
 
   return uniqueOnot(targets).map((target) =>
-    makeResult('onahBeinonit', latest, target, minhag),
+    makeResult('onahBeinonit', period, target, minhag),
   );
 }
 

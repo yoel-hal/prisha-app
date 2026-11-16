@@ -75,25 +75,25 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#333',
+    color: '#2A2226',
   },
   summary: {
     gap: 2,
   },
   summaryPrimary: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#1a1a1a',
+    fontWeight: '600',
+    color: '#2A2226',
   },
   summarySecondary: {
     fontSize: 14,
-    color: '#666',
+    color: '#5F5459',
   },
   calendarCard: {
     borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#e5e5e5',
+    borderColor: '#EAE3DD',
     padding: 10,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
   },
 });

@@ -2,9 +2,9 @@ import type { VesetType } from '../calculations/types';
 
 const VESET_BADGE_COLORS: Record<VesetType, { background: string; text: string }> =
   {
-    onahBeinonit: { background: '#dbeafe', text: '#1d4ed8' },
-    haflaga: { background: '#ede9fe', text: '#6d28d9' },
-    yomHaChodesh: { background: '#dcfce7', text: '#15803d' },
+    onahBeinonit: { background: '#F6E9EC', text: '#8F3B50' },
+    haflaga: { background: '#EEEAF4', text: '#55457A' },
+    yomHaChodesh: { background: '#E7F0E9', text: '#3F6B4B' },
   };
 
 export function vesetBadgeColors(type: VesetType): {

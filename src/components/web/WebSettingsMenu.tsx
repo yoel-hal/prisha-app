@@ -25,6 +25,7 @@ const DESKTOP_SETTINGS_MENU_WIDTH = 300;
 type SettingsHref =
   | '/settings/customization'
   | '/settings/notifications'
+  | '/settings/tahara'
   | '/settings/calendar-sync'
   | '/settings/location'
   | '/settings/privacy'
@@ -34,6 +35,7 @@ type SettingsHref =
 
 const MAIN_MENU_ITEMS: { href: SettingsHref; labelKey: string }[] = [
   { href: '/settings/customization', labelKey: 'settings.customization' },
+  { href: '/settings/tahara', labelKey: 'settings.tahara' },
   { href: '/settings/notifications', labelKey: 'settings.notifications' },
   { href: '/settings/calendar-sync', labelKey: 'settings.calendarSync' },
   { href: '/settings/location', labelKey: 'settings.location' },
@@ -189,7 +191,7 @@ export function WebSettingsMenu() {
           disabled={signingOut}
         >
           {signingOut ? (
-            <ActivityIndicator color="#C62828" />
+            <ActivityIndicator color="#B3261E" />
           ) : (
             <Text style={styles.signOutText}>{t('auth.signOut')}</Text>
           )}
@@ -224,7 +226,7 @@ const styles = StyleSheet.create({
     width: DESKTOP_SETTINGS_MENU_WIDTH,
     flexShrink: 0,
     alignSelf: 'stretch',
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
     borderEndWidth: StyleSheet.hairlineWidth,
     borderEndColor: DESKTOP_SIDEBAR_BORDER,
   },
@@ -238,14 +240,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: '600',
     marginBottom: 4,
   },
   sectionHeader: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#888',
-    textTransform: 'uppercase',
+    color: '#857A7F',
     marginTop: 12,
     marginBottom: 8,
   },
@@ -257,14 +258,14 @@ const styles = StyleSheet.create({
   langButton: {
     flex: 1,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ddd',
+    borderColor: '#EAE3DD',
     borderRadius: 8,
     paddingVertical: 10,
     alignItems: 'center',
   },
   langButtonActive: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
+    borderColor: '#A8485F',
   },
   langText: {
     fontSize: 14,
@@ -275,7 +276,7 @@ const styles = StyleSheet.create({
   },
   group: {
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#e5e5e5',
+    borderColor: '#EAE3DD',
     borderRadius: 12,
     overflow: 'hidden',
     marginTop: 4,
@@ -283,15 +284,14 @@ const styles = StyleSheet.create({
   groupHeader: {
     paddingVertical: 10,
     paddingHorizontal: 14,
-    backgroundColor: '#f7f7f7',
+    backgroundColor: '#FFFFFF',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#EAE3DD',
   },
   groupHeaderText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#888',
-    textTransform: 'uppercase',
+    color: '#857A7F',
   },
   row: {
     flexDirection: 'row',
@@ -300,11 +300,11 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#EAE3DD',
     ...(Platform.OS === 'web' ? { cursor: 'pointer' as const } : {}),
   },
   rowActive: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F4EFEA',
   },
   rowLast: {
     borderBottomWidth: 0,
@@ -317,21 +317,21 @@ const styles = StyleSheet.create({
   },
   rowLabel: {
     fontSize: 15,
-    color: '#444',
+    color: '#5F5459',
     flex: 1,
   },
   rowLabelActive: {
-    color: '#1a1a1a',
+    color: '#2A2226',
     fontWeight: '600',
   },
   rowLabelDestructive: {
-    color: '#C62828',
+    color: '#B3261E',
   },
   menuBadge: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#E53935',
+    backgroundColor: '#B3261E',
   },
   signOutButton: {
     marginTop: 24,
@@ -339,12 +339,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 10,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#FFCDD2',
-    backgroundColor: '#FFEBEE',
+    borderColor: '#F2C9C4',
+    backgroundColor: '#FBEAE8',
   },
   signOutText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#C62828',
+    color: '#B3261E',
   },
 });

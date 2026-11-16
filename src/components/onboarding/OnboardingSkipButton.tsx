@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
   },
   skipText: {
     fontSize: 16,
-    color: '#666',
+    color: '#5F5459',
     fontWeight: '500',
   },
 });

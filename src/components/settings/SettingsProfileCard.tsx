@@ -86,14 +86,14 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#4A90D9',
+    backgroundColor: '#A8485F',
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
     color: '#fff',
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   avatarEditBadge: {
     position: 'absolute',
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
@@ -115,14 +115,14 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: '#2A2226',
   },
   emailPrimary: {
     fontSize: 15,
-    color: '#1a1a1a',
+    color: '#2A2226',
   },
   emailMuted: {
     fontSize: 14,
-    color: '#6b7280',
+    color: '#5F5459',
   },
 });

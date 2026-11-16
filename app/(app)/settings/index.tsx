@@ -27,6 +27,7 @@ import { webScreenScrollStyles } from '../../../src/utils/webScroll';
 type SettingsRoute =
   | '/settings/customization'
   | '/settings/notifications'
+  | '/settings/tahara'
   | '/settings/calendar-sync'
   | '/settings/location'
   | '/settings/privacy'
@@ -60,7 +61,7 @@ function SettingsRow({
         <Icon
           name={isAppRTL() ? 'chevron-left' : 'chevron-right'}
           size={20}
-          color="#999"
+          color="#857A7F"
         />
       )}
     </Pressable>
@@ -169,6 +170,10 @@ export default function SettingsScreen() {
             onPress={() => navigate('/settings/customization')}
           />
           <SettingsRow
+            label={t('settings.tahara')}
+            onPress={() => navigate('/settings/tahara')}
+          />
+          <SettingsRow
             label={t('settings.notifications')}
             onPress={() => navigate('/settings/notifications')}
           />
@@ -217,7 +222,7 @@ export default function SettingsScreen() {
           disabled={signingOut}
         >
           {signingOut ? (
-            <ActivityIndicator color="#C62828" />
+            <ActivityIndicator color="#B3261E" />
           ) : (
             <Text style={styles.signOutText}>{t('auth.signOut')}</Text>
           )}
@@ -252,7 +257,7 @@ function LanguageButton({
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FBF8F5',
   },
   scroll: {
     padding: 20,
@@ -261,7 +266,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '600',
     marginBottom: 8,
   },
   accountCard: {
@@ -278,14 +283,14 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#4A90D9',
+    backgroundColor: '#A8485F',
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
     color: '#fff',
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   avatarEditBadge: {
     position: 'absolute',
@@ -294,7 +299,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
@@ -307,23 +312,22 @@ const styles = StyleSheet.create({
   accountName: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: '#2A2226',
   },
   accountEmailPrimary: {
     fontSize: 15,
-    color: '#1a1a1a',
+    color: '#2A2226',
   },
   accountEmailMuted: {
     fontSize: 14,
-    color: '#6b7280',
+    color: '#5F5459',
   },
   sectionHeader: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#888',
+    color: '#857A7F',
     marginTop: 16,
     marginBottom: 8,
-    textTransform: 'uppercase',
   },
   languageRow: {
     flexDirection: 'row',
@@ -332,14 +336,14 @@ const styles = StyleSheet.create({
   langButton: {
     flex: 1,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ddd',
+    borderColor: '#EAE3DD',
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: 'center',
   },
   langButtonActive: {
-    backgroundColor: '#1a1a1a',
-    borderColor: '#1a1a1a',
+    backgroundColor: '#A8485F',
+    borderColor: '#A8485F',
   },
   langText: {
     fontSize: 16,
@@ -350,7 +354,7 @@ const styles = StyleSheet.create({
   },
   group: {
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#e5e5e5',
+    borderColor: '#EAE3DD',
     borderRadius: 12,
     overflow: 'hidden',
   },
@@ -360,15 +364,14 @@ const styles = StyleSheet.create({
   groupHeader: {
     paddingVertical: 10,
     paddingHorizontal: 16,
-    backgroundColor: '#f7f7f7',
+    backgroundColor: '#FFFFFF',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#EAE3DD',
   },
   groupHeaderText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#888',
-    textTransform: 'uppercase',
+    color: '#857A7F',
   },
   row: {
     flexDirection: 'row',
@@ -377,7 +380,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#EAE3DD',
   },
   rowLast: {
     borderBottomWidth: 0,
@@ -387,7 +390,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   rowLabelDestructive: {
-    color: '#C62828',
+    color: '#B3261E',
   },
   signOutButton: {
     marginTop: 32,
@@ -395,12 +398,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 10,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#FFCDD2',
-    backgroundColor: '#FFEBEE',
+    borderColor: '#F2C9C4',
+    backgroundColor: '#FBEAE8',
   },
   signOutText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#C62828',
+    color: '#B3261E',
   },
 });

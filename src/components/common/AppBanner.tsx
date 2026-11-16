@@ -91,7 +91,7 @@ export function BannerContent({
             accessibilityLabel={t('app.banner.close')}
             hitSlop={8}
           >
-            <Icon name="x" size={18} color="#525252" />
+            <Icon name="x" size={18} color="#5F5459" />
           </Pressable>
         ) : null}
       </View>
@@ -108,7 +108,7 @@ export function BannerContent({
           accessibilityLabel={t('app.banner.close')}
           hitSlop={8}
         >
-          <Icon name="x" size={18} color="#525252" />
+          <Icon name="x" size={18} color="#5F5459" />
         </Pressable>
       ) : null}
       <Text style={[styles.mobileTitle, textStartStyle()]}>{title}</Text>
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
   },
   webHost,
   mobileCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#FBF8F5',
     borderRadius: 16,
     paddingTop: 16,
     paddingBottom: 16,
@@ -217,23 +217,23 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 6,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#e5e5e5',
+    borderColor: '#EAE3DD',
   },
   mobileTitle: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#171717',
+    fontWeight: '600',
+    color: '#2A2226',
     marginBottom: 6,
   },
   mobileBody: {
     fontSize: 14,
     lineHeight: 20,
-    color: '#404040',
+    color: '#5F5459',
   },
   mobileCta: {
     alignSelf: 'flex-start',
     marginTop: 12,
-    backgroundColor: '#171717',
+    backgroundColor: '#A8485F',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 8,
@@ -244,9 +244,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   webBanner: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#FBF8F5',
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#e5e5e5',
+    borderTopColor: '#EAE3DD',
     paddingHorizontal: 24,
     paddingVertical: 16,
     shadowColor: '#000',
@@ -271,16 +271,16 @@ const styles = StyleSheet.create({
   },
   webTitle: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#171717',
+    fontWeight: '600',
+    color: '#2A2226',
   },
   webBody: {
     fontSize: 14,
     lineHeight: 20,
-    color: '#404040',
+    color: '#5F5459',
   },
   webCta: {
-    backgroundColor: '#171717',
+    backgroundColor: '#A8485F',
     borderRadius: 10,
     paddingHorizontal: 16,
     paddingVertical: 10,

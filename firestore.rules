@@ -172,6 +172,28 @@ service cloud.firestore {
         && (!('calendar' in d) || d.calendar is map);
     }
 
+    function isValidTaharaCycle(d) {
+      return d.keys().hasOnly(['periodId', 'hefsekDateGregorian', 'hefsekDateHebrew', 'checks', 'status', 'createdAt', 'createdBy'])
+        && d.periodId is string && d.periodId.size() <= 128
+        && d.hefsekDateGregorian is string && d.hefsekDateGregorian.size() <= 40
+        && d.hefsekDateHebrew is map
+        && d.hefsekDateHebrew.keys().hasOnly(['year', 'month', 'day'])
+        && d.hefsekDateHebrew.year is number
+        && d.hefsekDateHebrew.month is number
+        && d.hefsekDateHebrew.day is number
+        && d.checks is map && d.checks.size() <= 14
+        && d.status in ['active', 'restarted']
+        && d.createdAt is string && d.createdAt.size() <= 40
+        && d.createdBy is string && d.createdBy.size() <= 128;
+    }
+
+    function isValidTaharaSettings(d) {
+      return d.keys().hasOnly(['enabled', 'minDaysOverride', 'remindersEnabled'])
+        && d.enabled is bool
+        && (d.minDaysOverride == null || d.minDaysOverride in [4, 5])
+        && d.remindersEnabled is bool;
+    }
+
     function changedKeys() {
       return request.resource.data.diff(resource.data).affectedKeys();
     }
@@ -222,6 +244,20 @@ service cloud.firestore {
         allow update: if canAccessCouple(coupleId)
           && changedKeys().hasOnly(['dateGregorian', 'dateHebrew', 'onah', 'notes', 'createdAt', 'createdBy'])
           && isValidPeriod(request.resource.data);
+      }
+
+      // Hefsek tahara and the seven clean days. Same access as periods (the partner sees all).
+      match /taharaCycles/{cycleId} {
+        allow read, delete: if canAccessCouple(coupleId);
+        allow create, update: if canAccessCouple(coupleId)
+          && isValidTaharaCycle(request.resource.data);
+      }
+
+      match /taharaSettings/{docId} {
+        allow read, delete: if canAccessCouple(coupleId);
+        allow create, update: if canAccessCouple(coupleId)
+          && docId == 'main'
+          && isValidTaharaSettings(request.resource.data);
       }
 
       // Legacy invites from before the couple-sharing redo; kept only so account deletion can clean them up.
