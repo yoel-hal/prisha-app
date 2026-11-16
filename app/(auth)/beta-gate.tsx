@@ -66,7 +66,7 @@ export default function BetaGateScreen() {
   const canSubmit = code.length === 6;
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+    <SafeAreaView className="flex-1 bg-[#FBF8F5]" edges={['top', 'bottom']}>
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -81,19 +81,19 @@ export default function BetaGateScreen() {
           <Animated.View style={shakeStyle} className="gap-8">
             <View className="items-center gap-6">
               <View className="items-center gap-2">
-                <Text className="text-center text-2xl font-semibold text-neutral-900">
+                <Text className="text-center text-2xl font-semibold text-[#2A2226]">
                   {t('betaGate.title', { lng: 'he' })}
                 </Text>
-                <Text className="text-center text-base text-neutral-500">
+                <Text className="text-center text-base text-[#5F5459]">
                   {t('betaGate.subtitle', { lng: 'he' })}
                 </Text>
               </View>
 
               <View className="items-center gap-2">
-                <Text className="text-center text-2xl font-semibold text-neutral-900">
+                <Text className="text-center text-2xl font-semibold text-[#2A2226]">
                   {t('betaGate.title', { lng: 'en' })}
                 </Text>
-                <Text className="text-center text-base text-neutral-500">
+                <Text className="text-center text-base text-[#5F5459]">
                   {t('betaGate.subtitle', { lng: 'en' })}
                 </Text>
               </View>
@@ -102,7 +102,7 @@ export default function BetaGateScreen() {
             <View className="gap-4">
               <TextInput
                 ref={inputRef}
-                className="rounded-xl border border-neutral-300 bg-neutral-50 px-4 py-3.5 text-center text-2xl font-semibold tracking-[0.4em] text-neutral-900"
+                className="rounded-xl border border-[#DDD3CC] bg-white px-4 py-3.5 text-center text-2xl font-semibold tracking-[0.4em] text-[#2A2226]"
                 value={code}
                 onChangeText={(value) => {
                   const digits = value.replace(/\D/g, '').slice(0, 6);
@@ -127,7 +127,7 @@ export default function BetaGateScreen() {
 
               {showError ? (
                 <Text
-                  className="rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-800"
+                  className="rounded-lg bg-[#FBEAE8] px-3 py-2.5 text-sm text-[#B3261E]"
                   style={textStartStyle()}
                 >
                   {t('betaGate.error')}
@@ -135,7 +135,7 @@ export default function BetaGateScreen() {
               ) : null}
 
               <Pressable
-                className={`min-h-[52px] items-center justify-center rounded-xl bg-neutral-900 py-4 ${
+                className={`min-h-[52px] items-center justify-center rounded-xl bg-[#A8485F] py-4 ${
                   canSubmit ? '' : 'opacity-60'
                 }`}
                 onPress={handleSubmit}
